@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "36c70651f5e98da447e1d73c7da8d4f3ac3698439366aeab3d8379d592713db4",
+   "source_sha256": "b8903d4bd7e6b3f2fff89e0c9284cb894860815713e21ea205a3a7ad5bf7be4e",
    "transform": "hand-written for publication; 5 wip block(s) removed",
-   "sha256": "224372c0e99f4a3aabe310b5651a09d8805c5d15fa42053eed5c19775e2a1860",
-   "bytes": 41427
+   "sha256": "3c45520672055cbf746f1733843ec3999f14e5906fe598c9fd592ca9a34e63d1",
+   "bytes": 51760
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "ed5ae8a5ceaa3c0ccdf6ef46bf64d636c1709c01dcca528cd7c2d19c48eaba36",
+   "source_sha256": "576b8afacc73f934f61e66a4e2323959c4a52bf5521aee3cebe072b0b83f9e42",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "ab20d0e842df3f441d48a0c44c4220c77bb8f20453422a1e3306fc0ee3e14277",
-   "bytes": 5115
+   "sha256": "38baf1eeedb8e1a4abb284258527e1c67b5f3966417362260c9569b45bca905c",
+   "bytes": 7658
   },
   {
    "path": "CREDITS.md",
@@ -107,19 +107,19 @@
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "ccae7e0b625ed8669478ca33bffc7e12ad2e2f2770e0390db2e6611c1cdb7292",
+   "source_sha256": "74a9051501914ff572e5e5a2358434cdd4fdd71aa2e3d8eecc5002118e8f6563",
    "transform": "hand-written for publication",
-   "sha256": "ccae7e0b625ed8669478ca33bffc7e12ad2e2f2770e0390db2e6611c1cdb7292",
-   "bytes": 30039
+   "sha256": "74a9051501914ff572e5e5a2358434cdd4fdd71aa2e3d8eecc5002118e8f6563",
+   "bytes": 46172
   },
   {
    "path": "engine/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/README.md",
-   "source_sha256": "06b0aed4e6db44ce1cc844c1b886b8a876290c64681985769c6b492e9dc89f19",
+   "source_sha256": "d883e1390ac9dc490baa2d65c1e12bb1c580e7cd84ac024643307e8a35349d26",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "9a42757c418e7a982117f56e5b535981bd722900bca8c18faff3c46852c1a09f",
-   "bytes": 4232
+   "sha256": "188bb8112006522167776843198d477dabc8643c221ddaddf06c5891d89234ab",
+   "bytes": 4326
   },
   {
    "path": "harness/README.md",
@@ -200,8 +200,8 @@
    "path": "engine/configs/run_serve.sh",
    "kind": "code",
    "source": "$LANE/run/run_serve.sh",
-   "source_sha256": "c317d631115d84a16ff21b0f611300af1c5ca31b5f359d3dc3990692da971c4a",
-   "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
+   "source_sha256": "eb0881103d596a3308dff6ec4b262f7d681e5f10b6d898abcfe0ce5fa49988ef",
+   "transform": "scrubbed (11 replacements; 3 per-file redaction rules)",
    "sha256": "371141d124957d0792595af6e1d8a155689db49b0d589f522cd518db07d3429a",
    "bytes": 4600
   },
@@ -932,9 +932,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 61,
+  "count": 65,
   "upstream_engine_files": 31,
-  "this_build_work_in_progress": 30,
+  "this_build_work_in_progress": 34,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }

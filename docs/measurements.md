@@ -1,8 +1,9 @@
 # Measurements
 
-Every number here is MEASURED on 2026-11-09 unless labelled ESTIMATED (arithmetic shown) or UPSTREAM (the named
-source). The raw receipts are private build logs and are not published; this page reduces them to tables and names
-the receipt each row comes from (paths under the build's `logs/`).
+Every number here is MEASURED on 2026-11-09 unless its row or section gives another date or it is labelled
+ESTIMATED (arithmetic shown) or UPSTREAM (the named source). The raw receipts are private build logs and are not
+published; this page reduces them to tables and names the receipt each row comes from (paths under the build's
+`logs/`).
 
 ## Results log
 
@@ -10,7 +11,15 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 
 | Date | Build or profile | Test | Result | Receipt |
 |---|---|---|---|---|
-| 2026-11-10 | IQ records in prompt reading (plan 04 part B) | first eight-card boot | built and passed its one-card checks; the boot failed while loading (driver error "invalid argument" during the build of the IQ bank); cause not established; not in this snapshot ([section](#iq-records-in-prompt-reading-plan-04-part-b)) | private boot log |
+| 2026-11-10 | IQ records in prompt reading (plan 04 part B), one slot, reserves 5.3 / 8.1 GiB: NOT accepted (quality not established) | termination test, chat 0 (216,245 tokens) | first read 107.82 s. 7 of 7 follow-ups kept the prompt, first token 4.02 to 5.38 s (median 4.44 s). Tool-call requests 49.4 to 62.6 tok/s. The final answer ran to the 32,000-token limit in thinking, a repetition loop (5.33 tokens per round) ([section](#iq-records-in-prompt-reading-plan-04-part-b-not-accepted-quality-not-established)) | `baseline/W4-piq-so-term-c0.out`, `baseline/W4-piq-so-term.jsonl` |
+| 2026-11-10 | IQ records in prompt reading (plan 04 part B): NOT accepted (quality not established) | load failure, and an eight-card boot with the allocator setting off | explained and fixed: the allocator setting during weight loading fills the cards, the driver error is reproduced on one card, and with the setting off the variant was ready in 349 s with no error. That the first boot failed in exactly this way is an inference. Not in this snapshot | private one-card receipts and boot log |
+| 2026-11-10 | three slots on the accepted tiers: NOT accepted (quality not established) | closeness, wider set | INCONCLUSIVE on the 12-prompt set: first different token 10 for, 2 against, and mean difference 7 for, 0 against, 5 undecided ([section](#quality-on-twelve-prompts-inconclusive)) | `t3w/quality-wide-score-N2w-S3hw-Pw-N2wr.out` |
+| 2026-11-10 | accepted configuration | closeness, wider set | INCONCLUSIVE on the 12-prompt set: first different token 11 for, 1 against, and mean difference 7 for, 0 against, 5 undecided ([section](#quality-on-twelve-prompts-inconclusive)) | `t3w/quality-wide-score-N2w-T3w-Pw-N2wr.out` |
+| 2026-11-10 | accepted configuration | termination test, three chats of 198,307 to 216,245 tokens | 3 of 3 final answers ended normally (6,417, 1,499 and 1,642 tokens). 0 of 3 at the limit, 95 % Wilson interval 0.000 to 0.561, so the rate is bounded only below 0.56 ([section](#long-thinking-answers-the-termination-test)) | `baseline/W4-t3a-term-c0.out`, `baseline/W4-t3a-term-c12.out`, `baseline/W4-t3a-term.jsonl` |
+| 2026-11-10 | this build, six configurations | chat 0 of the termination test (the 216K tool loop) | ended normally in the accepted configuration (both runs). Ran to the 32,000-token limit in the five boots with a lower share of routes on official-precision experts, each on chat 0 only, none accepted, quality not established. Cause not established ([section](#long-thinking-answers-the-termination-test)) | the receipts named in that section |
+| 2026-11-10 | Volta sPLIt | termination test, the same three chats | 3 of 3 final answers ended normally (10,013, 732 and 1,812 tokens). 0 of 3 at the limit, 95 % Wilson interval 0.000 to 0.561, so the rate is bounded only below 0.56 | `baseline/W4-prod-term.out`, `baseline/W4-prod-term.jsonl` |
+| 2026-11-10 | Volta sPLIt | a separate 31,173-token chat, two tool-call requests, thinking on | the final answer ran to the 32,000-token limit in thinking, a repetition loop (longest repeated span 18,185 of 23,336 text units), at 210.24 tok/s, 4.9 tokens per round | `baseline/W4-smoke-prod.out`, `baseline/W4-smoke-prod.jsonl` |
+| 2026-11-10 | IQ records in prompt reading (plan 04 part B) | first eight-card boot | built and passed its one-card checks. The boot failed while loading (driver error "invalid argument" during the build of the IQ bank). Explained and fixed later the same day (rows above). Not in this snapshot | private boot log |
 | 2026-11-10 | three-tier, three slots: NOT accepted (quality not established) | closeness, three prompts | INCONCLUSIVE by the rule | `t3/quality-score-N2-W3s3h-P-N2r.out` |
 | 2026-11-10 | three-tier, three slots: NOT accepted (quality not established) | tool loop, 216,255-token prompt (unique chat), thinking on | first read 173.54 s; 7 of 7 follow-ups kept the whole prompt; follow-up first token median 9.62 s; decode mean 64.8 tok/s; the final request ran to the 32,000-token limit in thinking (5.16 tokens per round) | `baseline/W3-s3h-loop-think1.jsonl` |
 | 2026-11-10 | three-tier, three slots: NOT accepted (quality not established) | 257,741-token prompt; card memory | read 207.1 s, decode 60.8 tok/s; highest card memory 31,704 MiB | `baseline/W3-s3h-ctx.out`, `W3-s3h-mem.txt` |
@@ -59,6 +68,17 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 - **Harness-shaped tests**: `harness/run/harness_shape.py` (one chat, a 216K-token public prompt, thinking on, 300
   tokens, each follow-up adding the answer and 8,000 characters) and `harness/run/harness_loop.py` (a tool loop in
   the Anthropic Messages API format).
+- **Termination test** (2026-11-10, program not in this snapshot): one chat is the chat of
+  `harness/run/harness_loop.py`, the 216K tool loop: a first read, six tool-call requests, then the final request
+  with thinking on, temperature 0 and a 32,000-token limit, one request at a time. Chat 0 is byte for byte that
+  loop's chat. Chat 1 and chat 2 take later sections of the same public source text. The outcome of a chat is
+  ENDED (the final request stopped normally) or LIMIT (it stopped at the token limit). The test keeps the answer in
+  memory only and writes numbers: of the answer cut into text units (a word or one punctuation character), the
+  share of distinct 20-unit windows and the length of the longest span that occurs at least twice. The summary
+  gives the 95 % Wilson interval of the share of chats at the limit.
+- **Closeness on twelve prompts** (2026-11-10, INCONCLUSIVE, program not in this snapshot): the request and
+  the per-prompt figures are those of `quality_t3.py` on a wider set of prompts invented for the check (code 3, JSON
+  2, general prose 3, legal-style prose 2, reasoning 2). The receipts hold token ids and log-probabilities only.
 - **Single-card checks** ran on one card of a separate 4-card V100 test host at a 150 W cap, with no other compute
   process (each check refuses to run otherwise).
 
@@ -212,21 +232,24 @@ round), 12.6 to 13.5 s wall each. The final request AGAIN ran to the 32,000-toke
 tok/s, 38.15 ms per round: 5.87 tokens per round, arithmetic). That is two of two on the no-host-tier profiles.
 The verdict of these profiles stays: not accepted, quality not established (closeness INCONCLUSIVE).
 
-Full count on the 216K tool loop. The final request ended normally on Volta sPLIt (10,013 tokens) and in the first
-accepted-mode run (6,417 tokens). It ran to the 32,000-token limit in thinking in both no-host-tier runs (5.66 and
-5.87 tokens per round) and in both later accepted-mode runs (2026-11-10, the next two sections: 5.21 and 5.16
-tokens per round). So four of five runs of this build, two of three in the accepted mode, all at temperature 0.
-The cause is not established. The test keeps no output text. On Volta sPLIt, the final request of the shorter
-turn-boundary loop above also ran to that limit in one of three runs with the 32,000-token limit.
+Full count on the 216K tool loop, all at temperature 0. The final request ended normally on Volta sPLIt (10,013
+tokens, twice) and in the accepted configuration (6,417 tokens, twice). It ran to the 32,000-token limit in
+thinking in both no-host-tier runs (5.66 and 5.87 tokens per round, quality not established) and in three runs with
+the host tier and reserves of 5.3 / 8.1 GiB (2026-11-10: 5.21, 5.16 and 5.33 tokens per round, none accepted,
+quality not established). The cause is not established. The count by configuration, with the two other chats of the
+termination test, is in [Long thinking answers](#long-thinking-answers-the-termination-test). On Volta sPLIt, the
+final request of the shorter turn-boundary loop above also ran to that limit in one of three runs with the
+32,000-token limit.
 
-## Accepted mode, one slot, other reserves (traced)
+## Host tier, one slot, reserves 5.3 / 8.1 GiB (traced)
 
-Profile `serve-nvfp4-pp2-t3-a1r.yaml`: the accepted three-tier mode (host tier, one slot) with the reserves of the
-three-slot profile, 5.3 / 8.1 GiB per card (the accepted profile has 4.5 / 7.5). Hot / warm / host experts: stage 0
-3,801 / 3,519 / 360; stage 1 2,450 / 4,624 / 606. Warm decode routes by the tally: 4.92 % (stage 0) and 11.16 %
-(stage 1). MEASURED 2026-11-10, public text, temperature 0, receipt `baseline/W3-ns-tr-loop-think1.jsonl`. The
-prefill trace was on. It synchronizes the card at every mark, so every speed in this section is slowed by the trace
-and does not compare with untraced rows.
+Profile `serve-nvfp4-pp2-t3-a1r.yaml`: the accepted profile's mode (host tier, one slot) with the reserves of the
+three-slot profile, 5.3 / 8.1 GiB per card (the accepted profile has 4.5 / 7.5). It is the three-slot profile's
+one-slot control, not the accepted configuration, and its quality is not established. Hot / warm / host experts:
+stage 0 3,801 / 3,519 / 360; stage 1 2,450 / 4,624 / 606. Warm decode routes by the tally: 4.92 % (stage 0) and
+11.16 % (stage 1). MEASURED 2026-11-10, public text, temperature 0, receipt `baseline/W3-ns-tr-loop-think1.jsonl`.
+The prefill trace was on. It synchronizes the card at every mark, so every speed in this section is slowed by the
+trace and does not compare with untraced rows.
 
 216K tool loop (unique chat, thinking on): first read 216,245 tokens in 171.92 s; 7 of 7 follow-ups kept the whole
 previous prompt. The six tool-call requests: first token 9.08 to 9.82 s, decode 59.8 to 62.8 tok/s, 13.2 to 14.6 s
@@ -259,15 +282,107 @@ Closeness (receipt `t3/quality-score-N2-W3s3h-P-N2r.out`): the divergence part h
 (first different token 25 / 56 / 12 against Volta sPLIt's 0 / 10 / 5). The mean part has one prompt below Volta
 sPLIt (prompt 3: 0.0392 against 0.1429), one above (prompt 2: 0.0565 against 0.0392) and one undecidable (prompt 1:
 Volta sPLIt has no common prefix), so the rule cannot decide. The pattern is the same as on the no-host-tier
-profile with three slots. Three prompts are too few to decide; the missing input is a larger prompt set. The
-accepted configuration stays the one-slot three-tier profile.
+profile with three slots. Three prompts are too few to decide. The wider set of 2026-11-10 is INCONCLUSIVE too
+([Quality on twelve prompts](#quality-on-twelve-prompts-inconclusive)). The accepted configuration stays the
+one-slot three-tier profile.
 
-## IQ records in prompt reading (plan 04 part B)
+## Long thinking answers: the termination test
+
+MEASURED 2026-11-10 on the 8-card host, one request at a time, public text, thinking on, temperature 0, a
+32,000-token limit on the final request ([How it was measured](#how-it-was-measured)). Each chat is a first read,
+six tool-call requests and the final answer. Receipts: `baseline/W4-prod-term.out`, `baseline/W4-t3a-term-c0.out`,
+`baseline/W4-t3a-term-c12.out` and their `.jsonl` files.
+
+| Chat, first prompt | Build | First read | Follow-ups: first token | Final answer | Distinct 20-unit windows | Longest repeated span |
+|---|---|---|---|---|---|---|
+| 0, 216,245 tokens | Volta sPLIt | 73.61 s | 3.33 to 3.81 s | ended normally: 10,013 tokens at 137.72 tok/s | 0.963 | 143 of 9,386 units |
+| 0, 216,245 tokens | accepted configuration | 164.9 s | 8.76 to 9.43 s | ended normally: 6,417 tokens at 67.45 tok/s | 0.9938 | 47 of 5,012 units |
+| 1, 198,307 tokens | Volta sPLIt | 69.96 s | 3.34 to 3.65 s | ended normally: 732 tokens at 122.51 tok/s | 1.0 | 5 of 631 units |
+| 1, 198,307 tokens | accepted configuration | 155.56 s | 8.9 to 9.51 s | ended normally: 1,499 tokens at 56.92 tok/s | 1.0 | 18 of 1,348 units |
+| 2, 204,871 tokens | Volta sPLIt | 72.35 s | 3.29 to 3.63 s | ended normally: 1,812 tokens at 124.48 tok/s | 0.9818 | 31 of 1,609 units |
+| 2, 204,871 tokens | accepted configuration | 161.39 s | 8.79 to 9.12 s | ended normally: 1,642 tokens at 58.96 tok/s | 1.0 | 14 of 1,438 units |
+
+Every follow-up kept the whole previous prompt (7 of 7 in each chat, on both builds). In this termination test 3 of
+3 chats ended normally in the accepted configuration and 3 of 3 on Volta sPLIt. With 0 of 3 at the limit, the 95 %
+Wilson interval of the share of chats that run to the limit is 0.000 to 0.561 (arithmetic for 0 of 3 with z =
+1.95996: z squared over 3 is 1.2805, and 1.2805 / 2.2805 is 0.5615), so three chats bound that rate only below 0.56.
+
+Chat 0 repeats itself. In the accepted configuration its eight requests had the context, kept-prompt and output
+token counts of the 2026-11-09 run (receipt `baseline/t3-T3a-loop-think1.jsonl`): outputs of 48, 273, 264, 199, 256,
+196 and 218 tokens, then 6,417. Volta sPLIt's chat 0 had the counts of its 2026-11-09 run: 191, 111, 127, 116, 141,
+127 and 138 tokens, then 10,013. The receipts hold counts, not text. The engine files differed between the two
+runs of this build: those of 2026-11-10 add the part B code, which the accepted profile leaves switched off.
+
+Chat 0 by configuration of this build, all at temperature 0:
+
+| Configuration | Hot / warm / host experts, stage 0 and stage 1 | Decode routes on official-precision experts by the tally | Chat 0, final answer | Receipt |
+|---|---|---|---|---|
+| Accepted: host tier, one slot, reserves 4.5 / 7.5 GiB | 4,107 / 3,213 / 360 and 2,695 / 4,379 / 606 | 96.26 % / 90.71 % | ended normally in both runs (6,417 tokens) | `baseline/t3-T3a-loop-think1.jsonl`, `baseline/W4-t3a-term-c0.out` |
+| No host tier, one slot (not accepted, quality not established) | 3,843 / 3,837 / 0 and 2,184 / 5,496 / 0 | 95.26 % / 86.47 % | ran to the limit, 5.66 tokens per round | `baseline/t3-T3n-loop-think1.jsonl` |
+| Host tier, one slot, reserves 5.3 / 8.1 GiB, traced (not accepted, quality not established) | 3,801 / 3,519 / 360 and 2,450 / 4,624 / 606 | 95.08 % / 88.84 % | ran to the limit, 5.21 tokens per round | `baseline/W3-ns-tr-loop-think1.jsonl` |
+| Plan 04 part B variant, host tier, one slot, reserves 5.3 / 8.1 GiB (not accepted, quality not established) | 3,656 / 3,664 / 360 and 2,381 / 4,693 / 606 | 94.43 % / 88.27 % | ran to the limit, 5.33 tokens per round | `baseline/W4-piq-so-term-c0.out` |
+| Host tier, three slots, reserves 5.3 / 8.1 GiB (not accepted, quality not established) | 3,597 / 3,723 / 360 and 2,290 / 4,784 / 606 | 94.16 % / 87.46 % | ran to the limit, 5.16 tokens per round (chat with a label line, 216,255 tokens) | `baseline/W3-s3h-loop-think1.jsonl` |
+| No host tier, three slots (not accepted, quality not established) | 3,334 / 4,346 / 0 and 1,779 / 5,901 / 0 | 92.77 % / 81.98 % | ran to the limit, 5.87 tokens per round | `baseline/t3-S3n-loop-think1.jsonl` |
+
+The share on official-precision experts is 100 % less the warm share the loader prints (arithmetic). Every
+configuration with a lower share than the accepted one ran chat 0's final answer to the 32,000-token limit in
+thinking.
+
+What this does and does not show. Those are five boots, and each ran chat 0 only. Chats 1 and 2 have run on Volta
+sPLIt and on the accepted configuration alone, so the rate of the other five on other chats is not measured. The
+cause is not established. The lower share is an observation on one chat, and chance is not excluded. Of the five
+runs to the limit, only the part B variant's was measured for repetition: its answer is a repetition loop (distinct
+20-unit windows 0.0422, longest repeated span 25,652 of 26,822 units). The four earlier runs kept no such measure.
+
+Volta sPLIt also runs to the limit. On a separate chat the same day (31,173 tokens at the first read, two tool-call
+requests, a label line first, receipt `baseline/W4-smoke-prod.out`) its final answer ran to the 32,000-token limit
+with thinking never closed: 154.02 s wall, 210.24 tok/s, distinct 20-unit windows 0.2011 overall and 0.0984 in the
+last quarter, longest repeated span 18,185 of 23,336 units. That is a repetition loop. So a run to the limit is
+not, by itself, a fault of this build.
+
+## IQ records in prompt reading (plan 04 part B, not accepted: quality not established)
 
 The mode that reads warm experts from their IQ2-class records during prompt reading was built and passed its CPU
-tests and its layer check on one card of the test host. Its first eight-card boot (2026-11-10) failed while
-loading: the driver returned "invalid argument" during the build of the IQ bank. The cause is not established. Its
-timed runs were not made, and the mode is not in this snapshot.
+tests and its layer check on one card of the test host. It is not in this snapshot.
+
+Load failure. Its first eight-card boot (2026-11-10) failed while loading: the driver returned "invalid argument"
+during the build of the IQ bank. MEASURED on one card of the test host afterwards: the engine loads weights under
+an allocator setting that caps block splitting at 20 MiB. Under it, building one stage-1 rank of the failed boot's
+plan (2,310 hot / 4,764 warm / 606 host experts) left 0.038 GiB of the card free, against 7.696 GiB with the
+setting off. The records of all 20 layers were equal in both arms. A probe of three small arms then gave the boot's
+error. With the setting on, a cached piece split from a larger block and a request the card cannot meet return
+"CUDA error: invalid argument". The same request without the setting, or with the setting and a whole cached block,
+returns an ordinary out-of-memory error. Fix: load with the setting off (`VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0`).
+MEASURED on eight cards: with it off the variant was ready in 349 s with no error. INFERENCE: that the first boot
+failed in exactly this way. No boot was made with the setting on and the allocator traced.
+
+The launcher in this snapshot does not set it. Every other measurement on this page was made with the engine's
+default. With the setting off the planner measures other free memory, so the accepted profile would not choose its
+measured tiers (ESTIMATED from the planner on CPU). Profiles that pin the measured tiers under the new setting are
+not measured yet.
+
+The boot that was measured (receipt `baseline/W4-piq-so-term-c0.out`): host tier, one slot, reserves 5.3 / 8.1 GiB,
+a prompt-reading workspace of 0.33 / 0.34 GiB per card. Hot / warm / host experts: stage 0 3,656 / 3,664 / 360,
+stage 1 2,381 / 4,693 / 606. Warm decode routes by the tally: 5.57 % (stage 0) and 11.73 % (stage 1). Chat 0 of
+the termination test, against the accepted configuration on the same test the same day:
+
+| | Part B variant (not accepted, quality not established) | Accepted configuration |
+|---|---|---|
+| First read, 216,245 tokens | 107.82 s (2,006 tok/s, arithmetic) | 164.9 s (1,311 tok/s, arithmetic) |
+| Follow-ups that kept the whole previous prompt | 7 of 7 | 7 of 7 |
+| Seven follow-ups: first token | 4.02 to 5.38 s, median 4.44 s | 8.76 to 9.43 s, median 8.99 s |
+| Six tool-call requests: decode | 49.41 to 62.57 tok/s | 55.49 to 65.29 tok/s |
+| Six tool-call requests: wall time each | 7.85 to 9.12 s | 12.59 to 14.05 s |
+| Final answer | ran to the 32,000-token limit in thinking: 356.05 s wall, 90.95 tok/s, 58.56 ms per round, 5.33 tokens per round | ended normally: 6,417 tokens, 67.45 tok/s, 61.65 ms per round, 4.16 tokens per round |
+| Repetition in the final answer | distinct 20-unit windows 0.0422, longest repeated span 25,652 of 26,822 units | 0.9938 and 47 of 5,012 units |
+
+Reading the prompt from compressed records changes the output from the first request on: request 0 gave 93 output
+tokens here against 48 in the accepted configuration.
+
+Not accepted. The quality of this variant is not established: its closeness was not captured, and its final answer
+on chat 0 ran to the limit. That run does not separate the variant from its tiers, because the one-slot profile
+with the same reserves and the staged reading also ran chat 0 to the limit (the traced run above). Next: the
+variant at the accepted reserves (4.5 / 7.5 GiB), with the termination test and the closeness capture.
 
 ## Three prompt slots (no host tier: not accepted, quality not established)
 
@@ -314,6 +429,45 @@ a closeness check against the all-native output, not a benchmark score.
 No host tier with three slots (receipt `t3/quality-score-N2-T3nS-P-N2r.out`): INCONCLUSIVE by the rule. The divergence
 part holds on three of three prompts. The mean part has one prompt below Volta sPLIt (prompt 3), one above (prompt 2)
 and one undecidable (prompt 1: Volta sPLIt has no common prefix), so the rule cannot decide.
+
+## Quality on twelve prompts: INCONCLUSIVE
+
+MEASURED 2026-11-10 ([How it was measured](#how-it-was-measured)): 1,024 tokens each, greedy, thinking off,
+log-probabilities of the chosen tokens, against this build's two-tier output, which repeated token for token on a
+second capture in the same boot. Score receipts `t3w/quality-wide-score-N2w-T3w-Pw-N2wr.out` (accepted
+configuration) and `t3w/quality-wide-score-N2w-S3hw-Pw-N2wr.out` (three slots on the accepted tiers: host tier,
+reserves 5.3 / 8.1 GiB, not accepted, quality not established).
+
+| Prompt (kind) | First different token: accepted | three slots | Volta sPLIt | Mean difference: accepted | three slots | Volta sPLIt |
+|---|---|---|---|---|---|---|
+| 1 (code) | 19 | 19 | 13 | 0.0213 | 0.0324 | 0.0648 |
+| 2 (JSON) | 26 | 52 | 34 | 0.0279 | 0.0239 | 0.0507 |
+| 3 (general prose) | 16 | 16 | 1 | 0.0098 | 0.0145 | 0.5154 |
+| 4 (legal-style prose) | 16 | 5 | 9 | 0.0146 | 0.0000 | 0.0334 |
+| 5 (reasoning) | 40 | 23 | 0 | 0.0506 | 0.0351 | not defined |
+| 6 (code) | 38 | 38 | 0 | 0.0503 | 0.0491 | not defined |
+| 7 (general prose) | 2 | 12 | 2 | 0.0004 | 0.0640 | 0.2006 |
+| 8 (legal-style prose) | 14 | 14 | 10 | 0.0029 | 0.0066 | 0.1104 |
+| 9 (reasoning) | 18 | 18 | 0 | 0.0346 | 0.0539 | not defined |
+| 10 (JSON) | 73 | 73 | 0 | 0.0076 | 0.0098 | not defined |
+| 11 (code) | 15 | 1 | 4 | 0.0528 | 0.0000 | 0.0616 |
+| 12 (general prose) | 17 | 17 | 0 | 0.0264 | 0.0187 | not defined |
+
+Rule fixed before the run: PASS if the arm diverges no earlier than Volta sPLIt on at least 8 prompts and has the
+smaller mean difference on at least 8. FAIL if 5 prompts refuse either part. Otherwise INCONCLUSIVE. A prompt with
+no common prefix decides nothing.
+
+| Arm | First different token no earlier than Volta sPLIt | Smaller mean difference | Result |
+|---|---|---|---|
+| Accepted configuration | 11 for, 1 against (prompt 2) | 7 for, 0 against, 5 undecided | INCONCLUSIVE |
+| Three slots on the accepted tiers (not accepted, quality not established) | 10 for, 2 against (prompts 4 and 11) | 7 for, 0 against, 5 undecided | INCONCLUSIVE |
+
+The first part holds for both arms. The second cannot decide: on prompts 5, 6, 9, 10 and 12 Volta sPLIt differs
+from the reference at the first token, so it has no mean difference to compare with, and seven prompts cannot reach
+eight. The rule was not changed after the data. The accepted configuration stays accepted on the three-prompt PASS
+above. Three slots stay not accepted. The missing input is a yardstick on those five prompts. Next: replace them
+with prompts on which Volta sPLIt shares a prefix with the reference, chosen without looking at the arms, and score
+again.
 
 ## Single-card checks (test host, one card, 150 W)
 

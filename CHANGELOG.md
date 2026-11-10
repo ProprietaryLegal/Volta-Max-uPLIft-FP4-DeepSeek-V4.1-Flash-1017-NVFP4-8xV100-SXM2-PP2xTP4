@@ -3,6 +3,33 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-10: termination test, twelve-prompt closeness check, part B boots
+
+Measured after the first release, the same day. One request at a time, public text, temperature 0.
+
+- **Termination test for long thinking answers.** It exists and has run. In the accepted configuration (host tier,
+  one slot, reserves 4.5 / 7.5 GiB) 3 of 3 chats of 198,307 to 216,245 tokens ended normally (6,417, 1,499 and 1,642
+  tokens), as on Volta sPLIt (10,013, 732 and 1,812). Three chats bound the share that runs to the limit only below
+  0.56 (95 % Wilson interval 0.000 to 0.561). Chat 0 gave the token counts of the 2026-11-09 run again.
+- **Chat 0 on the other configurations.** Every configuration of this build with a lower share of routes on
+  official-precision experts ran chat 0's final answer to the 32,000-token limit: five boots, each on chat 0 only,
+  none accepted, quality not established. The cause is not established. Volta sPLIt itself ran to the limit in a
+  repetition loop on a separate 31,173-token chat. This replaces the count in the entry below ("four of five runs
+  of this build, two of three in the accepted mode"): the two later runs it calls accepted-mode runs had other
+  reserves or three slots, and the accepted configuration has ended chat 0 in both of its runs.
+- **Closeness on a wider set.** The 12-prompt closeness check is INCONCLUSIVE, with the rule (8 of 12 on each
+  part) fixed before the run. Accepted configuration: first different token 11 for, 1 against, and mean difference
+  7 for, 0 against, 5 undecided, because Volta sPLIt differs from the reference at the first token on five prompts.
+  Three slots on the accepted tiers: 10 for, 2 against, and 7 for, 0 against, 5 undecided. They stay not accepted
+  (quality not established).
+- **IQ records in prompt reading** (plan 04 part B, not accepted, quality not established): the load failure is
+  explained and fixed (the engine's allocator setting during weight loading, reproduced on one card, and with the
+  setting off the variant boots). On that boot the first read of 216,245 tokens took 107.82 s against 164.9 s, and
+  a follow-up waited 4.44 s (median) for its first token against 8.76 to 9.43 s. Its long-thinking request ran to
+  the 32,000-token limit. Not in this snapshot. The launcher in this snapshot is unchanged.
+- **Open:** first, the part B variant at the accepted reserves, with the termination test and the closeness
+  capture. Then replacement of the five undecided prompts of the 12-prompt closeness set (INCONCLUSIVE until then).
+
 ## 2026-11-10: first public release (work in progress)
 
 - **Long thinking answers.** On the 216K tool loop the final request ran to the 32,000-token limit in thinking in both
