@@ -3,6 +3,32 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-10: load setting on the accepted tiers, part B on two more chats and on twelve prompts
+
+Measured after the entry below, the same day. One request at a time, public text, temperature 0.
+
+- **The accepted tiers under the load setting.** A profile that pins the accepted tiers with the load-time
+  allocator setting off booted with the same hot, warm and host experts and the same tier digests. Chat 0 of the
+  termination test ended normally with 6,417 tokens and gave the token counts of the two earlier runs on all eight
+  requests (first read 167.64 s). On that chat the setting did not change the token counts. The profile is not in
+  this snapshot, and the launcher is unchanged.
+- **Part B on chats 1 and 2** (plan 04 part B, reserves 5.3 / 8.1 GiB, not accepted, quality not established): both
+  final answers ended normally (749 and 1,491 tokens). First reads 102.12 s and 103.0 s against 155.56 s and
+  161.39 s, and a median wait of 4.42 s and 4.26 s before a follow-up's first token. With chat 0 the variant stands
+  at 1 of 3 at the limit (95 % Wilson interval 0.061 to 0.792).
+- **Correction to the entry below.** It says every configuration with a lower share ran chat 0 to the limit,
+  "five boots, each on chat 0 only". The lower share and the limit go together on chat 0 only. One of the five
+  configurations, the part B variant, has now ended chats 1 and 2 normally. The other four have run chat 0 and no
+  other chat.
+- **Part B on twelve prompts** (not accepted, quality not established): INCONCLUSIVE by the rule. First different
+  token 10 for, 2 against, and mean difference 5 for, 1 against, 6 undecided.
+- **Part B at the accepted tiers** (not accepted, quality not established): the variant ran out of card memory on
+  stage 0 in the second chunk of its first 216,245-token read (a request for 108 MiB with 64.75 MiB free).
+  INFERENCE from the code, nothing run: both reading modes peak at the same point and the variant is short by the
+  workspace it keeps from load. A fix is planned, not built.
+- **Open:** first, the part B variant at the accepted tiers after the planned fix for its memory shortfall. Then
+  the replacement prompts of the 12-prompt closeness set (INCONCLUSIVE until then).
+
 ## 2026-11-10: termination test, twelve-prompt closeness check, part B boots
 
 Measured after the first release, the same day. One request at a time, public text, temperature 0.

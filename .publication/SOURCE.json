@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "b8903d4bd7e6b3f2fff89e0c9284cb894860815713e21ea205a3a7ad5bf7be4e",
+   "source_sha256": "6e684fce582d3215349a6260df37a6ed1cebd11d14dadb35ace0ccf1468f1b60",
    "transform": "hand-written for publication; 5 wip block(s) removed",
-   "sha256": "3c45520672055cbf746f1733843ec3999f14e5906fe598c9fd592ca9a34e63d1",
-   "bytes": 51760
+   "sha256": "17f84236129ce19a09a8d17dcd8fad17974eb70a2c327ddfca34e33cbab86c98",
+   "bytes": 56903
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "576b8afacc73f934f61e66a4e2323959c4a52bf5521aee3cebe072b0b83f9e42",
+   "source_sha256": "1df8c5baf8d30472182adaf559714b6dcc65630eb8d1d723465dd76e6201c118",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "38baf1eeedb8e1a4abb284258527e1c67b5f3966417362260c9569b45bca905c",
-   "bytes": 7658
+   "sha256": "594b03522d387837f31c852a68dcd90016dc3f1ac191596156019e58f57b9420",
+   "bytes": 9891
   },
   {
    "path": "CREDITS.md",
@@ -107,10 +107,10 @@
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "74a9051501914ff572e5e5a2358434cdd4fdd71aa2e3d8eecc5002118e8f6563",
+   "source_sha256": "9c501a99e40220cc59df9afd27aed53161de7dbda382a88ec459c0740e82df73",
    "transform": "hand-written for publication",
-   "sha256": "74a9051501914ff572e5e5a2358434cdd4fdd71aa2e3d8eecc5002118e8f6563",
-   "bytes": 46172
+   "sha256": "9c501a99e40220cc59df9afd27aed53161de7dbda382a88ec459c0740e82df73",
+   "bytes": 55127
   },
   {
    "path": "engine/README.md",
@@ -137,7 +137,8 @@
    "source_sha256": "3c0e487dee312e5414fb3a572ede5d55ad373dc4978e7dec86a2604629cfd52c",
    "transform": "scrubbed (1 replacements)",
    "sha256": "ba640493427bab091a1d26f140808330ca5e110a79fa085de9d6ca1b53dd7d90",
-   "bytes": 62572
+   "bytes": 62572,
+   "note": "the engine file of the 2026-11-10 measurements, byte-equal to the first public commit. The source has changed since (among other things the order of allocations in the prompt reading step). Those changes are planned work that no measurement here ran, so this file is taken from the copy kept from the measurements"
   },
   {
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
@@ -203,7 +204,8 @@
    "source_sha256": "eb0881103d596a3308dff6ec4b262f7d681e5f10b6d898abcfe0ce5fa49988ef",
    "transform": "scrubbed (11 replacements; 3 per-file redaction rules)",
    "sha256": "371141d124957d0792595af6e1d8a155689db49b0d589f522cd518db07d3429a",
-   "bytes": 4600
+   "bytes": 4600,
+   "note": "the launcher the measurements ran with, byte-equal to the first public commit. The source has since gained the load-time allocator setting named in docs/measurements.md, and one per-file rule leaves it out"
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2.yaml",
@@ -932,9 +934,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 65,
+  "count": 70,
   "upstream_engine_files": 31,
-  "this_build_work_in_progress": 34,
+  "this_build_work_in_progress": 39,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }
