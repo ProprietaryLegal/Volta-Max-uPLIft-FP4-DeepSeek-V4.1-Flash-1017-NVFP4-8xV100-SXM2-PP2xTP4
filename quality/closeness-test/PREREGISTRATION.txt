@@ -1,0 +1,16 @@
+NVFP4 closeness test: pre-registration
+Rules and scripts fixed before any capture, 2026-11-10T19:54Z.
+
+sha256 of the files that fix the rules and the method:
+d789befc0a072d85ac3990e3a2fdfe2bb0b2a052c67478fdadb9c443f3df99f9  closeness_lib.py
+d3257cbde59951d37d088a9de1ba8b5b536e605409c748698324c43fd19d9d89  build_items.py
+bad9d50943e3ae8f86ecd69d3a7fee612d463ef1084f5df9df0e4fa622c48bb6  capture.py
+85c0fb6d4b31c4f690fe858b1c278568ce4de67055a7b8a2a109c0bfd207c701  score.py
+b7b270a93329a757111b7f56c7d75fa68a91891135a5702c368563e53e7b8b4d  report.py
+8fdd1afafc1f10a43ec3250b7259a0d94a4daf92d75aa8c12b15eb757f72d67b  README.md
+42c4c7d20c54c9f5f0147783ce86aa5cb5281a61e388eb4a038c693ca95c9303  SOURCES.md
+b33a2896b2631112e64f0e2bfd61f810ddb16c06a98ac59c3d3546b0eaf3d361  DESIGN.md (the private design notes behind README.md)
+
+Item plan (texts, not published): 19f597f3a7ba379f990212fc5306a97cc4b58f34513cd9b99830885375b4d341
+Item ids (published): c6a0c4692f77b60bae673ebf161ef8556d7a296dea36a68fd57eea19e057dd8f  items/plan-v1.ids.json
+Bootstrap seed 20261110, 2,000 resamples. Minimums 300 contexts and 500 questions.

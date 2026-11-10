@@ -1,10 +1,10 @@
 NVFP4-8R change to vllm/model_executor/model_loader/gguf_loader.py.
 Base: the Volta sPLIt engine file, sha256 478b6872cc0d235211b019f19d581c0954af8882344d7f99df5e0f0d458d4fc2 (as deployed 2026-11-09).
-Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976. Apply in the engine source root with: patch -p1 < this-file
+Result: sha256 71a3494865825d0242e468e29035615c1c1e2f8cdb6bcdd9085475669dea4d61. Apply in the engine source root with: patch -p1 < this-file
 
 --- a/vllm/model_executor/model_loader/gguf_loader.py
 +++ b/vllm/model_executor/model_loader/gguf_loader.py
-@@ -53,18 +53,181 @@
+@@ -53,18 +53,184 @@
  
      def __init__(self, load_config: LoadConfig):
          super().__init__(load_config)
@@ -163,8 +163,7 @@ Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976.
 +            "nvfp4_8r: TP rank %d layers %d-%d residency %s prefill_warm %s "
 +            "free %.2f GiB (stage least %.2f) reserve %.2f GiB prefill "
 +            "workspace %.2f GiB budget %.2f GiB records %.2f GiB, "
-+            "%d hot / %d warm / %d host experts, decode route share "
-+            "%.4f / %.4f / %.4f, tier digest %s, free after %.2f GiB",
++            "%d hot / %d warm / %d host experts, %s, tier digest %s, free after %.2f GiB",
 +            rank,
 +            plan.layers.start,
 +            plan.layers.stop - 1,
@@ -179,7 +178,11 @@ Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976.
 +            plan.count(tier.HOT),
 +            plan.count(tier.WARM),
 +            plan.count(tier.HOST),
-+            *stage.route_share,
++            (
++                "decode route share %.4f / %.4f / %.4f" % stage.route_share
++                if stage.route_share is not None
++                else f"tiers from tier map {cfg.tier_source.path.name}"
++            ),
 +            plan.digest[:12],
 +            torch.cuda.mem_get_info(device)[0] / 2**30,
 +        )
@@ -187,7 +190,7 @@ Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976.
      def _prepare_weights(self, model_config: ModelConfig):
          model_name_or_path = model_config.model
          if os.path.isfile(model_name_or_path):
-@@ -567,6 +730,11 @@
+@@ -567,6 +733,11 @@
              "engram_path"
          ) and model_config.hf_text_config.model_type != "deepseek_v41_text":
              raise ValueError("engram_path is supported only by the V4.1 loader")
@@ -199,7 +202,7 @@ Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976.
          device_config = vllm_config.device_config
          self._gguf_tp_size = vllm_config.parallel_config.tensor_parallel_size
          local_model_path = self._prepare_weights(model_config)
-@@ -629,6 +797,7 @@
+@@ -629,6 +800,7 @@
                  and hasattr(torch.ops._C, "gguf_affine_grouped_gemm_sm70_out")
              )
              adapter.canonical_expert_storage = quant_config.canonical_expert_storage
@@ -207,7 +210,7 @@ Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976.
              adapter.preserve_expert_blocks = quant_config.native_expert_storage
              if "output.weight" not in self._native_tensors:
                  model_config.hf_config.tie_word_embeddings = True
-@@ -690,11 +859,29 @@
+@@ -690,11 +862,29 @@
                  gguf_weights_map = self._stage_weights_map(
                      adapter, weight_model, gguf_weights_map
                  )
@@ -237,7 +240,7 @@ Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976.
              ):
                  from vllm.model_executor.layers.quantization import (
                      gguf_expert_storage,
-@@ -721,6 +908,16 @@
+@@ -721,6 +911,16 @@
                  logger.info("Loaded %d multimodal safetensors weights", len(loaded))
  
              process_weights_after_loading(model, model_config, target_device)

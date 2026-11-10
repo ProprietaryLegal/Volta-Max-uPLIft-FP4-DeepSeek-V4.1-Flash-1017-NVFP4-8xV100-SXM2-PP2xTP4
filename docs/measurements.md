@@ -5,13 +5,32 @@ ESTIMATED (arithmetic shown) or UPSTREAM (the named source). The raw receipts ar
 published; this page reduces them to tables and names the receipt each row comes from (paths under the build's
 `logs/`).
 
+The rows and sections of the two-tier mode are the all-NVFP4 build now published as
+[Volta Full NVFP4](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100). They stay here as the dated record, and that
+repository's README is the current statement of them. In rows before the mixed tally, "the accepted configuration"
+and "the accepted tiers" mean the three-tier profile.
+
 ## Results log
 
 Newest first. A later arm is one more row at the top, with its details in a section below.
 
 | Date | Build or profile | Test | Result | Receipt |
 |---|---|---|---|---|
-| 2026-11-10 | IQ records in prompt reading (plan 04 part B) at the accepted tiers: NOT accepted (quality not established) | first read of chat 0 (216,245 tokens) | booted with the accepted configuration's hot, warm and host experts, then ran out of card memory on stage 0 in the second chunk of the read (a request for 108 MiB with 64.75 MiB free). The server ended by itself. INFERENCE from the code, nothing run: both reading modes peak at the same point and the variant is short by the workspace it keeps from load. The fix is built and checked on one card of the test host (MEASURED 2026-11-10: results bit-equal to the previous file at four chunk sizes, peak of the reading call 1.30 GB to 0.67 GB at 8,188 rows). It has not yet run on eight cards and is not in this snapshot ([section](#iq-records-in-prompt-reading-plan-04-part-b-not-accepted-quality-not-established)) | private boot log, private one-card receipt |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot (the build of this release) | speed bench, long prompts 1K to 256K, thinking off | code 123.3 tok/s at 1K to 103.8 at 256K, legal 71.9 to 61.8, prose and chat 59.6 to 67.9. First token 5.60 s at 1K, 106.4 s at 128K, 209.6 s at 256K. Greedy output byte-identical in 45 of 45 cells, 1,425 MHz ([section](#speed-bench-1k-to-256k)) | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, long prompts 1K to 256K, thinking on | code 102.3 to 136.8 tok/s, structured 107.1 to 122.5, legal 67.8 to 81.8, prose 60.3 to 67.9, chat 54.6 to 66.6. First token 5.76 s at 1K to 210.2 s at 256K, 1,425 MHz | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, prompt reading by kind | 175 to 247 tok/s at 1K, 1,030 to 1,055 at 32K, 1,221 to 1,263 at 128K, 1,243 to 1,276 at 256K, 1,425 MHz | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, short prompts by kind | greedy: code 127.2 tok/s, structured 129.5, legal 74.9, prose 65.2, chat 59.9. Sampled 58.4 to 127.5. Greedy repeats byte-identical, 1,425 MHz | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, four prompts, thinking on, sampled | 92.4 tok/s token-weighted (84.7 to 130.8 per prompt), 1,425 MHz | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot, bench boot | tool loop, 216,255-token prompt, run 2 | first read 166.22 s, 7 of 7 follow-ups kept the prompt, first token median 9.47 s, decode mean 99.8 tok/s over all seven, 93.9 over the six that ended with a tool call. The final request ran to the 32,000-token limit inside thinking with no final answer (5.44 tokens per round). With run 1 (row below): 1 of 2 runs at the limit, 1,425 MHz | `baseline/W9C-t3n-mix4bh-loop216k-think1.out`, `.jsonl` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot, bench boot | short sets | general 87.0 tok/s (34.73 ms per round), legal-style 67.3 tok/s (34.41 ms), 1,425 MHz | `baseline/W9C-t3n-mix4bh-g1-tput.out`, `-l1-` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot (the build of this release) | short sets | general 83.6 tok/s (36.25 ms per round), legal-style 64.7 tok/s (35.78 ms). In-sample ([section](#hot_iq-on-the-mixed-tally-the-build-of-this-release)) | `baseline/W9-hiq1-g1-tput.out`, `-l1-` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | tool loops at 31K tokens, source code and US Code Title 28 | follow-ups decode 90.9 tok/s (40.09 ms per round) and 87.8 tok/s (38.18 ms). In-sample | `baseline/W9-hiq1-loop-think1.out`, `-looplegal-` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | tool loop, 216,255-token prompt, run 1 | first read 168.72 s, 7 of 7 follow-ups kept the prompt, first token median 9.36 s, decode mean 90.4 tok/s, final answer ended normally (1,385 tokens). Run 2 ran to the limit (row above) | `baseline/W9-hiq1-loop216k-think1.out` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | closeness, replaced 12-prompt set | PASS: first different token 11 for, 1 against, and mean difference 8 for, 4 against, 0 undecided | `t3w/quality-wide-score-R1-W9HIw-W9HIp.json` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot | long thinking chats 0, 1 and 2 | 0 of 3 at the 32,000-token limit (3,057, 1,262 and 1,592 tokens), 95 % Wilson interval 0.000 to 0.561 | `baseline/W9-hiq1-term-c0.out`, `-c1-`, `-c2-` |
+| 2026-11-10 | `hot_iq` on the mixed tally, one slot, route counters on | decode routes on compressed records | general 21.0 %, legal-style 16.7 %, source loop 15.0 %, US Code loop 15.7 % | `stats/accept-host-routes-W9-hiqstat-kinds.json` |
+| 2026-11-10 | `hot_iq` on the mixed tally, three slots: NOT accepted (quality not established) | short sets, three 30K chats taking turns | general 81.9 tok/s (35.23 ms per round), legal-style 68.7 tok/s (34.42 ms). 6 of 6 follow-ups kept their own chat's prompt | `baseline/W9-hiq3b-g1-tput.out`, `-l1-`, `-rotate3.out` |
+| 2026-11-10 | IQ records in prompt reading (plan 04 part B) at the accepted tiers: NOT accepted (quality not established) | first read of chat 0 (216,245 tokens) | booted with the accepted configuration's hot, warm and host experts, then ran out of card memory on stage 0 in the second chunk of the read (a request for 108 MiB with 64.75 MiB free). The server ended by itself. INFERENCE from the code, nothing run: both reading modes peak at the same point and the variant is short by the workspace it keeps from load. The fix is built and checked on one card of the test host (MEASURED 2026-11-10: results bit-equal to the previous file at four chunk sizes, peak of the reading call 1.30 GB to 0.67 GB at 8,188 rows). It is in this snapshot's engine file (the `hot_iq` measurements on the mixed tally ran with that file), and the variant has not yet run at the accepted tiers with it ([section](#iq-records-in-prompt-reading-plan-04-part-b-not-accepted-quality-not-established)) | private boot log, private one-card receipt |
 | 2026-11-10 | IQ records in prompt reading (plan 04 part B), one slot, reserves 5.3 / 8.1 GiB: NOT accepted (quality not established) | closeness, wider set | INCONCLUSIVE on the 12-prompt set: first different token 10 for, 2 against, and mean difference 5 for, 1 against, 6 undecided ([section](#quality-on-twelve-prompts-inconclusive)) | `t3w/quality-wide-score-N2w-PIQAw-Pw-N2wr.out` |
 | 2026-11-10 | IQ records in prompt reading (plan 04 part B), one slot, reserves 5.3 / 8.1 GiB: NOT accepted (quality not established) | termination test, chats 1 and 2 (198,307 and 204,871 tokens), second boot | both final answers ended normally (749 and 1,491 tokens). First reads 102.12 s and 103.0 s. 7 of 7 follow-ups kept the prompt in each chat, first token median 4.42 s and 4.26 s. With chat 0 the variant stands at 1 of 3 at the limit (95 % Wilson interval 0.061 to 0.792) ([section](#iq-records-in-prompt-reading-plan-04-part-b-not-accepted-quality-not-established)) | `baseline/W5-piqa-term-c12.out`, `baseline/W5-piqa-term.jsonl` |
 | 2026-11-10 | accepted tiers under the load setting (a profile that pins them, not in this snapshot) | termination test, chat 0 (216,245 tokens) | the same hot, warm and host experts and tier digests as the accepted configuration. First read 167.64 s. The final answer ended normally with 6,417 tokens at 66.97 tok/s, and all eight requests gave the token counts of the two earlier runs ([section](#long-thinking-answers-the-termination-test)) | `baseline/W5-t3so-term-c0.out`, `baseline/W5-t3so-term.jsonl` |
@@ -46,6 +65,164 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 | 2026-11-09 | three-tier | context rows, 46 to 257,741 tokens | 60.9 to 75.9 tok/s; read 28.5 s (30,795), 83.1 s (106,531), 194.2 s (257,741) | `baseline/t3-T3a-ctx.jsonl` |
 | 2026-11-09 | three-tier | short sets, two runs | general 50.6 / 51.8 tok/s, legal-style 56.9 / 58.4 tok/s | `baseline/t3-T3a-g1-tput.out`, `-g2-`, `-l1-`, `-l2-` |
 | 2026-11-09 | two-tier, Volta sPLIt | short sets, context rows, long prompts, harness-shaped test | the sections below | private boot receipts of the same day |
+
+## hot_iq on the mixed tally: the build of this release
+
+MEASURED 2026-11-10 on the 8-card host, one request at a time, temperature 0, card clock ceiling 1,425 MHz (the
+rows of 2026-11-09 ran at 1,522 MHz). Profile: `hot_iq`, one prompt slot, card reserves 4.5 / 7.5 GiB, prompts read
+with the full-precision records (`native_staged`), the load-time allocator setting off
+(`VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0`). Tiers from the mixed tally: stage 0 3,833 hot and 3,847 warm (compressed)
+experts, stage 1 2,254 and 5,426, no host tier (tier digests `8e7829184090` and `5b09c0383a80`). The engine file
+is this snapshot's without the tier-map change, which reads the same tiers from the Hugging Face package's map
+(not yet booted on eight cards as of 2026-11-10, the boot check follows).
+
+The full speed bench of this configuration (prompt lengths 1K to 256K, five kinds of text) is its own section
+below ([Speed bench](#speed-bench-1k-to-256k)).
+
+| Measure | Result | Receipt |
+|---|---|---|
+| Short prompts, general set | 83.6 tok/s (36.25 ms per round) | `baseline/W9-hiq1-g1-tput.out` |
+| Short prompts, legal-style set | 64.7 tok/s (35.78 ms per round) | `baseline/W9-hiq1-l1-tput.out` |
+| Tool loop at 31K tokens, source code | 90.9 tok/s (40.09 ms per round) | `baseline/W9-hiq1-loop-think1.out` |
+| Tool loop at 31K tokens, US Code Title 28 | 87.8 tok/s (38.18 ms per round) | `baseline/W9-hiq1-looplegal-think1.out` |
+| Tool loop at 216K tokens, run 1 | first read of 216,255 tokens 168.72 s, 7 of 7 follow-ups kept the prompt, first token median 9.36 s, decode mean 90.4 tok/s, final answer ended normally (1,385 tokens) | `baseline/W9-hiq1-loop216k-think1.out` |
+| Tool loop at 216K tokens, run 2, bench boot | first read 166.22 s, 7 of 7 follow-ups kept the prompt, first token median 9.47 s, decode mean 99.8 tok/s over all seven, 93.9 over the six that ended with a tool call, the final request ran to the 32,000-token limit inside thinking with no final answer ([section](#speed-bench-1k-to-256k)) | `baseline/W9C-t3n-mix4bh-loop216k-think1.out`, `.jsonl` |
+| Short sets, bench boot | general 87.0 tok/s (34.73 ms per round), legal-style 67.3 tok/s (34.41 ms) | `baseline/W9C-t3n-mix4bh-g1-tput.out`, `-l1-` |
+
+Short-set tok/s is output tokens over the whole request time, the wait for the first token included. Tool-loop
+tok/s is the mean decode rate of the follow-ups (first to last streamed token).
+
+Decode routes on compressed records, counted by the route counters (`VLLM_NVFP4_8R_STATS=1`) on a separate boot of
+the same profile: general 20.96 %, legal-style 16.74 %, source loop 14.98 %, US Code loop 15.69 % of the whole
+model's decode routes. By stage: 10.38 to 14.85 % on stage 0 and 19.58 to 27.07 % on stage 1. Host tier 0.000 %.
+
+In-sample. The mixed tally weights four kinds of text equally: one private, and three made from this repository's
+public prompt sets (the general short set, the source-code tool loops at 31K and 216K tokens, and the legal-style
+short set with the US Code tool loop). The rows above are on text the hot set was chosen from. Chats 1 and 2 of
+the long thinking test take later sections of the public source text and are held out.
+
+Closeness on the replaced 12-prompt set (MEASURED, greedy, thinking off, 1,024 tokens each, receipts
+`t3w/quality-W9HIw.json` and `t3w/quality-W9HIp.json`, score `t3w/quality-wide-score-R1-W9HIw-W9HIp.json`). The
+five prompts of the 12-prompt set on which Volta sPLIt shares no prefix with the reference
+([section](#quality-on-twelve-prompts-inconclusive)) are replaced by prompts from a pool written for this check,
+chosen by a selection rule fixed in advance that reads no result of this build. The rule of 8 of 12 on each part
+is unchanged. First different token no earlier than Volta sPLIt's: 11 for, 1 against. Smaller mean
+log-probability difference: 8 for, 4 against, 0 undecided. PASS.
+
+Long thinking chats (MEASURED, thinking on, temperature 0, a 32,000-token limit on the final request). Chats 0, 1
+and 2 of the termination test ([section](#long-thinking-answers-the-termination-test)): final answers of 3,057,
+1,262 and 1,592 tokens, all ended normally, 0 of 3 at the limit (95 % Wilson interval 0.000 to 0.561). Every
+follow-up kept its prompt. The rule fixed before the run: no more chats at the limit than the host-tier profile on
+the same tally (not accepted, quality not established), which ran chat 0 to the limit and ended chats 1 and 2
+normally. Chats 3 to 8 of the planned nine and the runs at sampling settings were not made. Receipts
+`baseline/W9-hiq1-term-c0.out`, `-c1-`, `-c2-`.
+
+Three prompt slots (`hot_iq` on the mixed tally, not accepted, quality not established). Tiers stage 0 3,346 /
+4,334, stage 1 1,886 / 5,794. General 81.9 tok/s (35.23 ms per round), legal-style 68.7 tok/s (34.42 ms). Three
+chats of 30,439 to 31,174 tokens taking turns: 6 of 6 follow-ups kept their own chat's prompt, first token median
+8.08 s. Receipts `baseline/W9-hiq3b-g1-tput.out`, `-l1-`, `-rotate3.out`.
+
+## Speed bench: 1K to 256K
+
+MEASURED 2026-11-10 on the build of this release (`hot_iq` on the mixed tally, one prompt slot, reserves 4.5 / 7.5
+GiB, prompts read with the full-precision records), one request at a time, card clock ceiling 1,425 MHz. Receipts
+`benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` (169 of 169 requests, status DONE). The prompts and the method
+are Volta sPLIt's speed bench: the run record checks each document's token count and the chat template's tokens
+against Volta sPLIt's (no drift). Long prompts go to `/v1/completions` as token ids: greedy, seed 42, `ignore_eos`,
+1,024 tokens, a random cache salt, thinking off, or on at reasoning effort 50. Short prompts are one chat message,
+thinking off, up to 1,024 tokens with a natural stop, at temperature 0 or 1. The four thinking-on prompts run at
+temperature 1, reasoning effort 50, up to 2,048 tokens. Decode = (tokens - 1) / (last token - first token), timed
+by the benchmark program. In every long-prompt cell the first streamed event carried one token, so that formula holds.
+
+### Long prompts, thinking off
+
+| prompt | first token | prompt reading | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1K | 5.60 s | 175-247 tok/s | 123.3 | 130.7 | 71.9 | 59.9 | 60.4 |
+| 2K | 7.02 s | 274-324 tok/s | 118.9 | 119.5 | 65.2 | 64.5 | 67.9 |
+| 4K | 9.12 s | 437-454 tok/s | 120.9 | 114.9 | 62.5 | 63.5 | 66.0 |
+| 8K | 13.3 s | 595-622 tok/s | 127.0 | 126.4 | 69.7 | 67.8 | 63.7 |
+| 16K | 19.3 s | 812-868 tok/s | 126.6 | 123.0 | 69.7 | 60.2 | 64.5 |
+| 32K | 31.4 s | 1,030-1,055 tok/s | 119.3 | 124.4 | 66.7 | 61.8 | 67.2 |
+| 64K | 56.1 s | 1,161-1,188 tok/s | 116.9 | 117.6 | 68.0 | 59.6 | 66.7 |
+| 128K | 106.4 s | 1,221-1,263 tok/s | 115.4 | 116.9 | 67.9 | 59.9 | 61.8 |
+| 256K | 209.6 s | 1,243-1,276 tok/s | 103.8 | 110.0 | 61.8 | 60.5 | 63.3 |
+
+90 requests, each cell the mean of 2 runs. Largest difference between the two runs of a cell 6.3 tok/s. Greedy
+output byte-identical in 45 of 45 cells. First token = median of the five kinds, prompt reading = range over the
+five kinds.
+
+### Long prompts, thinking on
+
+| prompt | first token | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|---:|
+| 1K | 5.76 s | 131.7 | 113.1 | 81.8 | 63.8 | 63.4 |
+| 2K | 7.17 s | 134.2 | 107.2 | 75.6 | 62.9 | 64.1 |
+| 4K | 9.14 s | 135.8 | 121.9 | 73.9 | 61.7 | 62.4 |
+| 8K | 13.2 s | 135.2 | 122.5 | 77.3 | 67.9 | 66.5 |
+| 16K | 19.3 s | 136.8 | 111.7 | 71.4 | 63.6 | 66.6 |
+| 32K | 31.3 s | 102.3 | 112.3 | 77.6 | 63.9 | 60.0 |
+| 64K | 56.2 s | 122.0 | 120.7 | 75.5 | 65.2 | 59.4 |
+| 128K | 106.8 s | 110.8 | 114.6 | 71.5 | 60.5 | 58.0 |
+| 256K | 210.2 s | 110.5 | 107.1 | 67.8 | 60.3 | 54.6 |
+
+45 requests, one run per cell.
+
+### Prompt reading by text type
+
+| prompt | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|
+| 1K | 182 | 175 | 183 | 247 | 189 |
+| 2K | 279 | 274 | 292 | 324 | 301 |
+| 4K | 449 | 437 | 448 | 450 | 454 |
+| 8K | 595 | 622 | 617 | 616 | 609 |
+| 16K | 868 | 847 | 847 | 812 | 831 |
+| 32K | 1,055 | 1,045 | 1,049 | 1,034 | 1,030 |
+| 64K | 1,188 | 1,167 | 1,170 | 1,166 | 1,161 |
+| 128K | 1,263 | 1,255 | 1,232 | 1,221 | 1,227 |
+| 256K | 1,275 | 1,276 | 1,243 | 1,251 | 1,248 |
+
+Prompt tokens / first-token time, thinking off, mean of 2 runs, tok/s.
+
+### Short prompts, by text type
+
+| kind of output | greedy (T=0) | sampled (T=1) | tokens per round, T=0 | Volta sPLIt greedy | Volta sPLIt sampled |
+|---|---:|---:|---:|---:|---:|
+| code | **127.2** (125.0-127.4) | 127.4 (113.8-129.5) | 4.39 | 213.1 | 196.8 |
+| structured (JSON) | **129.5** (125.6-129.7) | 127.5 (126.1-129.5) | 4.45 | 209.4 | 205.4 |
+| legal | **74.9** (74.9-75.0) | 68.0 (67.7-69.7) | 2.59 | 115.7 | 108.4 |
+| prose | **65.2** (64.6-65.2) | 60.7 (58.2-60.8) | 2.26 | 98.0 | 87.2 |
+| chat | **59.9** (59.9-60.1) | 58.4 (55.8-61.0) | 2.06 | 96.2 | 93.8 |
+| thinking on, 4 prompts, token-weighted | - | **92.4** (84.7-130.8 per prompt) | - | - | 132.3 |
+
+Up to 1,024 tokens with a natural stop, thinking off, median of 3 runs with range. Greedy repeats byte-identical
+for every kind. The four
+thinking-on prompts: 130.8 tok/s (215 tokens), 98.5 (544), 121.4 (368) and 84.7 (2,048). Volta sPLIt's columns are its
+published bench of 2026-11-05 at a 1,522 MHz ceiling.
+
+### Tool loop at 216K tokens, run 2
+
+The same 216,255-token loop as run 1 (section above), thinking on, on the bench boot after the bench. Receipt
+`baseline/W9C-t3n-mix4bh-loop216k-think1.jsonl`.
+
+| Request | Prompt tokens | Kept | First token | Output tokens | Decode | Stop |
+|---|---:|---:|---:|---:|---:|---|
+| 0 | 216,255 | 0 | 166.22 s | 48 | 148.03 tok/s | tool_use |
+| 1 | 219,315 | 216,240 | 9.47 s | 258 | 92.46 tok/s | tool_use |
+| 2 | 222,441 | 219,504 | 9.10 s | 198 | 83.37 tok/s | tool_use |
+| 3 | 225,633 | 222,576 | 9.26 s | 175 | 89.60 tok/s | tool_use |
+| 4 | 228,647 | 225,744 | 9.52 s | 218 | 99.62 tok/s | tool_use |
+| 5 | 232,230 | 228,800 | 9.89 s | 193 | 99.05 tok/s | tool_use |
+| 6 | 235,478 | 232,368 | 9.68 s | 198 | 99.42 tok/s | tool_use |
+| 7 | 238,424 | 235,616 | 9.22 s | 32,000 | 134.97 tok/s | max_tokens |
+
+**The final request of the 216K tool loop ran to the limit on the bench boot.** In this tool loop (216,255-token prompt, thinking on) the first read took 166.22 s and all seven follow-ups kept the previous prompt (first token median 9.47 s, decode mean 99.8 tok/s over the seven and 93.9 tok/s over the six that ended with a tool call (83.4 to 99.6)). The final request then ran to the 32,000-token limit inside thinking and gave no final answer (stop reason `max_tokens`, 5.44 tokens per round). On the earlier boot of the same profile the same loop's final answer ended normally (1,385 tokens). So on this build that loop's final request has run to the limit in 1 of 2 runs. Chats 0, 1 and 2 of the long thinking test on the mixed tally ([above](#hot_iq-on-the-mixed-tally-the-build-of-this-release)) are separate requests of 216,245, 198,307 and 204,871 tokens and are not counted here.
+
+### Short sets on the bench boot
+
+General 87.0 tok/s (34.73 ms per round, 3,072 tokens in 35.31 s), legal-style 67.3 tok/s (34.41 ms, 3,072 tokens in
+45.67 s), receipts `baseline/W9C-t3n-mix4bh-g1-tput.out`, `-l1-`. The earlier boot of the same profile measured 83.6
+and 64.7 (section above). Both at 1,425 MHz.
 
 ## How it was measured
 
@@ -376,9 +553,11 @@ returns an ordinary out-of-memory error. Fix: load with the setting off (`VLLM_W
 MEASURED on eight cards: with it off the variant was ready in 349 s with no error. INFERENCE: that the first boot
 failed in exactly this way. No boot was made with the setting on and the allocator traced.
 
-The launcher in this snapshot does not set it. Every boot of this section after the failed first one, and the
-pinned-tier boot of the accepted tiers ([Long thinking answers](#long-thinking-answers-the-termination-test)), ran
-with the setting off. Every other measurement on this page was made with the engine's default. With the setting
+The launcher in this snapshot does not set it. The `hot_iq` launcher `engine/configs/serve_hot_iq.sh` does, because
+the measurements of `hot_iq` on the mixed tally ran with the setting off. Every boot of this section after the
+failed first one, and the pinned-tier boot of the accepted tiers
+([Long thinking answers](#long-thinking-answers-the-termination-test)), ran with the setting off. Every other
+measurement on this page before the mixed tally was made with the engine's default. With the setting
 off the planner measures other free memory, so the accepted profile would not choose its measured tiers (ESTIMATED
 from the planner on CPU). A profile that pins those tiers under the setting was measured on 2026-11-10: chat 0 gave
 the accepted configuration's token counts again. That profile is not in this snapshot.
@@ -441,9 +620,9 @@ At chunks of 7, 64, 4,096 and 8,188 rows the changed file gave results bit-equal
 previous file repeated its own results bit-equal. The peak of allocated memory in the reading call at 8,188 rows
 fell from 1,302,698,496 to 673,694,208 bytes (1.30 GB to 0.67 GB, or 1.21 to 0.63 GiB), a fall of 0.59 GiB.
 The check did not run the variant's own records in the reading step, or a read with routes to warm or host
-experts. The fix has not yet run on eight cards, so whether the variant then reads a long prompt at the accepted
-tiers is not measured. The changed file is not in this snapshot. The engine file here is the previous file of
-that check.
+experts. The fix is in this snapshot's engine file: the `hot_iq` measurements on the mixed tally ran with that
+file, reading prompts with the full-precision records. The variant has not yet run at the accepted tiers with the
+fix, so whether it then reads a long prompt there is not measured. The variant is not in this snapshot.
 
 Not accepted. The quality of this variant is not established. Its closeness check on twelve prompts is INCONCLUSIVE
 ([section](#quality-on-twelve-prompts-inconclusive)): first different token 10 for, 2 against, and mean difference

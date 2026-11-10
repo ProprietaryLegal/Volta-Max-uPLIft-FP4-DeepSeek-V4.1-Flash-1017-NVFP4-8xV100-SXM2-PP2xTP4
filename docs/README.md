@@ -3,6 +3,7 @@
 | File | What it is |
 |---|---|
 | [measurements.md](measurements.md) | every published number, with how it was measured |
+| [history.md](history.md) | the steps that led to Max uPLIft: the three-tier mode, the first-tally profiles and the earlier closeness checks |
 | [plans/README.md](plans/README.md) | the build-and-test plans and their shared rules |
 | [plans/00-WHERE-TIME-GOES.md](plans/00-WHERE-TIME-GOES.md) | time and memory budget of a decode round |
 | [plans/01-three-tier-residency.md](plans/01-three-tier-residency.md) | the three-tier mode (built) |

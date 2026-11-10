@@ -11,17 +11,21 @@ stage, identical on the stage's four TP ranks:
 
 ``choose_tiers`` ranks by the private decode tally. Tier arrays and counts
 stay in memory: callers log counts of experts and shares of routes only.
+``plan_from_map`` takes the tiers instead from a fixed tier map (a published
+package's HOT/WARM flag per expert, no tally): ``load_tier_map``.
 """
 
 from __future__ import annotations
 
 import enum
 import hashlib
+import json
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass
 from fractions import Fraction
 from functools import cached_property
+from pathlib import Path
 
 import numpy as np
 
@@ -35,6 +39,8 @@ _BLOCKS = 576 * 20
 assert _BLOCKS == 1280 * 9 == 11520
 
 RESIDENCY_KEY = "nvfp4_8r_residency"
+TIER_MAP_KEY = "nvfp4_8r_tier_map"
+TIER_MAP_FORMAT = "nvfp4-8r-tier-map-v1"
 HOST_SHARE_KEY = "nvfp4_8r_host_route_share"
 MAX_HOST_ROUTE_SHARE = 0.05
 
@@ -297,3 +303,129 @@ def choose_tiers(
         need += cost[layer]
         tiers[layer][e] = Tier.HOT
     return TierPlan(layers, tiers, dict(iq_bytes), budget_bytes, residency)
+
+
+# -- fixed tier map (a published package): HOT/WARM per expert, no tally ------
+def stage_digest(arrays: Mapping[int, np.ndarray], layers: range) -> str:
+    """sha256 of the tier arrays in layer order (TierPlan.digest's rule)."""
+    h = hashlib.sha256()
+    for layer in layers:
+        h.update(arrays[layer].tobytes())
+    return h.hexdigest()
+
+
+@dataclass(frozen=True, eq=False)
+class TierMap:
+    """Every routed expert's tier from a tier map file: HOT or WARM, nothing
+    else (no HOST tier, no count, no rank). ``stages`` maps a stage's first
+    layer to (its layers, the sha256 its tier arrays must give)."""
+
+    tiers: dict[int, np.ndarray]  # layer -> int8 [384], read-only
+    stages: dict[int, tuple[range, str]]
+
+    def stage(self, layers: range) -> dict[int, np.ndarray]:
+        if layers.start not in self.stages or self.stages[layers.start][0] != layers:
+            have = [(r.start, r.stop - 1) for r, _ in self.stages.values()]
+            raise ValueError(
+                f"the tier map has no stage of layers {layers.start}-{layers.stop - 1} (has {have}): "
+                "it was made for another pipeline split"
+            )
+        return {layer: self.tiers[layer] for layer in layers}
+
+
+def parse_tier_map(doc: object) -> TierMap:
+    """The tier map document (TIER_MAP_FORMAT), checked whole; no defaults."""
+    keys = {"format", "comment", "num_layers", "num_experts", "stages", "hot"}
+    if not isinstance(doc, dict) or set(doc) != keys:
+        got = sorted(doc) if isinstance(doc, dict) else type(doc).__name__
+        raise ValueError(f"a tier map has exactly the keys {sorted(keys)}, got {got}")
+    if doc["format"] != TIER_MAP_FORMAT:
+        raise ValueError(f"tier map format {doc['format']!r}, want {TIER_MAP_FORMAT!r}")
+    n, hot = doc["num_layers"], doc["hot"]
+    if doc["num_experts"] != NUM_EXPERTS or type(n) is not int or n < 1:
+        raise ValueError(f"tier map is for {doc['num_experts']!r} experts x {n!r} layers")
+    if not isinstance(hot, list) or len(hot) != n:
+        raise ValueError(f"tier map 'hot' must list {n} layers")
+    tiers: dict[int, np.ndarray] = {}
+    for layer, ids in enumerate(hot):
+        if (
+            not isinstance(ids, list)
+            or any(type(e) is not int for e in ids)
+            or ids != sorted(set(ids))
+            or not ids
+            or ids[0] < 0
+            or ids[-1] >= NUM_EXPERTS
+            or len(ids) == NUM_EXPERTS
+        ):
+            raise ValueError(
+                f"tier map layer {layer}: HOT ids must be distinct ascending ints in 0..383, "
+                "at least one and not all (a layer needs a WARM expert)"
+            )
+        tier = np.full(NUM_EXPERTS, Tier.WARM, np.int8)
+        tier[ids] = Tier.HOT
+        tier.setflags(write=False)
+        tiers[layer] = tier
+    stages: dict[int, tuple[range, str]] = {}
+    covered: list[int] = []
+    for s in doc["stages"] if isinstance(doc["stages"], list) else [None]:
+        if (
+            not isinstance(s, dict)
+            or set(s) != {"first_layer", "last_layer", "hot", "compressed", "digest"}
+            or any(type(s[k]) is not int for k in ("first_layer", "last_layer", "hot", "compressed"))
+        ):
+            raise ValueError(f"tier map stage entry {s!r}")
+        layers = range(s["first_layer"], s["last_layer"] + 1)
+        if len(layers) == 0 or layers.start != len(covered):
+            raise ValueError(f"tier map stages must be contiguous from layer 0, got {s!r}")
+        covered.extend(layers)
+        digest = s["digest"]
+        if type(digest) is not str or len(digest) != 64:
+            raise ValueError(f"tier map stage {layers.start}: digest must be a sha256 hex")
+        got = stage_digest(tiers, layers) if layers.stop <= n else None
+        if got != digest:
+            raise ValueError(
+                f"tier map stage {layers.start}-{layers.stop - 1}: its tiers give digest "
+                f"{(got or 'none')[:12]}, the file says {digest[:12]}"
+            )
+        n_hot = sum(int((tiers[layer] == Tier.HOT).sum()) for layer in layers)
+        if (s["hot"], s["compressed"]) != (n_hot, len(layers) * NUM_EXPERTS - n_hot):
+            raise ValueError(f"tier map stage {layers.start}: stated counts disagree with its HOT ids")
+        stages[layers.start] = (layers, digest)
+    if covered != list(range(n)):
+        raise ValueError(f"tier map stages cover layers {covered[:1]}..{covered[-1:]}, want 0..{n - 1}")
+    return TierMap(tiers, stages)
+
+
+def load_tier_map(path: Path) -> TierMap:
+    return parse_tier_map(json.loads(Path(path).read_text()))
+
+
+def plan_from_map(
+    tier_map: TierMap,
+    layers: range,
+    iq_bytes: Mapping[int, int],
+    budget_bytes: int,
+    residency: WarmResidency,
+) -> TierPlan:
+    """The stage's plan from a fixed tier map instead of the tally. Refuses a
+    stage the map does not hold, a residency other than hot_iq (the map has
+    no HOST tier), and a budget that cannot hold the map's records (no
+    re-planning: the shipped tiers or nothing). The digest equals the map's."""
+    if not isinstance(residency, HotIq):
+        raise ValueError(f"a tier map serves {RESIDENCY_KEY} hot_iq only, got {residency!r}")
+    arrays = tier_map.stage(layers)
+    need = sum(
+        int((arrays[layer] == Tier.HOT).sum()) * EXPERT_BYTES
+        + int((arrays[layer] == Tier.WARM).sum()) * iq_bytes[layer]
+        for layer in layers
+    )
+    if need > budget_bytes:
+        raise ValueError(
+            f"the tier map's records of layers {layers.start}-{layers.stop - 1} need {need} bytes "
+            f"({need / 2**30:.4f} GiB) per card; this card's budget (free HBM - reserve - prefill "
+            f"workspace) is {budget_bytes} bytes ({budget_bytes / 2**30:.4f} GiB)"
+        )
+    plan = TierPlan(layers, arrays, dict(iq_bytes), budget_bytes, residency)
+    if plan.digest != tier_map.stages[layers.start][1]:
+        raise ValueError("the stage's plan digest differs from the tier map's")
+    return plan

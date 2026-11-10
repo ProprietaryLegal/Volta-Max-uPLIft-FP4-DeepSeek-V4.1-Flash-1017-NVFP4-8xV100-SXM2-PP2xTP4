@@ -29,6 +29,7 @@ import numpy as np
 import torch
 
 from vllm.logger import init_logger
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_stats as route_stats
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_tiers as tiers
 from vllm.model_executor.layers.fused_moe.experts.skinny_sm70_moe import (
     _QPN_MAX_M,
@@ -58,6 +59,9 @@ TOP_K = 6
 NUM_EXPERTS = 384
 SWIGLU_LIMIT = 10.0
 PACK_FORMAT = "nvfp4-8r-mxfp4-v1"
+# A published package's packs: one file per (layer, rank), all 384 records in
+# expert-id order, so the file order carries no ranking (HFP-01).
+PACK_FORMAT_ID_ORDER = "nvfp4-8r-mxfp4-v2-id-order"
 
 _W13_CODES = TP_INTER * HIDDEN // 2
 _W13_SCALES = TP_INTER * HIDDEN // 32
@@ -130,6 +134,8 @@ def _load_trace_from_env(raw: str | None) -> bool:
 
 
 _LOAD_TRACE = _load_trace_from_env(os.environ.get(LOAD_TRACE_ENV))
+# Decode route counters (campaign card 8.2): off unless the switch is 1.
+_STATS = route_stats.stats_from_env(os.environ.get(route_stats.STATS_ENV))
 
 
 def _load_trace(device: torch.device, rank: int, at: str, tier) -> None:
@@ -169,8 +175,40 @@ def read_manifest(packs: Path) -> list[list[dict[str, list[int]]]]:
     return manifest["layers"]
 
 
+def read_id_order_manifest(packs: Path) -> dict:
+    """The v2 (expert-id order) manifest, checked whole."""
+    manifest = json.loads((packs / "manifest.json").read_text())
+    want = {"format": PACK_FORMAT_ID_ORDER, "num_layers": 40, "tp_ranks": 4,
+            "num_experts": NUM_EXPERTS, "expert_bytes": EXPERT_BYTES, "file": "L{layer:02d}-r{rank}.bin"}
+    got = {k: manifest.get(k) for k in want}
+    if got != want or set(manifest) - set(want) - {"comment"}:
+        raise ValueError(f"{packs}/manifest.json is not an {PACK_FORMAT_ID_ORDER} manifest: {got}")
+    return manifest
+
+
+def check_packs(packs: Path) -> str:
+    """The format of a pack directory (v1 split or v2 id order), validated."""
+    if not (packs / "manifest.json").is_file():
+        raise ValueError(f"no pack manifest in {packs}")
+    fmt = json.loads((packs / "manifest.json").read_text())["format"]
+    if fmt == PACK_FORMAT_ID_ORDER:
+        read_id_order_manifest(packs)
+    else:
+        read_manifest(packs)
+    return fmt
+
+
 def read_rank_experts(packs: Path, layer: int, rank: int) -> np.ndarray:
     """All 384 expert records of one (layer, rank), indexed by expert id."""
+    if json.loads((packs / "manifest.json").read_text())["format"] == PACK_FORMAT_ID_ORDER:
+        read_id_order_manifest(packs)
+        if not (0 <= layer < 40 and 0 <= rank < 4):
+            raise ValueError(f"no pack file for layer {layer} rank {rank}")
+        path = packs / f"L{layer:02d}-r{rank}.bin"
+        data = np.fromfile(path, np.uint8)
+        if data.size != NUM_EXPERTS * EXPERT_BYTES:
+            raise ValueError(f"{path}: {data.size} bytes, want {NUM_EXPERTS} x {EXPERT_BYTES}")
+        return data.reshape(NUM_EXPERTS, EXPERT_BYTES)
     split = read_manifest(packs)[layer][rank]
     out = np.empty((NUM_EXPERTS, EXPERT_BYTES), np.uint8)
     seen = 0
@@ -596,6 +634,8 @@ class NativeV41Moe:
         self.experts = experts
         self.slot_of_expert = slot_of_expert.to(dev)
         self.max_tokens = max_tokens
+        # Set by three_tier when the stats switch is on; None otherwise.
+        self.stats: route_stats.RouteStats | None = None
         self.cold = cold
         self.cold_slot_of_expert = None
         if cold is not None:
@@ -674,10 +714,13 @@ class NativeV41Moe:
             )
         dev = experts.q13.device
         to = lambda a: torch.from_numpy(a).to(dev)  # noqa: E731
-        return cls(
+        moe = cls(
             experts, to(maps.hot), max_tokens, cold=cold, cold_slot_of_expert=to(maps.cold),
             warm=WarmTier(iq, to(maps.iq), to(maps.host), counts[2] > 0, prefill),
         )
+        if _STATS:
+            moe.stats = route_stats.RouteStats(tier, dev)
+        return moe
 
     @staticmethod
     def _compact(flat: torch.Tensor):
@@ -778,6 +821,8 @@ class NativeV41Moe:
         s = m * TOP_K
         if self.warm is not None:
             launches = self._tier_groups(topk_ids)
+            if self.stats is not None:
+                self.stats.count(topk_ids)
         elif self.cold is None:
             launches = self._groups(topk_ids)
         else:
@@ -875,20 +920,31 @@ class NativeV41Moe:
                     ids, bperm, torch.where(bgids < batch_experts, bgids, 0).to(torch.int32),
                     torch.minimum(bgoff, bcount).to(torch.int32),
                 ))
-        y13 = torch.empty((s, 2 * TP_INTER), dtype=torch.float16, device=dev)
         inter = torch.zeros((s, W2_K), dtype=torch.float16, device=dev)
-        # IQ prefill: no launch writes a WARM route's y2 row; zeros keep it
-        # finite and the reduce multiplies it by 0.0. (Its y13 and inter rows
-        # are never read: the W2 launches read only their own groups' rows.)
-        y2 = (torch.empty if iq_prefill is None else torch.zeros)(
-            (s, HIDDEN), dtype=torch.float16, device=dev
-        )
-        out = torch.empty((m, HIDDEN), dtype=torch.float32, device=dev)
         e = self.experts
-        for names, xin, y, slot_major, split in (
-            (("q13", "s13", "g1"), x, y13, False, self.split13),
-            (("q2", "s2", "g2"), inter, y2, True, self.split2),
+        # Peak HBM of this call: each pass's output is allocated when the pass
+        # starts, and y13 with the activation's FP32 temporaries is freed
+        # before y2 exists. With all of them alive at once a full chunk held
+        # 1.21 GiB here and a stage-0 card ran out at the activation
+        # (a private one-card check); now 0.63 GiB.
+        y2 = None
+        for names, slot_major, split in (
+            (("q13", "s13", "g1"), False, self.split13),
+            (("q2", "s2", "g2"), True, self.split2),
         ):
+            first = names[0] == "q13"
+            if first:
+                xin = x
+                y = torch.empty((s, 2 * TP_INTER), dtype=torch.float16, device=dev)
+            else:
+                xin = inter
+                # IQ prefill: no launch writes a WARM route's y2 row; zeros
+                # keep it finite and the reduce multiplies it by 0.0. (Its y13
+                # and inter rows are never read: the W2 launches read only
+                # their own groups' rows.)
+                y = y2 = (torch.empty if iq_prefill is None else torch.zeros)(
+                    (s, HIDDEN), dtype=torch.float16, device=dev
+                )
             q, sc, g = names
             torch.ops._C.skinny_moe_qpn_sm70(
                 xin, getattr(e, q), getattr(e, sc), getattr(e, g), *hot_launch,
@@ -899,11 +955,15 @@ class NativeV41Moe:
                 self._run_cold(cold_launches, names, xin, y, slot_major, split, m, batch_experts)
                 if trace is not None:
                     seconds_staged += _mark(dev) - mark
-            if names[0] == "q13":
-                g13 = y13[:, :TP_INTER].float().clamp(max=SWIGLU_LIMIT)
-                u13 = y13[:, TP_INTER:].float().clamp(-SWIGLU_LIMIT, SWIGLU_LIMIT)
+            if first:
+                g13 = y[:, :TP_INTER].float().clamp(max=SWIGLU_LIMIT)
+                u13 = y[:, TP_INTER:].float().clamp(-SWIGLU_LIMIT, SWIGLU_LIMIT)
                 inter[:, :TP_INTER].copy_(torch.nn.functional.silu(g13) * u13)
                 del g13, u13
+            del y, xin
+        assert y2 is not None
+        del inter
+        out = torch.empty((m, HIDDEN), dtype=torch.float32, device=dev)
         if iq_prefill is None:
             _mtp_weighted_reduce(y2, topk_weights.contiguous(), out)
         else:
@@ -912,7 +972,7 @@ class NativeV41Moe:
             # full-K result of every WARM route on this rank's rows.
             iq_ids, w_native = self._iq_routes(topk_ids, topk_weights)
             _mtp_weighted_reduce(y2, w_native.contiguous(), out)
-            del y13, inter, y2  # not held across the IQ part's own workspace
+            del y2  # not held across the IQ part's own workspace
             mark = _mark(dev) if trace is not None else 0.0
             out.add_(iq_prefill.partial(x, iq_ids, topk_weights))
             if trace is not None:
@@ -980,10 +1040,12 @@ def choose_residency(
     }
 
 
-EXTRA_KEYS = (
-    "nvfp4_8r_packs", "nvfp4_8r_tally", "nvfp4_8r_reserve_bytes", tiers.RESIDENCY_KEY,
-    tiers.PREFILL_WARM_KEY,
+REQUIRED_KEYS = (
+    "nvfp4_8r_packs", "nvfp4_8r_reserve_bytes", tiers.RESIDENCY_KEY, tiers.PREFILL_WARM_KEY,
 )
+# Exactly one: the private tally the planner ranks by, or a fixed tier map.
+TIER_SOURCE_KEYS = ("nvfp4_8r_tally", tiers.TIER_MAP_KEY)
+EXTRA_KEYS = REQUIRED_KEYS + TIER_SOURCE_KEYS
 # Valid only beside EXTRA_KEYS, and only for the residency that needs them.
 CONDITIONAL_KEYS = (tiers.HOST_SHARE_KEY,)
 TALLY_PHASE = "teacher"  # the P16 phase that stands for decode routing
@@ -1010,6 +1072,24 @@ def _parse_reserve(raw: object) -> dict[int, int]:
 
 
 @dataclass(frozen=True)
+class TallySource:
+    """Tiers planned at load from the free HBM and this decode tally (private)."""
+
+    path: Path
+
+
+@dataclass(frozen=True, eq=False)
+class TierMapSource:
+    """Tiers fixed by a tier map file (HFP-01): no tally, no planning."""
+
+    path: Path
+    tier_map: tiers.TierMap
+
+
+TierSource = TallySource | TierMapSource
+
+
+@dataclass(frozen=True)
 class NativePackConfig:
     """model-loader-extra-config for native experts, parsed once at the loader.
 
@@ -1022,17 +1102,29 @@ class NativePackConfig:
     into (plan 01): two_tier is the hot/cold build, the other two add the
     production IQ record as a WARM tier in HBM. ``prefill_warm`` says which
     record of a WARM expert prefill computes with (plan 04 part B); iq with
-    two_tier cannot be constructed.
+    two_tier cannot be constructed. ``tier_source`` says where the tiers come
+    from: the tally (planned at load) or a tier map (hot_iq only).
     """
 
     packs: Path
-    tally: Path
+    tier_source: TierSource
     reserve_by_stage: dict[int, int]
     residency: tiers.Residency
     prefill_warm: tiers.PrefillWarm
 
     def __post_init__(self) -> None:
         tiers.check_prefill_warm(self.prefill_warm, self.residency)
+        if isinstance(self.tier_source, TierMapSource) and not isinstance(self.residency, tiers.HotIq):
+            raise ValueError(
+                f"{tiers.TIER_MAP_KEY} serves {tiers.RESIDENCY_KEY} hot_iq only, got {self.residency!r}"
+            )
+
+    @property
+    def tally(self) -> Path:
+        """The tally's path; a tier-map config has none."""
+        if not isinstance(self.tier_source, TallySource):
+            raise ValueError(f"this config takes its tiers from {self.tier_source.path}, not a tally")
+        return self.tier_source.path
 
     def reserve_for(self, layers: range) -> int:
         if layers.start not in self.reserve_by_stage:
@@ -1050,19 +1142,30 @@ class NativePackConfig:
             if stray:
                 raise ValueError(f"{stray} need the nvfp4_8r pack keys {list(EXTRA_KEYS)}")
             return None
-        if len(present) != len(EXTRA_KEYS):
-            missing = sorted(set(EXTRA_KEYS) - set(present))
+        missing = sorted(set(REQUIRED_KEYS) - set(present))
+        sources = [k for k in TIER_SOURCE_KEYS if k in extra]
+        if missing:
             raise ValueError(f"nvfp4_8r native experts need {missing} as well")
+        if len(sources) != 1:
+            raise ValueError(
+                f"nvfp4_8r native experts need exactly one of {list(TIER_SOURCE_KEYS)}, got {sources}"
+            )
         reserve = _parse_reserve(extra["nvfp4_8r_reserve_bytes"])
         packs = Path(extra["nvfp4_8r_packs"])
-        if not (packs / "manifest.json").is_file():
-            raise ValueError(f"no pack manifest in {packs}")
-        read_manifest(packs)
-        tally = Path(extra["nvfp4_8r_tally"])
-        if not tally.is_file():
-            raise ValueError(f"no routing tally at {tally}")
+        check_packs(packs)
+        source: TierSource
+        if sources == ["nvfp4_8r_tally"]:
+            tally = Path(extra["nvfp4_8r_tally"])
+            if not tally.is_file():
+                raise ValueError(f"no routing tally at {tally}")
+            source = TallySource(tally)
+        else:
+            path = Path(extra[tiers.TIER_MAP_KEY])
+            if not path.is_file():
+                raise ValueError(f"no tier map at {path}")
+            source = TierMapSource(path, tiers.load_tier_map(path))
         residency = tiers.parse_residency(extra)
-        return cls(packs, tally, reserve, residency,
+        return cls(packs, source, reserve, residency,
                    tiers.parse_prefill_warm(extra, residency))
 
     def decode_counts(self) -> np.ndarray:
@@ -1093,6 +1196,8 @@ def plan_stage(
     if not ordered or ordered != list(range(ordered[0], ordered[-1] + 1)):
         raise ValueError(f"stage MoE layers are not one contiguous run: {ordered}")
     layers = range(ordered[0], ordered[-1] + 1)
+    if _STATS:
+        raise ValueError(f"{route_stats.STATS_ENV}=1 needs a residency with a WARM tier")
     reserve = cfg.reserve_for(layers)
     budget = free_bytes - reserve
     if budget < EXPERT_BYTES:
@@ -1315,8 +1420,9 @@ class TierStagePlan:
     free_bytes: int  # the least free HBM over the stage's four ranks
     reserve_bytes: int
     plan: tiers.TierPlan
-    # Share of the stage's decode-tally routes in HOT, WARM, HOST.
-    route_share: tuple[float, float, float]
+    # Share of the stage's decode-tally routes in HOT, WARM, HOST; None when
+    # the tiers come from a tier map (there is no tally to share out).
+    route_share: tuple[float, float, float] | None
     prefill_bytes: int  # warm_prefill_bytes, taken out of the record budget
 
 
@@ -1341,6 +1447,16 @@ def plan_tiers(
         raise ValueError(f"stage MoE layers are not one contiguous run: {ordered}")
     layers = range(ordered[0], ordered[-1] + 1)
     reserve = cfg.reserve_for(layers)
+    if isinstance(cfg.tier_source, TierMapSource):
+        if _STATS:
+            raise ValueError(
+                f"{route_stats.STATS_ENV}=1 writes snapshots beside a tally; a tier-map config has none"
+            )
+        plan = tiers.plan_from_map(
+            cfg.tier_source.tier_map, layers, iq_bytes, free_bytes - reserve - prefill_bytes,
+            cfg.residency,
+        )
+        return TierStagePlan(free_bytes, reserve, plan, None, prefill_bytes)
     counts = cfg.decode_counts()
     plan = tiers.choose_tiers(
         counts, layers, iq_bytes, free_bytes - reserve - prefill_bytes, cfg.residency
@@ -1408,4 +1524,15 @@ def build_stage(
         )
         if _LOAD_TRACE:
             _load_trace(device, rank, f"L{layer}", plan.tiers[layer])
+    if _STATS:
+        # Snapshots go beside the tally, in its private directory.
+        counters = {}
+        for layer, moe in built.items():
+            if moe.stats is None:
+                raise ValueError(f"L{layer}: the stats switch is on and the layer has no counters")
+            counters[layer] = moe.stats
+        route_stats.StatsWriter(
+            cfg.tally.parent / route_stats.STATS_DIR, plan.layers.start, rank, counters,
+            dict(plan.tiers),
+        ).start()
     return built

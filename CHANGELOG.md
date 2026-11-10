@@ -3,6 +3,66 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-10: the speed bench of Volta Max uPLIft
+
+- **Speed bench** (MEASURED 2026-11-10, card clock ceiling 1,425 MHz, 169 requests, the prompts and method of Volta
+  sPLIt's bench): decode of code 123.3 tok/s after a 1K prompt and 103.8 after 256K, legal 71.9 and 61.8, greedy
+  output byte-identical in 45 of 45 cells. Prompt reading tops out at 1,243 to 1,276 tok/s, and the first token
+  comes 106.4 s after a 128K prompt and 209.6 s after 256K. Slower than Volta sPLIt's bench (2026-11-05, 1,522 MHz)
+  in every thinking-off cell, prompt-reading cell and short-prompt row. In the README:
+  [Tokens per second](README.md#tokens-per-second).
+- **The 216K tool loop's final request ran to the 32,000-token limit** inside thinking on the bench boot, with no
+  final answer. On the earlier boot it ended normally (1,385 tokens), so 1 of 2 runs. The tables that showed only
+  the earlier run now show both.
+- **Short sets on the bench boot:** general 87.0 tok/s, legal-style 67.3. The headline keeps the earlier boot's 83.6
+  and 64.7, the lower pair.
+- **Not changed.** No engine file and no tier.
+
+## 2026-11-10: one repository per build
+
+- **This repository is about Volta Max uPLIft only.** The README describes the build of this release. The steps
+  that led to it (the three-tier mode, the first-tally `hot_iq` profiles, the prompt-reading variant and the earlier
+  closeness checks) moved from the README to [docs/history.md](docs/history.md), unchanged, and stay dated rows of
+  the measurement log.
+- **The all-NVFP4 two-tier mode is its own repository,** [Volta Full NVFP4](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100):
+  every routed expert at exactly NVIDIA's NVFP4 precision, the rest from host RAM over PCIe. It carries the engine as
+  released here at `79dc164` and the measurements of that mode. Its rows stay in
+  [docs/measurements.md](docs/measurements.md) as the dated record.
+- **Not changed.** No measurement and no engine file.
+
+## 2026-11-10: Volta Max uPLIft (`hot_iq` on the mixed tally) is the build of this release, with a Hugging Face package
+
+- **Volta Max uPLIft.** The build that puts as much of the routed work at NVIDIA's NVFP4 precision as fits on the
+  eight cards at the accepted reserves (4.5 / 7.5 GiB, one prompt slot), promoting experts in order of use per byte,
+  with every routed expert on the cards in decode. This maximizes use, not the count of NVFP4 experts (README build
+  section). Result: 6,087 of the 15,360 routed experts at exactly NVFP4 precision, the rest from IQ2-class records,
+  none read over PCIe in decode. Prompt
+  reading still reads the compressed experts' NVFP4 records from host RAM (`native_staged`). The configuration key
+  is `hot_iq`. The two-tier and three-tier modes below were earlier steps, with experts in host RAM.
+- **The build of this release is Max uPLIft (`hot_iq`) on the mixed tally** (MEASURED 2026-11-10, one slot, reserves
+  4.5 / 7.5 GiB, details in [docs/measurements.md](docs/measurements.md)): closeness PASS on the replaced 12-prompt
+  set (first different token 11 for, 1 against, and mean difference 8 for, 4 against, 0 undecided), 0 of 3 long
+  thinking chats at the 32,000-token limit (95 % Wilson interval 0.000 to 0.561), 83.6 tok/s general and 64.7 tok/s
+  legal-style on the short sets, 87.8 to 90.9 tok/s in the 31K tool loops. The speeds are in-sample: three of the
+  mixed tally's four kinds of text are made from the public prompt sets. The full speed bench followed (entry above).
+- **Hugging Face package** ([hot_iq package](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4), upload in progress on 2026-11-10, do not download yet): every weight file this build serves, the
+  MXFP4 expert files in expert-id order, the tier map (only whether each expert is hot or compressed) and the
+  profile template, 556 GB.
+- **Engine.** The engine files are now those the `hot_iq` measurements ran with: the reading step's new allocation
+  order (the memory fix below) and the route counters (`nvfp4_8r_stats.py`, new). Added: the tier-map change
+  (`nvfp4_8r_tier_map` and the v2 pack format). Its CPU check passed. It has not yet booted on eight cards (2026-11-10). The boot check follows.
+- **The memory fix for part B.** The part B variant at the accepted tiers ran out of card memory on its first long
+  read. The fix, checked on one card, is in this snapshot's engine file. The variant has not yet run at the
+  accepted tiers with it and is not in this snapshot.
+- **Launcher.** `engine/configs/serve_hot_iq.sh` and `engine/configs/hot_iq.yaml.template` are new. `run_serve.sh`
+  is unchanged and does not set the load-time allocator setting. The `hot_iq` launcher sets it, as its measurements
+  ran.
+- **Corrections to the entries below.** The engine file of this snapshot is no longer the previous file of the
+  one-card check. On chat 0, a lower share of routes on official-precision experts no longer goes with a run to the
+  limit in every configuration: `hot_iq` on the mixed tally ended chat 0 normally (3,057 tokens).
+- **Not changed.** The earlier profiles and their measurements. The first-tally `hot_iq` profiles stay not
+  accepted (quality not established).
+
 ## 2026-11-10: the memory fix for part B is built and checked on one card
 
 Text only. No file of the engine or the harness changes in this entry.

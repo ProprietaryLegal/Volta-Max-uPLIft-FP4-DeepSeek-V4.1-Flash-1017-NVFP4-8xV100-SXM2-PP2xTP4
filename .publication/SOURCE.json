@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "ba28cc78147a27992634fc16f1b80ded54b5e4e481d13a53d5925cd59b3ad9ff",
-   "transform": "hand-written for publication; 5 wip block(s) removed",
-   "sha256": "fb12ff917a4778da80a23d98f66de923dc51b5495dcb31661763862296dae216",
-   "bytes": 57894
+   "source_sha256": "65d818628655541bc226f73ee7406dda880ff9e4e4c8dd32f084be8c1b92c60f",
+   "transform": "hand-written for publication; 3 wip block(s) removed",
+   "sha256": "72b9a8cb3c2ec7ffc7d71434e60b80cad78be80aa9445b31259d5d4d35b02ec0",
+   "bytes": 63470
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "a3c1982063f193a835797ce51bdcc1e681c065de7b5593654a6a92e680f6ffe0",
+   "source_sha256": "b57bf70c6bdc4a239013e9c2479c945b9dc3a96b45ae7985cba80a001019eb24",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "02aaaf85137fb7ee790a0f4b5290c8ad3fd09d0f43997aa64cbe3191bba5830c",
-   "bytes": 11213
+   "sha256": "87f4aef868557dca84d88909eedb9a5ca8afb5afbe9c9b1ebe3828960426ee52",
+   "bytes": 16486
   },
   {
    "path": "CREDITS.md",
@@ -98,28 +98,37 @@
    "path": "docs/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/README.md",
-   "source_sha256": "0d3de5e1d87c87a8ba0c9f50e0a9cc13b67247838275327bac18844ee91edb43",
+   "source_sha256": "4443f03aa8b97a71d90872c238bbd1e826190586dac17b0d0d5847f3b32f2901",
    "transform": "hand-written for publication",
-   "sha256": "0d3de5e1d87c87a8ba0c9f50e0a9cc13b67247838275327bac18844ee91edb43",
-   "bytes": 2128
+   "sha256": "4443f03aa8b97a71d90872c238bbd1e826190586dac17b0d0d5847f3b32f2901",
+   "bytes": 2272
   },
   {
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "8047eeeaaec8f17564d1ab25711901a7707543fd2478da556a562db04999e20c",
+   "source_sha256": "e23d67d1438c2596e9b6b2b79d108ce4c81214810baeb2ab99ed184d97014dca",
    "transform": "hand-written for publication",
-   "sha256": "8047eeeaaec8f17564d1ab25711901a7707543fd2478da556a562db04999e20c",
-   "bytes": 56251
+   "sha256": "e23d67d1438c2596e9b6b2b79d108ce4c81214810baeb2ab99ed184d97014dca",
+   "bytes": 72655
+  },
+  {
+   "path": "docs/history.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/history.md",
+   "source_sha256": "e1216353640a9b1480671e5f5459e5523b9b451627e37d90c4475612b53aeec6",
+   "transform": "hand-written for publication; 2 wip block(s) removed",
+   "sha256": "61b094ab4534afc3fde5b7f2b48a0c815eba9b01bd3f739347db9a528d486e85",
+   "bytes": 32563
   },
   {
    "path": "engine/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/README.md",
-   "source_sha256": "d883e1390ac9dc490baa2d65c1e12bb1c580e7cd84ac024643307e8a35349d26",
+   "source_sha256": "9b694025641f5aee1f131aa223c52be4861e59eee6261328bb4d54a8fee3555f",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "188bb8112006522167776843198d477dabc8643c221ddaddf06c5891d89234ab",
-   "bytes": 4326
+   "sha256": "40101c6f056b5e5d03d55743db16a7d189be45be4e4d80b18a392eaf5d86b3b3",
+   "bytes": 6695
   },
   {
    "path": "harness/README.md",
@@ -131,36 +140,135 @@
    "bytes": 4608
   },
   {
+   "path": "engine/configs/serve_hot_iq.sh",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/configs/serve_hot_iq.sh",
+   "source_sha256": "9ac7f575d868c4f6e83375355f5b7992d49536bf060faee39bb9ac055f627e94",
+   "transform": "hand-written for publication",
+   "sha256": "9ac7f575d868c4f6e83375355f5b7992d49536bf060faee39bb9ac055f627e94",
+   "bytes": 2042
+  },
+  {
+   "path": "quality/closeness-test/PREREGISTRATION.txt",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/PREREGISTRATION.txt",
+   "source_sha256": "f7ff84a88905c3aab7fbf8bc094c3331b2e311052a9e03e767bbac7fa5591e42",
+   "transform": "hand-written for publication",
+   "sha256": "f7ff84a88905c3aab7fbf8bc094c3331b2e311052a9e03e767bbac7fa5591e42",
+   "bytes": 1117
+  },
+  {
+   "path": "quality/closeness-test/README.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/README.md",
+   "source_sha256": "8fdd1afafc1f10a43ec3250b7259a0d94a4daf92d75aa8c12b15eb757f72d67b",
+   "transform": "hand-written for publication",
+   "sha256": "8fdd1afafc1f10a43ec3250b7259a0d94a4daf92d75aa8c12b15eb757f72d67b",
+   "bytes": 6602
+  },
+  {
+   "path": "quality/closeness-test/SOURCES.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/SOURCES.md",
+   "source_sha256": "42c4c7d20c54c9f5f0147783ce86aa5cb5281a61e388eb4a038c693ca95c9303",
+   "transform": "hand-written for publication",
+   "sha256": "42c4c7d20c54c9f5f0147783ce86aa5cb5281a61e388eb4a038c693ca95c9303",
+   "bytes": 4529
+  },
+  {
+   "path": "quality/closeness-test/build_items.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/build_items.py",
+   "source_sha256": "d3257cbde59951d37d088a9de1ba8b5b536e605409c748698324c43fd19d9d89",
+   "transform": "hand-written for publication",
+   "sha256": "d3257cbde59951d37d088a9de1ba8b5b536e605409c748698324c43fd19d9d89",
+   "bytes": 27381
+  },
+  {
+   "path": "quality/closeness-test/capture.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/capture.py",
+   "source_sha256": "bad9d50943e3ae8f86ecd69d3a7fee612d463ef1084f5df9df0e4fa622c48bb6",
+   "transform": "hand-written for publication",
+   "sha256": "bad9d50943e3ae8f86ecd69d3a7fee612d463ef1084f5df9df0e4fa622c48bb6",
+   "bytes": 22782
+  },
+  {
+   "path": "quality/closeness-test/closeness_lib.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/closeness_lib.py",
+   "source_sha256": "d789befc0a072d85ac3990e3a2fdfe2bb0b2a052c67478fdadb9c443f3df99f9",
+   "transform": "hand-written for publication",
+   "sha256": "d789befc0a072d85ac3990e3a2fdfe2bb0b2a052c67478fdadb9c443f3df99f9",
+   "bytes": 17909
+  },
+  {
+   "path": "quality/closeness-test/items/plan-v1.ids.json",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/items/plan-v1.ids.json",
+   "source_sha256": "c6a0c4692f77b60bae673ebf161ef8556d7a296dea36a68fd57eea19e057dd8f",
+   "transform": "hand-written for publication",
+   "sha256": "c6a0c4692f77b60bae673ebf161ef8556d7a296dea36a68fd57eea19e057dd8f",
+   "bytes": 315462
+  },
+  {
+   "path": "quality/closeness-test/report.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/report.py",
+   "source_sha256": "b7b270a93329a757111b7f56c7d75fa68a91891135a5702c368563e53e7b8b4d",
+   "transform": "hand-written for publication",
+   "sha256": "b7b270a93329a757111b7f56c7d75fa68a91891135a5702c368563e53e7b8b4d",
+   "bytes": 30123
+  },
+  {
+   "path": "quality/closeness-test/score.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/score.py",
+   "source_sha256": "85c0fb6d4b31c4f690fe858b1c278568ce4de67055a7b8a2a109c0bfd207c701",
+   "transform": "hand-written for publication",
+   "sha256": "85c0fb6d4b31c4f690fe858b1c278568ce4de67055a7b8a2a109c0bfd207c701",
+   "bytes": 31303
+  },
+  {
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
    "kind": "code",
-   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
-   "source_sha256": "3c0e487dee312e5414fb3a572ede5d55ad373dc4978e7dec86a2604629cfd52c",
-   "transform": "scrubbed (1 replacements)",
-   "sha256": "ba640493427bab091a1d26f140808330ca5e110a79fa085de9d6ca1b53dd7d90",
-   "bytes": 62572,
-   "note": "the engine file of the 2026-11-10 measurements, byte-equal to the first public commit. The source has changed since (among other things the order of allocations in the prompt reading step, checked on one card). No measurement on eight cards here ran with those changes, so this file is taken from the copy kept from the measurements"
+   "source": "$LANE/stage/hf-pack/src-copy/after/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
+   "source_sha256": "e75848cff2d92c40cc1defe27cff640c8ed73b2f5a2b82910806640996f2d726",
+   "transform": "scrubbed (2 replacements; 1 per-file redaction rules)",
+   "sha256": "eed6eccc01a709d0be29f71b024969b3b32134021338ba895e245cd7d76eaa1c",
+   "bytes": 68256,
+   "note": "the engine file of the hot_iq measurements of 2026-11-10 with the tier-map change of the hot_iq release applied. The measurements dated 2026-11-09 and the earlier ones of 2026-11-10 ran on the file of the first public commit"
   },
   {
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
    "kind": "code",
-   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
-   "source_sha256": "f0c68ec68dcc75929b12c76351e115d157b48c8c1224d3a4069b0c8bcefceb0e",
+   "source": "$LANE/stage/hf-pack/src-copy/after/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
+   "source_sha256": "e7119c4ec6aa1807ce317a8645a7c0636bbb046fa8ed9fca82a626deb0f02c9d",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "f0c68ec68dcc75929b12c76351e115d157b48c8c1224d3a4069b0c8bcefceb0e",
-   "bytes": 11955
+   "sha256": "e7119c4ec6aa1807ce317a8645a7c0636bbb046fa8ed9fca82a626deb0f02c9d",
+   "bytes": 18197
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_stats.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_stats.py",
+   "source_sha256": "a509ec1de6f23c1671056379b1ede9e6b473efaf8c74084de4c78209234b632d",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "d7fdd093b902aa036d63fdccfaaa43f5b557f7e9415f78492f011af2f93a5088",
+   "bytes": 9494
   },
   {
    "path": "engine/patches/gguf_loader.patch",
    "kind": "patch",
-   "source": "diff $LANE/patches/P3-wiring-before-gguf_loader.py -> $LANE/engine/src/vllm/model_executor/model_loader/gguf_loader.py",
-   "source_sha256": "1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976",
+   "source": "diff $LANE/patches/P3-wiring-before-gguf_loader.py -> $LANE/stage/hf-pack/src-copy/after/vllm/model_executor/model_loader/gguf_loader.py",
+   "source_sha256": "71a3494865825d0242e468e29035615c1c1e2f8cdb6bcdd9085475669dea4d61",
    "base_sha256": "478b6872cc0d235211b019f19d581c0954af8882344d7f99df5e0f0d458d4fc2",
-   "result_sha256": "1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976",
+   "result_sha256": "71a3494865825d0242e468e29035615c1c1e2f8cdb6bcdd9085475669dea4d61",
    "base_is_production_file": true,
    "applies_and_reproduces": true,
    "transform": "generated unified diff against the production engine file",
-   "sha256": "245d3f59b7c9bdf3f15514d8dcbe3db8ebed5e27f98f16cfebe74abb184c6c1c",
-   "bytes": 11980
+   "sha256": "2b02fc5af5c018f471c14a4331b222192e38374d61f8627605ffd5e4d67e2ec2",
+   "bytes": 12127
   },
   {
    "path": "engine/patches/gguf_moe.patch",
@@ -187,6 +295,15 @@
    "transform": "generated unified diff against the production engine file",
    "sha256": "e9d534a3376722bb60f9cd7d6ec3b44721051ed7c35bf5932b8db438b15fd978",
    "bytes": 6730
+  },
+  {
+   "path": "engine/configs/hot_iq.yaml.template",
+   "kind": "code",
+   "source": "$LANE/stage/hf-pack/out/serve/hot_iq.yaml.template",
+   "source_sha256": "97442899bcc5b74c3aaa6254f19b85d2e12c75ffd9199cd3497f2ba061f48977",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "97442899bcc5b74c3aaa6254f19b85d2e12c75ffd9199cd3497f2ba061f48977",
+   "bytes": 2164
   },
   {
    "path": "engine/configs/env.sh",
@@ -360,6 +477,51 @@
    "transform": "scrubbed (3 replacements; 1 per-file redaction rules)",
    "sha256": "1f5b0ffc1d8bfd81503e860dfe70f02af8caaebc015327a15e2c46026897e1ff",
    "bytes": 1407
+  },
+  {
+   "path": "harness/run/benchvolta.sh",
+   "kind": "code",
+   "source": "$LANE/run/benchvolta.sh",
+   "source_sha256": "7269a85f05a7ede50c8c65a59319e95676eae964821d7ccc24679591dd3e3458",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "7269a85f05a7ede50c8c65a59319e95676eae964821d7ccc24679591dd3e3458",
+   "bytes": 459
+  },
+  {
+   "path": "harness/run/bench_volta_run.py",
+   "kind": "code",
+   "source": "$LANE/run/bench_volta_run.py",
+   "source_sha256": "12fe3e712ff7794211b9e94ea007b185984efb286c9f9d1f59bd89f7159b1ad4",
+   "transform": "scrubbed (9 replacements; 5 per-file redaction rules)",
+   "sha256": "5a68d1bdf8a03b8b1de9c8078bb74499938326c679d2d86417e34091369f2a3f",
+   "bytes": 30995
+  },
+  {
+   "path": "harness/run/bench_volta_summary.py",
+   "kind": "code",
+   "source": "$LANE/run/bench_volta_summary.py",
+   "source_sha256": "db7e3e84a04a6559295d16921a3439fef7e41b081424adca8212e777d538f6c4",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "db7e3e84a04a6559295d16921a3439fef7e41b081424adca8212e777d538f6c4",
+   "bytes": 7071
+  },
+  {
+   "path": "docs/charts/decode-by-length-light.png",
+   "kind": "binary",
+   "source": "$LANE/stage/hf-pack/promo/out/decode-by-length-light.png",
+   "source_sha256": "6badec2c72541c34e8330fffc3e122e6bd0b6e54d38da8691d282b6690b4a699",
+   "transform": "copied byte for byte (image)",
+   "sha256": "6badec2c72541c34e8330fffc3e122e6bd0b6e54d38da8691d282b6690b4a699",
+   "bytes": 263002
+  },
+  {
+   "path": "docs/charts/decode-by-length-dark.png",
+   "kind": "binary",
+   "source": "$LANE/stage/hf-pack/promo/out/decode-by-length-dark.png",
+   "source_sha256": "360d18dcfbcd4e683407cf9373ca44ec76f789e4b9803b9fc4eac4066931e88a",
+   "transform": "copied byte for byte (image)",
+   "sha256": "360d18dcfbcd4e683407cf9373ca44ec76f789e4b9803b9fc4eac4066931e88a",
+   "bytes": 260076
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/__init__.py",
@@ -935,9 +1097,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 76,
+  "count": 112,
   "upstream_engine_files": 31,
-  "this_build_work_in_progress": 45,
+  "this_build_work_in_progress": 81,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }
