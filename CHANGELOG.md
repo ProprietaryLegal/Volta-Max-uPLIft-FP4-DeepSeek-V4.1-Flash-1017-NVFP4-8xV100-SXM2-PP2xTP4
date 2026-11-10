@@ -3,6 +3,23 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-10: the memory fix for part B is built and checked on one card
+
+Text only. No file of the engine or the harness changes in this entry.
+
+- **Correction to the entry below.** It says of the part B variant at the accepted tiers that it ran out of card
+  memory and "A fix is planned, not built." The fix was built the same day: the reading step allocates and frees
+  its tensors in another order. It is checked on one card of the test host, has not yet run on eight cards and is
+  not in this snapshot.
+- **The one-card check of the fix** (MEASURED 2026-11-10, plan 04 part B, not accepted, quality not established):
+  results bit-equal to the previous file at four chunk sizes (7, 64, 4,096 and 8,188 rows), and the peak of the
+  reading call fell from 1.30 GB to 0.67 GB at 8,188 rows. One layer with all its experts hot. The check did not
+  run the variant's own records in the reading step. Not yet run on eight cards, and not in this snapshot.
+- **Unchanged.** The engine file and the launcher in this snapshot. The engine file is the previous file of the
+  one-card check. The changed file follows after the next eight-card run.
+- **Open:** first, the part B variant at the accepted tiers on eight cards with the fix. Then the replacement
+  prompts of the 12-prompt closeness set (INCONCLUSIVE until then).
+
 ## 2026-11-10: load setting on the accepted tiers, part B on two more chats and on twelve prompts
 
 Measured after the entry below, the same day. One request at a time, public text, temperature 0.

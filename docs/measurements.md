@@ -11,7 +11,7 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 
 | Date | Build or profile | Test | Result | Receipt |
 |---|---|---|---|---|
-| 2026-11-10 | IQ records in prompt reading (plan 04 part B) at the accepted tiers: NOT accepted (quality not established) | first read of chat 0 (216,245 tokens) | booted with the accepted configuration's hot, warm and host experts, then ran out of card memory on stage 0 in the second chunk of the read (a request for 108 MiB with 64.75 MiB free). The server ended by itself. INFERENCE from the code, nothing run: both reading modes peak at the same point and the variant is short by the workspace it keeps from load. A fix is planned, not built ([section](#iq-records-in-prompt-reading-plan-04-part-b-not-accepted-quality-not-established)) | private boot log |
+| 2026-11-10 | IQ records in prompt reading (plan 04 part B) at the accepted tiers: NOT accepted (quality not established) | first read of chat 0 (216,245 tokens) | booted with the accepted configuration's hot, warm and host experts, then ran out of card memory on stage 0 in the second chunk of the read (a request for 108 MiB with 64.75 MiB free). The server ended by itself. INFERENCE from the code, nothing run: both reading modes peak at the same point and the variant is short by the workspace it keeps from load. The fix is built and checked on one card of the test host (MEASURED 2026-11-10: results bit-equal to the previous file at four chunk sizes, peak of the reading call 1.30 GB to 0.67 GB at 8,188 rows). It has not yet run on eight cards and is not in this snapshot ([section](#iq-records-in-prompt-reading-plan-04-part-b-not-accepted-quality-not-established)) | private boot log, private one-card receipt |
 | 2026-11-10 | IQ records in prompt reading (plan 04 part B), one slot, reserves 5.3 / 8.1 GiB: NOT accepted (quality not established) | closeness, wider set | INCONCLUSIVE on the 12-prompt set: first different token 10 for, 2 against, and mean difference 5 for, 1 against, 6 undecided ([section](#quality-on-twelve-prompts-inconclusive)) | `t3w/quality-wide-score-N2w-PIQAw-Pw-N2wr.out` |
 | 2026-11-10 | IQ records in prompt reading (plan 04 part B), one slot, reserves 5.3 / 8.1 GiB: NOT accepted (quality not established) | termination test, chats 1 and 2 (198,307 and 204,871 tokens), second boot | both final answers ended normally (749 and 1,491 tokens). First reads 102.12 s and 103.0 s. 7 of 7 follow-ups kept the prompt in each chat, first token median 4.42 s and 4.26 s. With chat 0 the variant stands at 1 of 3 at the limit (95 % Wilson interval 0.061 to 0.792) ([section](#iq-records-in-prompt-reading-plan-04-part-b-not-accepted-quality-not-established)) | `baseline/W5-piqa-term-c12.out`, `baseline/W5-piqa-term.jsonl` |
 | 2026-11-10 | accepted tiers under the load setting (a profile that pins them, not in this snapshot) | termination test, chat 0 (216,245 tokens) | the same hot, warm and host experts and tier digests as the accepted configuration. First read 167.64 s. The final answer ended normally with 6,417 tokens at 66.97 tok/s, and all eight requests gave the token counts of the two earlier runs ([section](#long-thinking-answers-the-termination-test)) | `baseline/W5-t3so-term-c0.out`, `baseline/W5-t3so-term.jsonl` |
@@ -433,14 +433,24 @@ INFERENCE, from reading the code with nothing run: the failing point lies in the
 modes share. Both hold the same tensors there (1.21 GiB for a chunk of 8,188 rows, arithmetic), and it is the peak
 of the step in both. The variant is short by the workspace it keeps from load, 0.33 GiB. Its free memory after
 load is lower by about that much (3.61 against 3.93 GiB, 0.32 GiB). Why the second chunk failed where the first
-passed is not shown by the log. A fix is planned. It is not built.
+passed is not shown by the log.
+
+The fix is built and checked on one card of the test host. MEASURED 2026-11-10 (private one-card receipt, one
+process, one layer with all its experts hot). The reading step allocates and frees its tensors in another order.
+At chunks of 7, 64, 4,096 and 8,188 rows the changed file gave results bit-equal to the previous file, and the
+previous file repeated its own results bit-equal. The peak of allocated memory in the reading call at 8,188 rows
+fell from 1,302,698,496 to 673,694,208 bytes (1.30 GB to 0.67 GB, or 1.21 to 0.63 GiB), a fall of 0.59 GiB.
+The check did not run the variant's own records in the reading step, or a read with routes to warm or host
+experts. The fix has not yet run on eight cards, so whether the variant then reads a long prompt at the accepted
+tiers is not measured. The changed file is not in this snapshot. The engine file here is the previous file of
+that check.
 
 Not accepted. The quality of this variant is not established. Its closeness check on twelve prompts is INCONCLUSIVE
 ([section](#quality-on-twelve-prompts-inconclusive)): first different token 10 for, 2 against, and mean difference
 5 for, 1 against, 6 undecided. Its final answer on chat 0 ran to the limit, and those on chats 1 and 2 ended
 normally. The run on chat 0 does not separate the variant from its tiers, because the one-slot profile with the
 same reserves and the staged reading also ran chat 0 to the limit (the traced run above). Next: the variant at the
-accepted tiers after the planned fix for its memory shortfall, with the termination test and the closeness capture.
+accepted tiers on eight cards with the fix for its memory shortfall, the termination test and the closeness capture.
 
 ## Three prompt slots (no host tier: not accepted, quality not established)
 

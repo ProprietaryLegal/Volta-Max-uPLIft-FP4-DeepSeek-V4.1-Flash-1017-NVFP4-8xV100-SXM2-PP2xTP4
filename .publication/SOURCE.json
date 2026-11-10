@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "6e684fce582d3215349a6260df37a6ed1cebd11d14dadb35ace0ccf1468f1b60",
+   "source_sha256": "ba28cc78147a27992634fc16f1b80ded54b5e4e481d13a53d5925cd59b3ad9ff",
    "transform": "hand-written for publication; 5 wip block(s) removed",
-   "sha256": "17f84236129ce19a09a8d17dcd8fad17974eb70a2c327ddfca34e33cbab86c98",
-   "bytes": 56903
+   "sha256": "fb12ff917a4778da80a23d98f66de923dc51b5495dcb31661763862296dae216",
+   "bytes": 57894
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "1df8c5baf8d30472182adaf559714b6dcc65630eb8d1d723465dd76e6201c118",
+   "source_sha256": "a3c1982063f193a835797ce51bdcc1e681c065de7b5593654a6a92e680f6ffe0",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "594b03522d387837f31c852a68dcd90016dc3f1ac191596156019e58f57b9420",
-   "bytes": 9891
+   "sha256": "02aaaf85137fb7ee790a0f4b5290c8ad3fd09d0f43997aa64cbe3191bba5830c",
+   "bytes": 11213
   },
   {
    "path": "CREDITS.md",
@@ -107,10 +107,10 @@
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "9c501a99e40220cc59df9afd27aed53161de7dbda382a88ec459c0740e82df73",
+   "source_sha256": "8047eeeaaec8f17564d1ab25711901a7707543fd2478da556a562db04999e20c",
    "transform": "hand-written for publication",
-   "sha256": "9c501a99e40220cc59df9afd27aed53161de7dbda382a88ec459c0740e82df73",
-   "bytes": 55127
+   "sha256": "8047eeeaaec8f17564d1ab25711901a7707543fd2478da556a562db04999e20c",
+   "bytes": 56251
   },
   {
    "path": "engine/README.md",
@@ -138,7 +138,7 @@
    "transform": "scrubbed (1 replacements)",
    "sha256": "ba640493427bab091a1d26f140808330ca5e110a79fa085de9d6ca1b53dd7d90",
    "bytes": 62572,
-   "note": "the engine file of the 2026-11-10 measurements, byte-equal to the first public commit. The source has changed since (among other things the order of allocations in the prompt reading step). Those changes are planned work that no measurement here ran, so this file is taken from the copy kept from the measurements"
+   "note": "the engine file of the 2026-11-10 measurements, byte-equal to the first public commit. The source has changed since (among other things the order of allocations in the prompt reading step, checked on one card). No measurement on eight cards here ran with those changes, so this file is taken from the copy kept from the measurements"
   },
   {
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
@@ -340,7 +340,8 @@
    "source_sha256": "a5e56a82db887ab90ce897cea8013d672b2d4d3b9828356e84a1c5a0479e32be",
    "transform": "scrubbed (3 replacements; 3 per-file redaction rules)",
    "sha256": "80acef09c3c9e66f1fc220bd678aa1469b29d8bfe0470996fde1f2e2d42b655e",
-   "bytes": 11580
+   "bytes": 11580,
+   "note": "the harness script of the published measurements, byte-equal to the first public commit. The source has since gained a second text option for a bench that has not run, so this file is taken from the copy kept from before that change"
   },
   {
    "path": "harness/run/harness_shape.py",
@@ -934,9 +935,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 70,
+  "count": 76,
   "upstream_engine_files": 31,
-  "this_build_work_in_progress": 39,
+  "this_build_work_in_progress": 45,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }
