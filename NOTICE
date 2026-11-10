@@ -1,0 +1,15 @@
+PLI Labs - Volta Max uPLIft FP4
+Copyright 2026 Proprietary Legal Intelligence LLC
+
+Original PLI Labs code and documentation are licensed under Apache-2.0 (LICENSE; also LICENSES/Apache-2.0.txt).
+
+Third-party material in this tree:
+- 1CatAI/1Cat-vLLM and vllm-project/vllm (Apache-2.0): every patch under engine/patches/ is a diff against the engine
+  of our earlier build, Volta sPLIt, which is 1Cat-vLLM (#1277) with its patch series. Their context lines are that
+  project's code. The new files under engine/src/ call 1Cat-vLLM's sm70_skinny QPN MoE backend (#742), whose kernels
+  come from dnv2003/v100-skinny (MIT); no v100-skinny source is copied here.
+- The measurement scripts call the harness scripts published with Volta sPLIt (Apache-2.0).
+
+No model weights, packs, wheels, compiled libraries, routing tallies or prompt corpora are distributed here. DeepSeek
+supplies the model, its MXFP4 experts, the DSpark drafter and the Engram design (MIT); NVIDIA the NVFP4 pack (MIT);
+ISTA-DASLab the GSQ-RCO GGUF quantization (MIT). See CREDITS.md for every project this work builds on.

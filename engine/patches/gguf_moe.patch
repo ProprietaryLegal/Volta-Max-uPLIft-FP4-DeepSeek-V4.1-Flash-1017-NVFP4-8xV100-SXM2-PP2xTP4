@@ -1,0 +1,83 @@
+NVFP4-8R change to vllm/model_executor/layers/quantization/gguf_moe.py.
+Base: the Volta sPLIt engine file, sha256 d2960a06649dacf9b4b5ced4556f8478e162496cf004f6ec46d95932bad1f689 (as deployed 2026-11-09).
+Result: sha256 ce09ad9db1e5ac4b4bdef0ed85b8f2b1cdcceffd935a8fad12ac3d625d57ea3b. Apply in the engine source root with: patch -p1 < this-file
+
+--- a/vllm/model_executor/layers/quantization/gguf_moe.py
++++ b/vllm/model_executor/layers/quantization/gguf_moe.py
+@@ -219,6 +219,10 @@
+         }
+         self.expert_cache = None
+         self.cache_layer = -1
++        # NVFP4-8R: routed experts from native packs, attached by the loader
++        # after dense weights load (gguf_loader._attach_nvfp4_8r).
++        self.nvfp4_8r = getattr(quant_config, "nvfp4_8r", None)
++        self.native_moe = None
+ 
+     @property
+     def topk_indices_dtype(self):
+@@ -263,6 +267,11 @@
+             layer.register_parameter(name, param)
+ 
+     def load_expert(self, layer, param, weight, shard_id, expert_id):
++        if self.nvfp4_8r is not None:
++            raise RuntimeError(
++                "routed experts come from the nvfp4_8r packs; the loader must "
++                "not yield GGUF expert tensors"
++            )
+         if param.is_gguf_weight_type:
+             value = int(weight.item())
+             previous = self.weight_types.setdefault(shard_id, value)
+@@ -333,6 +342,18 @@
+         self.loaded_experts[shard_id].add(expert_id)
+ 
+     def process_weights_after_loading(self, layer):
++        if self.nvfp4_8r is not None:
++            if layer.apply_router_weight_on_input:
++                raise ValueError("nvfp4_8r experts weight outputs, not inputs")
++            if not self.is_v41 or self.swiglu_limit != 10.0:
++                raise ValueError("nvfp4_8r packs hold V4.1 experts (SwiGLU limit 10)")
++            self.native_admission = {
++                "enabled": True,
++                "storage": "nvfp4_8r",
++                "packs": str(self.nvfp4_8r.packs),
++                "decode_rows": [1, 6],
++            }
++            return
+         if not self.native_enabled or not native_available():
+             raise ValueError(
+                 "Native GGUF experts require enabled packaged _C_gguf operators"
+@@ -428,6 +449,25 @@
+                 "host_matrix_compute": False,
+             }
+ 
++    def _apply_nvfp4_8r(self, layer, x, topk_weights, topk_ids):
++        moe = self.native_moe
++        if moe is None:
++            raise RuntimeError(f"{layer.layer_name}: nvfp4_8r experts not attached")
++        if layer.expert_map is not None:
++            raise RuntimeError("nvfp4_8r experts take global ids (no EP)")
++        if topk_weights.dtype != torch.float32 or x.dtype != torch.float16:
++            raise RuntimeError(
++                f"nvfp4_8r needs fp16 x and fp32 weights, got "
++                f"{x.dtype}/{topk_weights.dtype}"
++            )
++        ids = topk_ids.to(torch.int32).contiguous()
++        x = x.contiguous()
++        weights = topk_weights.contiguous()
++        if 1 <= x.size(0) <= moe.max_tokens:
++            # Graph-capturable decode / MTP verification rows.
++            return moe.forward(x, ids, weights).to(x.dtype)
++        return moe.forward_prefill(x, ids, weights).to(x.dtype)
++
+     def get_fused_moe_quant_config(self, layer):
+         return None
+ 
+@@ -441,6 +481,8 @@
+     ):
+         if layer.apply_router_weight_on_input or layer.activation != MoEActivation.SILU:
+             raise ValueError("Native GGUF experts require output-weighted SiLU routing")
++        if self.nvfp4_8r is not None:
++            return self._apply_nvfp4_8r(layer, x, topk_weights, topk_ids)
+         ids = topk_ids.to(torch.int32).contiguous()
+         if self.expert_trace_tokens:
+             from .gguf_expert_trace import trace_routing

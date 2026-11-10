@@ -1,0 +1,89 @@
+# NVFP4-8R PP2xTP4 profile: three-tier mode with no host tier (hot_iq), three prompt slots (max-num-seqs 3:
+# start it with NVFP4_SLOTS=3). Routed experts come from the native NVFP4->MXFP4 packs
+# (model-loader-extra-config.nvfp4_8r_packs).
+# In decode the hot experts run native from HBM and every other expert from its IQ record in HBM.
+# Derived from production's serving profile with every path moved to this build's copies under $LANE and
+# port 18043 (loopback). Non-expert tensors come from the isolated GGUF copy. Launch only after production is
+# stopped. Measured results: docs/measurements.md.
+model: $LANE/models/gguf/DeepSeek-V4.1-Flash-1017-GSQ-RCO-IQ2_XXS-00001-of-00004.gguf
+hf-config-path: $LANE/models/base
+tokenizer: $LANE/models/base
+tokenizer-mode: deepseek_v41
+served-model-name: deepseek-v4.1-flash
+host: 127.0.0.1
+port: 18043
+dtype: half
+quantization: gguf
+load-format: gguf
+tensor-parallel-size: 4
+pipeline-parallel-size: 2
+max-model-len: 524288
+max-num-seqs: 3
+max-num-batched-tokens: 8192
+kv-cache-memory-bytes: 268435456
+gpu-memory-utilization: 0.96
+no-enforce-eager: true
+compilation-config:
+  mode: 0
+  cudagraph_mode: FULL
+  cudagraph_capture_sizes: [1, 2, 3, 4, 5, 6]
+  max_cudagraph_capture_size: 6
+# This baseline's YAML loader omits false scalar flags; use explicit negations.
+no-async-scheduling: true
+enable-prefix-caching: true
+enable-chunked-prefill: true
+no-disable-custom-all-reduce: true
+enable-auto-tool-choice: true
+tool-call-parser: deepseek_v41
+# Thinking on by default (R1-style <think>...</think>); a request can pass
+# chat_template_kwargs {"thinking": false} or reasoning_effort.
+reasoning-parser: deepseek_v4
+default-chat-template-kwargs: '{"thinking": true}'
+model-loader-extra-config:
+  engram_path: $LANE/models/engram/DeepSeek-V4.1-Flash-Engram-IQ4_NL.gguf
+  # Native routed experts (P2/P3): manifest + per (layer, TP rank) hot/cold packs.
+  nvfp4_8r_packs: $LANE/packs
+  # Decode routing tally (local, private) that ranks experts for host RAM.
+  nvfp4_8r_tally: $LANE/engine/private/p16-tally.npz
+  # per-card HBM kept free after dense load (KV, graphs, drafter, prefill staging), per pipeline stage,
+  # keyed by the stage's first layer (P9). This profile: 5.3 GiB on stage 0 and 8.1 GiB on stage 1,
+  # the reserves of the three-slot profiles.
+  # The accepted one-slot profile keeps 4.5 / 7.5 GiB, which were set from MEASURED peaks on the two-tier
+  # calibration boot of 2026-11-09 (about 4.0 and 6.9 GiB needed, plus about 0.5 GiB margin).
+  nvfp4_8r_reserve_bytes:
+    0: 5690831872
+    20: 8697308160
+  # Expert tiers (plan 01). two_tier: hot native in HBM, the rest zero-copy from host RAM (the P3 build).
+  # hot_iq_host (with nvfp4_8r_host_route_share: 0.0) or hot_iq: add the production IQ record in HBM as a
+  # warm tier, so no routed decode expert is read over PCIe.
+  nvfp4_8r_residency: hot_iq
+  # WARM prefill (plan 04 part B). native_staged: prefill stages a WARM expert's native record from host
+  # RAM (the plan 01 build). Only native_staged is in this snapshot: the iq mode (plan 04 part B) and its
+  # module follow in a later update.
+  nvfp4_8r_prefill_warm: native_staged
+speculative-config:
+  method: dspark
+  model: $LANE/models/dspark-v41
+  quantization: fp8
+  num_speculative_tokens: 5
+  draft_load_config:
+    load_format: safetensors
+  enforce_eager: false
+kernel-config:
+  sm70_ring:
+    enabled: false
+  sm70_gguf:
+    expert_storage: original
+    expert_arena: true
+    expert_cache_host_storage: shared_original
+    # Every expert resident: a cold set of zero takes no spare slots (P2 admits both).
+    expert_cache_offload_fraction: 0
+    expert_cache_spare_slots: 0
+    expert_cache_fraction: 0
+    expert_cache_host_slack: 0
+    expert_load_prefetch_banks: 1
+    expert_cache_prefill_tokens: 4096
+    dense_storage: original
+    embedding_storage: original
+    prefill_min_m: 1
+    dequant_workspace_bytes: 33554432

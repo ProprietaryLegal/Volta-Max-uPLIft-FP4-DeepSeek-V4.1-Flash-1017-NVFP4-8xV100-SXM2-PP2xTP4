@@ -1,0 +1,940 @@
+{
+ "name": "Volta Max uPLIft FP4",
+ "repository": "https://github.com/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-NVFP4-8xV100-SXM2-PP2xTP4",
+ "assembled": "2026-11-10",
+ "with_wip": false,
+ "with_research": false,
+ "assembler": "assemble.py (explicit manifest; scrub rules; generated engine patches checked by re-applying)",
+ "placeholders": {
+  "$LANE": "this build's root directory",
+  "$PROD": "the Volta sPLIt production checkout",
+  "$GGUF_SRC": "a local copy of the ISTA-DASLab GSQ-RCO GGUF shards",
+  "$HOME": "a home directory",
+  "$DSPARK_SRC": "a local copy of the DSpark drafter files"
+ },
+ "files": [
+  {
+   "path": "README.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/README.md",
+   "source_sha256": "36c70651f5e98da447e1d73c7da8d4f3ac3698439366aeab3d8379d592713db4",
+   "transform": "hand-written for publication; 5 wip block(s) removed",
+   "sha256": "224372c0e99f4a3aabe310b5651a09d8805c5d15fa42053eed5c19775e2a1860",
+   "bytes": 41427
+  },
+  {
+   "path": "CHANGELOG.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/CHANGELOG.md",
+   "source_sha256": "ed5ae8a5ceaa3c0ccdf6ef46bf64d636c1709c01dcca528cd7c2d19c48eaba36",
+   "transform": "hand-written for publication; 1 wip block(s) removed",
+   "sha256": "ab20d0e842df3f441d48a0c44c4220c77bb8f20453422a1e3306fc0ee3e14277",
+   "bytes": 5115
+  },
+  {
+   "path": "CREDITS.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/CREDITS.md",
+   "source_sha256": "879555be296105d8b239d5d1ebc651f560ce7b5572c9380bb8dc26173167032d",
+   "transform": "hand-written for publication",
+   "sha256": "879555be296105d8b239d5d1ebc651f560ce7b5572c9380bb8dc26173167032d",
+   "bytes": 3975
+  },
+  {
+   "path": "NOTICE",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/NOTICE",
+   "source_sha256": "8157703f60d248447fc7892cd43f51b2871ec8542d427e68847e5def0995a5a9",
+   "transform": "hand-written for publication",
+   "sha256": "26ad00d4bfa79cb52c2b24dfe8490cbc86d73bd324f5859acc09f9cfc20153d7",
+   "bytes": 1089
+  },
+  {
+   "path": "SECURITY.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/SECURITY.md",
+   "source_sha256": "692c958aaa605b2621f1c4b0b7c662aa7b3c67353dca7738ab2998c9a3061acb",
+   "transform": "hand-written for publication",
+   "sha256": "692c958aaa605b2621f1c4b0b7c662aa7b3c67353dca7738ab2998c9a3061acb",
+   "bytes": 598
+  },
+  {
+   "path": "CONTRIBUTING.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/CONTRIBUTING.md",
+   "source_sha256": "38a3581cfb70d88cba9920c4c6882bdefa17e5be80c40860e72c640e60a52862",
+   "transform": "hand-written for publication",
+   "sha256": "2f1cc207fd785229dfff691f124c649f97aa7cd7d58157812b3cd4f3decade3c",
+   "bytes": 2105
+  },
+  {
+   "path": "LICENSE",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/LICENSE",
+   "source_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+   "transform": "hand-written for publication",
+   "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+   "bytes": 11358
+  },
+  {
+   "path": "LICENSES/Apache-2.0.txt",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/LICENSES/Apache-2.0.txt",
+   "source_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+   "transform": "hand-written for publication",
+   "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+   "bytes": 11358
+  },
+  {
+   "path": ".gitignore",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/.gitignore",
+   "source_sha256": "87b9e994533f4a3c13713e9bc77837b9fac5cc582a0f39849d36c102b225fc8d",
+   "transform": "hand-written for publication",
+   "sha256": "87b9e994533f4a3c13713e9bc77837b9fac5cc582a0f39849d36c102b225fc8d",
+   "bytes": 127
+  },
+  {
+   "path": "docs/README.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/README.md",
+   "source_sha256": "0d3de5e1d87c87a8ba0c9f50e0a9cc13b67247838275327bac18844ee91edb43",
+   "transform": "hand-written for publication",
+   "sha256": "0d3de5e1d87c87a8ba0c9f50e0a9cc13b67247838275327bac18844ee91edb43",
+   "bytes": 2128
+  },
+  {
+   "path": "docs/measurements.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/measurements.md",
+   "source_sha256": "ccae7e0b625ed8669478ca33bffc7e12ad2e2f2770e0390db2e6611c1cdb7292",
+   "transform": "hand-written for publication",
+   "sha256": "ccae7e0b625ed8669478ca33bffc7e12ad2e2f2770e0390db2e6611c1cdb7292",
+   "bytes": 30039
+  },
+  {
+   "path": "engine/README.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/README.md",
+   "source_sha256": "06b0aed4e6db44ce1cc844c1b886b8a876290c64681985769c6b492e9dc89f19",
+   "transform": "hand-written for publication; 1 wip block(s) removed",
+   "sha256": "9a42757c418e7a982117f56e5b535981bd722900bca8c18faff3c46852c1a09f",
+   "bytes": 4232
+  },
+  {
+   "path": "harness/README.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/harness/README.md",
+   "source_sha256": "78df1a1bbfa7c947464b9ae819555e2f08495e617bf7d720cdb00df441705dff",
+   "transform": "hand-written for publication; 1 wip block(s) removed",
+   "sha256": "fa8f5a0283def0f5c82ae603c4847103dacb6f535c6b1cb6e3e875e156e2ade6",
+   "bytes": 4608
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
+   "source_sha256": "3c0e487dee312e5414fb3a572ede5d55ad373dc4978e7dec86a2604629cfd52c",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "ba640493427bab091a1d26f140808330ca5e110a79fa085de9d6ca1b53dd7d90",
+   "bytes": 62572
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
+   "source_sha256": "f0c68ec68dcc75929b12c76351e115d157b48c8c1224d3a4069b0c8bcefceb0e",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "f0c68ec68dcc75929b12c76351e115d157b48c8c1224d3a4069b0c8bcefceb0e",
+   "bytes": 11955
+  },
+  {
+   "path": "engine/patches/gguf_loader.patch",
+   "kind": "patch",
+   "source": "diff $LANE/patches/P3-wiring-before-gguf_loader.py -> $LANE/engine/src/vllm/model_executor/model_loader/gguf_loader.py",
+   "source_sha256": "1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976",
+   "base_sha256": "478b6872cc0d235211b019f19d581c0954af8882344d7f99df5e0f0d458d4fc2",
+   "result_sha256": "1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976",
+   "base_is_production_file": true,
+   "applies_and_reproduces": true,
+   "transform": "generated unified diff against the production engine file",
+   "sha256": "245d3f59b7c9bdf3f15514d8dcbe3db8ebed5e27f98f16cfebe74abb184c6c1c",
+   "bytes": 11980
+  },
+  {
+   "path": "engine/patches/gguf_moe.patch",
+   "kind": "patch",
+   "source": "diff $LANE/patches/P3-wiring-before-gguf_moe.py -> $LANE/engine/src/vllm/model_executor/layers/quantization/gguf_moe.py",
+   "source_sha256": "ce09ad9db1e5ac4b4bdef0ed85b8f2b1cdcceffd935a8fad12ac3d625d57ea3b",
+   "base_sha256": "d2960a06649dacf9b4b5ced4556f8478e162496cf004f6ec46d95932bad1f689",
+   "result_sha256": "ce09ad9db1e5ac4b4bdef0ed85b8f2b1cdcceffd935a8fad12ac3d625d57ea3b",
+   "base_is_production_file": true,
+   "applies_and_reproduces": true,
+   "transform": "generated unified diff against the production engine file",
+   "sha256": "7f67f631bce7d7edd42377e60912361cc05f0fb9769b8a8eda2f015215995464",
+   "bytes": 3794
+  },
+  {
+   "path": "engine/patches/deepseek_v41_engram_io.patch",
+   "kind": "patch",
+   "source": "diff $LANE/patches/P4-before-deepseek_v41_engram_io.py -> $LANE/engine/src/vllm/model_executor/layers/deepseek_v41_engram_io.py",
+   "source_sha256": "f97b6a462a624a534d3052290d67fdd059be133c2ed6ec6e2e735fa613df6ff4",
+   "base_sha256": "f1926f7a947a57effe9f48534e2ee93b5c9e9e89724709aeaa106aef3fc9b5cd",
+   "result_sha256": "f97b6a462a624a534d3052290d67fdd059be133c2ed6ec6e2e735fa613df6ff4",
+   "base_is_production_file": true,
+   "applies_and_reproduces": true,
+   "transform": "generated unified diff against the production engine file",
+   "sha256": "e9d534a3376722bb60f9cd7d6ec3b44721051ed7c35bf5932b8db438b15fd978",
+   "bytes": 6730
+  },
+  {
+   "path": "engine/configs/env.sh",
+   "kind": "code",
+   "source": "$LANE/run/env.sh",
+   "source_sha256": "3de0279134689bf24c15d52b37a65682e864bd6282eefcde1b00cf83113b1420",
+   "transform": "scrubbed (15 replacements)",
+   "sha256": "404c7d5a8ab393654e659fe5e26182bfdae41816f502590c38152dfb1944b912",
+   "bytes": 1423
+  },
+  {
+   "path": "engine/configs/run_serve.sh",
+   "kind": "code",
+   "source": "$LANE/run/run_serve.sh",
+   "source_sha256": "c317d631115d84a16ff21b0f611300af1c5ca31b5f359d3dc3990692da971c4a",
+   "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
+   "sha256": "371141d124957d0792595af6e1d8a155689db49b0d589f522cd518db07d3429a",
+   "bytes": 4600
+  },
+  {
+   "path": "engine/configs/serve-nvfp4-pp2.yaml",
+   "kind": "code",
+   "source": "$LANE/run/serve-nvfp4-pp2.yaml",
+   "source_sha256": "88bb1f99305f84d3899be422712c65af80a20fd29ebd060e99aa10a1de4073c9",
+   "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
+   "sha256": "b1dda56a6565e8667d16231978d26f0f342b275c466603a347df5b714591cdec",
+   "bytes": 3795
+  },
+  {
+   "path": "engine/configs/serve-nvfp4-pp2-t3.yaml",
+   "kind": "code",
+   "source": "$LANE/run/serve-nvfp4-pp2-t3.yaml",
+   "source_sha256": "d4914effcca474757d591d7823403452f69b1d31bb114425eff99d2f16f9bd57",
+   "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
+   "sha256": "b4768fad56d9b85fe756035c86b2f39043e3a9913ed080e429effc232a57d868",
+   "bytes": 3990
+  },
+  {
+   "path": "engine/configs/serve-nvfp4-pp2-t3n.yaml",
+   "kind": "code",
+   "source": "$LANE/run/serve-nvfp4-pp2-t3n.yaml",
+   "source_sha256": "01916e8864bc5e115fb10607274f42a7105214b31da836178fe92289143d5dcb",
+   "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
+   "sha256": "3a5ccb2c036fb19cd1c017c638e217ee42dfddb2457a7cc574e9026e4e5ba56c",
+   "bytes": 3879
+  },
+  {
+   "path": "engine/configs/serve-nvfp4-pp2-t3-a3.yaml",
+   "kind": "code",
+   "source": "$LANE/run/serve-nvfp4-pp2-t3-a3.yaml",
+   "source_sha256": "d5c94bbaa57746371acb1a211782223514dab31e27f7e7ec69b1e9d633bd9fd7",
+   "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
+   "sha256": "4c9f060ab8521e9a312d17245a5a500168b4cd26f830f7f0a62e8a0789452d5a",
+   "bytes": 4022
+  },
+  {
+   "path": "engine/configs/serve-nvfp4-pp2-t3-a1r.yaml",
+   "kind": "code",
+   "source": "$LANE/run/serve-nvfp4-pp2-t3-a1r.yaml",
+   "source_sha256": "0f432fffb02dd4f6b6c213bb6538028bfb192c2eb2983338f0dbff7f7fa8959d",
+   "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
+   "sha256": "d13a4dca0f3624ed62bbac0d23175fa86df7a5d6a5c8f98590c5e95b22de27d4",
+   "bytes": 4078
+  },
+  {
+   "path": "engine/configs/serve-nvfp4-pp2-t3n-a3.yaml",
+   "kind": "code",
+   "source": "$LANE/run/serve-nvfp4-pp2-t3n-a3.yaml",
+   "source_sha256": "bc2282fa81901b7621ebfc5df193ea1db721ad718f43371f2ffc47a70041dcda",
+   "transform": "scrubbed (11 replacements; 3 per-file redaction rules)",
+   "sha256": "1fbefbccf28c64fa34f89099f34e7ef7e25a65424b4da1f61eb7c9ff66fb11d8",
+   "bytes": 3911
+  },
+  {
+   "path": "harness/run/arm_measure.sh",
+   "kind": "code",
+   "source": "$LANE/run/arm_measure.sh",
+   "source_sha256": "30a987ee00f25151d4abc7a4a3106b60ce58d719dd26845e6f8f8ca28bf1ff7a",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "f6f1394096fbabe35e0251b3dfd384bdff18df218fa67a7152e48a7d7ab47c2d",
+   "bytes": 1294
+  },
+  {
+   "path": "harness/run/baseline.sh",
+   "kind": "code",
+   "source": "$LANE/run/baseline.sh",
+   "source_sha256": "34d7198599c8fbeb0e3cdf2121669628e2d6efaa5a5507ed7b2c79000a6e21bb",
+   "transform": "scrubbed (6 replacements)",
+   "sha256": "a1c1d59040b0a286428e83fbd389d7c66c7daaac7897113af42823929b2a1645",
+   "bytes": 1561
+  },
+  {
+   "path": "harness/run/longprompt.py",
+   "kind": "code",
+   "source": "$LANE/run/longprompt.py",
+   "source_sha256": "4947f6a6ab265b68244be10f6bd29d567de83ca65a5cb24da573c6b969f9a8d2",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "4947f6a6ab265b68244be10f6bd29d567de83ca65a5cb24da573c6b969f9a8d2",
+   "bytes": 1796
+  },
+  {
+   "path": "harness/run/measure_boot.sh",
+   "kind": "code",
+   "source": "$LANE/run/measure_boot.sh",
+   "source_sha256": "44a73685567df48b3a694b540d2816fe5bcec4ba1ba8697f0397b11b38408982",
+   "transform": "scrubbed (5 replacements)",
+   "sha256": "f601b6bfa5a93869a3938d81dfdbae16f9b1234019a8233d0683e6059afe5d31",
+   "bytes": 2026
+  },
+  {
+   "path": "harness/run/memwatch.sh",
+   "kind": "code",
+   "source": "$LANE/run/memwatch.sh",
+   "source_sha256": "3aad6428c8730161279c11e13e7cce42edf2cf539c6ef27004bbfa0ae5d22592",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "3aad6428c8730161279c11e13e7cce42edf2cf539c6ef27004bbfa0ae5d22592",
+   "bytes": 467
+  },
+  {
+   "path": "harness/run/swap_arm.sh",
+   "kind": "code",
+   "source": "$LANE/run/swap_arm.sh",
+   "source_sha256": "cff2f3432e17a879e85a61bc61e10ab5e1675d8ff9608e8aa3730c2fd64e2897",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "c5f7b23fbe55f172495f78c614819e5a1a46fb9be6bfd25716eae2f3dbe05020",
+   "bytes": 2312
+  },
+  {
+   "path": "harness/run/tput_prompts.py",
+   "kind": "code",
+   "source": "$LANE/run/tput_prompts.py",
+   "source_sha256": "f8fee1f8f57736307ebfddf4aa4fd1867a3533e79248e18da536ad35f7f9c750",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "9ebc5d46a5fc26fab00e86dbea775ac1249c7574fc91b202eb570f0c52582b21",
+   "bytes": 794
+  },
+  {
+   "path": "harness/run/ctx_tput.py",
+   "kind": "code",
+   "source": "$LANE/run/ctx_tput.py",
+   "source_sha256": "068a9afcc2d2308c25af43263eba319e7aebd0e9da6c797f19db95848ac42cae",
+   "transform": "scrubbed (4 replacements; 2 per-file redaction rules)",
+   "sha256": "d920ec97fd69370534400c22bd98aa67c7b820014f7c4933a4c8cce5163af037",
+   "bytes": 2908
+  },
+  {
+   "path": "harness/run/harness_loop.py",
+   "kind": "code",
+   "source": "$LANE/run/harness_loop.py",
+   "source_sha256": "a5e56a82db887ab90ce897cea8013d672b2d4d3b9828356e84a1c5a0479e32be",
+   "transform": "scrubbed (3 replacements; 3 per-file redaction rules)",
+   "sha256": "80acef09c3c9e66f1fc220bd678aa1469b29d8bfe0470996fde1f2e2d42b655e",
+   "bytes": 11580
+  },
+  {
+   "path": "harness/run/harness_shape.py",
+   "kind": "code",
+   "source": "$LANE/run/harness_shape.py",
+   "source_sha256": "2ade723f4f1c77b9bb6291275e78e7f762d87141e22e505147dd7f77febd0617",
+   "transform": "scrubbed (6 replacements; 4 per-file redaction rules)",
+   "sha256": "05bf181d452f6be58abded3416ce9d6dc0aaa929c85b54f43f5165ff225650bd",
+   "bytes": 4651
+  },
+  {
+   "path": "harness/run/copy_weights.sh",
+   "kind": "code",
+   "source": "$LANE/copy_weights.sh",
+   "source_sha256": "25fd447533c565915fdf1a148a68a30546e0bfc729f31f7c9b22d7743deffe8e",
+   "transform": "scrubbed (3 replacements; 1 per-file redaction rules)",
+   "sha256": "1f5b0ffc1d8bfd81503e860dfe70f02af8caaebc015327a15e2c46026897e1ff",
+   "bytes": 1407
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/__init__.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/__init__.py",
+   "source_sha256": "bab8fb78a81a2004dfbe4ee2810fd4abb0c5d9fda8085015bc7207367c62a2ac",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "bab8fb78a81a2004dfbe4ee2810fd4abb0c5d9fda8085015bc7207367c62a2ac",
+   "bytes": 76
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/accept_p1.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p1.py",
+   "source_sha256": "7c4234170c0d8640dce3abc9343b14b9737e8b4714cf3db046e86573805031ee",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "88bde71bf955bade547d6be9c0733096e59b1fe9b3be2ac322374b29e0cc3360",
+   "bytes": 11584
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/accept_p2.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p2.py",
+   "source_sha256": "a7d73df881199b540158986415640707ba5b9cf7bc84e189339f9b0116fd3bb1",
+   "transform": "scrubbed (7 replacements)",
+   "sha256": "9c5babb99a54bc333b9cd3883f04bfe023b5be5c718f4e8b122450ab5ac8edf2",
+   "bytes": 8035
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/accept_p3_layer.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p3_layer.py",
+   "source_sha256": "053e1a4111411f1d9ffd90f5627ef799886c397cd26a630dc4928d210fb2dd2f",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "9a35ebbe0107eecf5873d1bec9a7f2d68c1b88882d917b880257b90d9cca04c4",
+   "bytes": 10154
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/accept_p4.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p4.py",
+   "source_sha256": "016063480debf55f32a5b4e0319aaa4c66edd11dcd365575121790e0fbadf08c",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "c90bc3f5ed23a429bb5947475f997ded31a13bdbb4d40a82402920747cb3a014",
+   "bytes": 4296
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/accept_t3_layer.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_t3_layer.py",
+   "source_sha256": "c6e805040b3590ca3d88f593888877d5883878ffb97656a62a0dc0f4c90d8578",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "1faf2e4e09e47b04577fcf3562f05a7e34a3fc1e800d3f80f54b54b772afa9dd",
+   "bytes": 12695
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/accept_t3_stage.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_t3_stage.py",
+   "source_sha256": "d0b692e2610878bb38bb728361023d4f296a58b930304cbe5891ff1575acce12",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "1896a388c91560b537090470cbc1143a222aee0bfeaf13ee993d8291c924f421",
+   "bytes": 7274
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/bench_p3_miss_paths.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_p3_miss_paths.py",
+   "source_sha256": "56a87bfa623d7ee3a1c8db9ae5ff960db0582fdd819fa91bae335b8a4ea2bdb1",
+   "transform": "scrubbed (2 replacements; 1 per-file redaction rules)",
+   "sha256": "57e49085ab4c9c01649a8e33ac28dc3bcc27f944bd4ddc7241d925ec658af618",
+   "bytes": 8263
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/build_packs.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/build_packs.py",
+   "source_sha256": "3f4dc681062869fe3b1b9a35612b05c9ae3e18eac8a41d1b60caac47933bc8bf",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "e8a123eeddaf961d0f3da70d281c657888cf4c6e55ac2b581b17897a8e650bb1",
+   "bytes": 13180
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/check_engram_mxfp4_file.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/check_engram_mxfp4_file.py",
+   "source_sha256": "bb377a84847b4660e44b90e149225a9a6b329bf91709c08da63625266abcb609",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "bb377a84847b4660e44b90e149225a9a6b329bf91709c08da63625266abcb609",
+   "bytes": 2546
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/check_p5_paths.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/check_p5_paths.py",
+   "source_sha256": "d334c2e0a09b916ae7159569b2dee39b696e007e7fc0846ba3dcb59eeba329c5",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "70dcbbcb8d2aa2595605f6ba09afd57cc7e674a5e4242f89f16d6189498485ac",
+   "bytes": 4106
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/copy_gguf.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/copy_gguf.sh",
+   "source_sha256": "3b7d473a339bf7fb586aa5de91348d967f1fc7f48c09b24605e93b5868778511",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "38f06132964258718c0fa1ab40dcc0cda640886e56e9fca3547587f2d41234ab",
+   "bytes": 648
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/copy_p5_assets.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/copy_p5_assets.sh",
+   "source_sha256": "9ea4cc9a5e317c5cc919d4e573b82179bd1dedde3eda5364c647e33a80080de7",
+   "transform": "scrubbed (8 replacements)",
+   "sha256": "4bc779a7881b5577bd5bad3d6c3050b44e52d00700cc9918b9df88be7c336382",
+   "bytes": 1833
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/cpu_moe.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/cpu_moe.py",
+   "source_sha256": "00d1cd6a57a2bc137ac5215e3408f6d3c3a0994534a8fd5d7f86bb15bd8f23d5",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "00d1cd6a57a2bc137ac5215e3408f6d3c3a0994534a8fd5d7f86bb15bd8f23d5",
+   "bytes": 2133
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/cpu_mxfp4_moe.c",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/cpu_mxfp4_moe.c",
+   "source_sha256": "4341a5d9df2d07a60766ce490bfffe0d68db0151f174b42d0bdffaf39f0248e1",
+   "transform": "scrubbed (5 replacements)",
+   "sha256": "2c14487e7bc15ce366e1e20a777b9535c6f4e2b1fb0efdfc58ee9cf567c82454",
+   "bytes": 4450
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/estimate_round.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/estimate_round.py",
+   "source_sha256": "34b9830281feb8e25545ea81ab5480a38e080223032029db76823fb5a59e37be",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "6bf5e1ce6613356638c5764e6640c29f6b9a1028d0601c22bce2875a81ac0c07",
+   "bytes": 4989
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/falsify_f_iq_prefill.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/falsify_f_iq_prefill.py",
+   "source_sha256": "425652fb1e8cc94eacf7cd76363afc3a6c947ead9727e97bdc214d7b3b66d846",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "e2f68c86c7151a9c8e3ce492556342e487a31253c9f79465c323932b45561d7c",
+   "bytes": 9365
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/falsify_t3_iq_drop.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/falsify_t3_iq_drop.py",
+   "source_sha256": "6e3919aa913fab543177907c2e5de9f587e9b17bcc2817fb70515a091c819ddb",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "48d0887254527425e02942a99f30c086ae13de3a70fcfa661af08c0fd0b01898",
+   "bytes": 14291
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/make_f_prefill_refs.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/make_f_prefill_refs.py",
+   "source_sha256": "a200c2a9634d6f4161d42ad5324a9b30ed92f4dae8f13d03581b267ac4bb0cc7",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "41101eeea5f312fdd1c0b376ce4f096f2e32f578a37471d6d169698d3d3a3d9f",
+   "bytes": 5357
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/make_p2_refs.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/make_p2_refs.py",
+   "source_sha256": "bb365e5fb4f8b26e4aa573153d394f6485a7b02d1ab29926559e494c76a51bbe",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "2cbb6c9945bc4a5b44920ffbfc58fa909b8c143e660ef188794944bbb9788dd0",
+   "bytes": 4673
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/make_p4_refs.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/make_p4_refs.py",
+   "source_sha256": "369425da7b3dae97c1cf917338ab6e4bea62af1c1e4818ceb50259ed6dcbda86",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "f18951634cad00587f13e0be857d2becf3aad74b0ce4f7ae1b809f0d5a715f68",
+   "bytes": 4682
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/make_t3_iq_slices.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/make_t3_iq_slices.py",
+   "source_sha256": "10ebaa7abb134f777cba744d9755cbc76934b7f4c40f25f43c62a1eabe168ad6",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "fe0822f9fd5f10a26f794a0698cae07bcf56e37dac2f0fa4489dace6adbbcea0",
+   "bytes": 3616
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/make_t3_refs.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/make_t3_refs.py",
+   "source_sha256": "f99fb415c86d50210475ae6b328467154061d77ea34f3ceb313e03ab6b1ced8f",
+   "transform": "scrubbed (4 replacements; 1 per-file redaction rules)",
+   "sha256": "54789feab4b2439724ed5481a120bb3dbaf415566225d0a8d64d0acbea011b92",
+   "bytes": 4637
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/pack_engram_mxfp4.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/pack_engram_mxfp4.py",
+   "source_sha256": "ba6736251d2596e62469ab3de484691bb5c0ad661bada0f25d72699b43d6e1e2",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "54e3a374d9bc0d752ee64414bb0fe15236ff8c9851d885d6c66fd06ed1b3c0f2",
+   "bytes": 4922
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/probe_completed_layer.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/probe_completed_layer.py",
+   "source_sha256": "d2954a8a969dc89f3ee236908599126328deb04cb27fb890f04471f37d34d1f2",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "d2954a8a969dc89f3ee236908599126328deb04cb27fb890f04471f37d34d1f2",
+   "bytes": 3007
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/probe_p1.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/probe_p1.py",
+   "source_sha256": "30fc9fe04855a54157a5f90efd4f67c82b23eff1d87073716b1a3c494f84f16c",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "30fc9fe04855a54157a5f90efd4f67c82b23eff1d87073716b1a3c494f84f16c",
+   "bytes": 1903
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/quality_t3.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/quality_t3.py",
+   "source_sha256": "7c9b4669c4a5d56c67decf6784c86a6522594f3b92a33acab1b2214a804ca267",
+   "transform": "scrubbed (9 replacements)",
+   "sha256": "501ab678d1042dde0dc33da5563a0a73f4e17925cd6a0786cc944f4ae3e66234",
+   "bytes": 17035
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_f_prefill_refs.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_f_prefill_refs.sh",
+   "source_sha256": "6d3c7fff01502dada383845fe36e2f9dbf9f3d1b87c655169fb73a3ed067a273",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "11e26287231c1b0a2d2ece6f86ce3b877de826d44fb1cd96ba0f6ba98b7b0fa0",
+   "bytes": 1291
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_p1.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_p1.sh",
+   "source_sha256": "a6b5059996d5c3bd5d70085ac2bb0100e67510136c72055ef4c912242aef9274",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "c6a9328e156110eb33ee2447de08cd25382e3ad493b809d8b1daafecef73091f",
+   "bytes": 1260
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_p2_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_p2_testhost.sh",
+   "source_sha256": "198d77e5288ce19ef0c9d0f092ea156b9074d02d17a8026247792e9465d6ab4b",
+   "transform": "scrubbed (5 replacements; 1 per-file redaction rules)",
+   "sha256": "257469c0444f775707de497f87d25c939249d7f50b4e102609973d018619c08f",
+   "bytes": 774
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_p2_refs.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_p2_refs.sh",
+   "source_sha256": "b4d6c192bf8ed99bfbfbb6429db7d77d86afb3db233dcda57158392906fefc86",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "890ae425f54bd10621080beb8b6c4c7d6bc8686f83cc531f5af933acd5395bb2",
+   "bytes": 725
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_p3_bench_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_p3_bench_testhost.sh",
+   "source_sha256": "3d1b70462225d552fe30769e3fc934589f0d5a343d27a922511ff449f71a8152",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "5dee8be85e205675e3f71e68cfec93b20d8b59957564b86b1f6291ab094b9a8a",
+   "bytes": 821
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_p3_layer_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_p3_layer_testhost.sh",
+   "source_sha256": "620291e87adc397aa757ac52cd1638e79f0ad4bc3d10ef3b27086601dab09e59",
+   "transform": "scrubbed (5 replacements; 1 per-file redaction rules)",
+   "sha256": "8244057147bc54b456f2301c54fabcf601f8f2de9723d021677573e9a4ed1d82",
+   "bytes": 930
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_p3_prefill_refs.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_p3_prefill_refs.sh",
+   "source_sha256": "38599708c4d7d2ac124ae641530d01042cb77454ada020e36c149f29e6431113",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "fb7fd471a13a0c94bdb84bacacb3327415fa0b75af6a3b2f739f61935c3b2a46",
+   "bytes": 765
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_p4_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_p4_testhost.sh",
+   "source_sha256": "008b4e63395f387c6efbc16852bf98c40c56bd6d404c2383b95f07e1217657fd",
+   "transform": "scrubbed (5 replacements)",
+   "sha256": "0b2b18be9e73410340a2315cc2eaafb9e2e9caf4c640b196614cf333de01abeb",
+   "bytes": 652
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_t3_falsifier_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_t3_falsifier_testhost.sh",
+   "source_sha256": "c32002dfdd27d3d7960afe75adb0c37660c69983fb05213241a2261fd20625c8",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "f60b9ee6bc8bfc18282d53f24e386f7dba07a97d762eb63e1e98d8cd7cbca7bf",
+   "bytes": 2572
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_t3_layer_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_t3_layer_testhost.sh",
+   "source_sha256": "623be92adae9580933771e3c2bbcb4758011000e1bf7f1621d72bc27c34d647c",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "ad4c59b661bba1097fd8c78f611ead28a1906816352022cfa5aa7e60b1a1da4d",
+   "bytes": 2637
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_t3_p3_regress_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_t3_p3_regress_testhost.sh",
+   "source_sha256": "b2e41189383f72bf3630f66a497cd0bc3d43f62bf403f4833dc39f8427533ad1",
+   "transform": "scrubbed (5 replacements)",
+   "sha256": "25231bc1be373f473829dd32387c1d3b7a53eead27b3c4a8e18d1ca07e543cf3",
+   "bytes": 1402
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_t3_stage_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_t3_stage_testhost.sh",
+   "source_sha256": "432a05e1309d1fca1e3326979b30e57c9e4deb21c7e301aded1ba96c5750929c",
+   "transform": "scrubbed (4 replacements)",
+   "sha256": "0936abd1a18f90bd16c591f570f9e8fa671d99edf3bbee688517f6b9f1a69aa7",
+   "bytes": 2603
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/scan_p2_scales.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/scan_p2_scales.py",
+   "source_sha256": "6dc6dde785e2b4c75165e1f6d376127cea9bdfaa5f063acef52de5761afab153",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "6dc6dde785e2b4c75165e1f6d376127cea9bdfaa5f063acef52de5761afab153",
+   "bytes": 2411
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/sparse_tables.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/sparse_tables.py",
+   "source_sha256": "d45ad28973a0f799129158f68da0489a262c051307c19b1736468baa094fa583",
+   "transform": "scrubbed (5 replacements)",
+   "sha256": "c5bd2bb638e197495b0f00c49ffe39a88f7244f70d0b832d99356273a62276ab",
+   "bytes": 3945
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_p3_loader_wiring.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_p3_loader_wiring.py",
+   "source_sha256": "ab9022e14250ba91f5ca1cbec58d09ac05977ec1b5664dabcf5294d4338c353a",
+   "transform": "scrubbed (4 replacements; 1 per-file redaction rules)",
+   "sha256": "a9bec7d8ddb87398238b3a88703c40932ae816dc00290c5cd9f8dd88aa5e0e9f",
+   "bytes": 6122
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_p3_split_groups.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_p3_split_groups.py",
+   "source_sha256": "95d3b2fe7f8b13396b775ef3b7109f1a4c62eb7f46c320ba34ce3ba70b653565",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "95d3b2fe7f8b13396b775ef3b7109f1a4c62eb7f46c320ba34ce3ba70b653565",
+   "bytes": 3417
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_residency.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_residency.py",
+   "source_sha256": "3fe171560e569eb70e955ff2d923061bbe6b37c7d91b7171d346146938ac7faf",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "7be099c66b3f4c65bdc58a03e3318960b98d57c78db97970c94abe2aa61a0f76",
+   "bytes": 1927
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_t3_dispatch.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_dispatch.py",
+   "source_sha256": "4c81aea9f136357444bf5de78ce10fa914f0d80aa8ef215fd1b8addd8a1c2686",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "4c81aea9f136357444bf5de78ce10fa914f0d80aa8ef215fd1b8addd8a1c2686",
+   "bytes": 8306
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_t3_iq_bank.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_iq_bank.py",
+   "source_sha256": "1f99a5f9866da6ece47e1cf9030c0c9b0b5c76b23d44ea96498148f7cab8f4f4",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "abba40a4382eca3dc8ce0dd279ab65b4f3f3c0bc90209baab1aca8646b00a6af",
+   "bytes": 4452
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_t3_quality.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_quality.py",
+   "source_sha256": "2b95df553c5b234eb2014770d8a1dc7858c89d214afe67a210fefba1a975b6e7",
+   "transform": "scrubbed (1 replacements; 1 per-file redaction rules)",
+   "sha256": "d24817873814103bf0ddde9bdbf4acde29c3e89bd65e1c35abc1a8d5af81093f",
+   "bytes": 8999
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_t3_stage_plan.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_stage_plan.py",
+   "source_sha256": "d1ffbed7a8db1bc52643ed35c0de6c27d9b2cb875e81238f009cc819d600787f",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "a5fb86ee48baa0591ac259f2263ae1b3a795d7ccd00dfca35c00f9acca3fa58f",
+   "bytes": 8936
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_t3_tiers.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_tiers.py",
+   "source_sha256": "99f99017865cf8c540e829a38b03c44a01bd39f80d290447aff9992b1e00b069",
+   "transform": "scrubbed (3 replacements; 1 per-file redaction rules)",
+   "sha256": "635b27ef42196510c3ecdc9ef0f8cefb43c79bd9241ac0038fb57648cf09f043",
+   "bytes": 16025
+  },
+  {
+   "path": "tools/check_data_boundary.sh",
+   "kind": "code",
+   "source": "$LANE/repo/tools/check_data_boundary.sh",
+   "source_sha256": "9d700cdf2f172bb082e0ac3dbb08ab012b62b90d3cdbb3b9a5399bd43e9e4356",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "0801374c1abfe7e3a35a766fc9b12e8c66583b79e9d7680dd0ac74d07de602f6",
+   "bytes": 1717
+  },
+  {
+   "path": "docs/research/LANE-RESEARCH.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/research/LANE-RESEARCH.md",
+   "source_sha256": "b2001cab84921413021e2eb07aaa049ced64d589275a3452553bf580dd44e62c",
+   "transform": "scrubbed (30 replacements; 12 per-file redaction rules); banner added",
+   "sha256": "1fcf2d3df6eaae2fce59b97ec74c34c87867a42b158779f26aeae0c38bd441fb",
+   "bytes": 11991
+  },
+  {
+   "path": "docs/plans/README.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/plans/README.md",
+   "source_sha256": "532486ccd8c10484bb3ad7261c3097514351c89694d5c3de8ab710a6b98c1e8d",
+   "transform": "scrubbed (26 replacements; 7 per-file redaction rules); banner added",
+   "sha256": "26a07ff2e6a5b8b457ad67a59edec671937eeb6b90bb8dd868d4eedd39bb2b43",
+   "bytes": 7428
+  },
+  {
+   "path": "docs/plans/00-WHERE-TIME-GOES.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/plans/00-WHERE-TIME-GOES.md",
+   "source_sha256": "b1b04328e736cf9b6cf14f5d7317a5239698b593e1a1d0f06f27f8ba3a1a661c",
+   "transform": "scrubbed (17 replacements; 5 per-file redaction rules); banner added",
+   "sha256": "13be21f8b406d69d9c492dc3a0481dae4cc5eafc42cee65d0bad38f0fc60f523",
+   "bytes": 10802
+  },
+  {
+   "path": "docs/plans/01-three-tier-residency.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/plans/01-three-tier-residency.md",
+   "source_sha256": "4acb061ee16bfcb0300b7e095a296781a8fd08482d2e8ed1bbc3458f441bfd0d",
+   "transform": "scrubbed (29 replacements); banner added",
+   "sha256": "c1f67b56b242b7fef8cc645e577729fc94769dfcef07cff476365b97a9e263af",
+   "bytes": 29525
+  },
+  {
+   "path": "docs/plans/02-reserve-and-sizing.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/plans/02-reserve-and-sizing.md",
+   "source_sha256": "4edc48daf6a05df39863b3b262674b11d5656dc4704411f5a7519c4f1e6ec4ee",
+   "transform": "scrubbed (17 replacements; 1 per-file redaction rules); banner added",
+   "sha256": "c851c7bdf43a87fbc766aedbac5e072ae47608c89fb2a52d141e93ecce0c4806",
+   "bytes": 12670
+  },
+  {
+   "path": "docs/plans/03-dispatch-overhead.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/plans/03-dispatch-overhead.md",
+   "source_sha256": "e6d48b3a8ae1e5f7bab4439c7c5f67bd1a84bfeff49c19166c80aae8abe858e4",
+   "transform": "scrubbed (9 replacements); banner added",
+   "sha256": "3ae2c35d286ab922d70eaadd5f1c01f9da18b10cbdaec171b4336e2f77e010d5",
+   "bytes": 10683
+  },
+  {
+   "path": "docs/plans/04-prefill-staging.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/plans/04-prefill-staging.md",
+   "source_sha256": "82d7df1b6917510bb2c4fe6760225e2f6c604e7e6751eaf5595ea73183037417",
+   "transform": "scrubbed (22 replacements; 3 per-file redaction rules); banner added",
+   "sha256": "c30170b78bb149c8aced5d4572edde364f34d119fce178eec40e309b1b7b20c6",
+   "bytes": 11886
+  },
+  {
+   "path": "docs/plans/05-miss-cache-all-native.md",
+   "kind": "doc",
+   "source": "$LANE/repo/nvfp4-8r/plans/05-miss-cache-all-native.md",
+   "source_sha256": "82b8ed96233542b7abf34695023bcf2d07252204c86aa4fec6b06f47ec5069e0",
+   "transform": "scrubbed (12 replacements); banner added",
+   "sha256": "0680198a50711bb1f8b35e4c9164d0101a46902ff04216973b976262a7916c93",
+   "bytes": 12415
+  }
+ ],
+ "left_out": [
+  {
+   "what": "model weights, NVFP4 pack copy, converted packs, GGUF and Engram files, wheels, the venv, compiled libraries",
+   "why": "never distributed; download from the upstream links in README.md"
+  },
+  {
+   "what": "engine/private/ (the decode routing tally) and anything derived per expert from it (route id lists, references, hot lists)",
+   "why": "derived from private use; only aggregate tier counts and route shares are published"
+  },
+  {
+   "what": "logs/ (receipts, boot logs, card memory samples, legal-style prompt file, quality captures)",
+   "why": "raw logs and prompts are not published; docs/measurements.md reduces the receipts to tables"
+  },
+  {
+   "what": "internal lane records (progress notes, plans and reports)",
+   "why": "they name private hosts and paths; their measured numbers are in docs/measurements.md"
+  },
+  {
+   "what": "run/tools/*.py",
+   "why": "byte-identical copies of production (Volta sPLIt) run tools, not this build's work"
+  },
+  {
+   "what": "run/state/, run/cache/",
+   "why": "boot logs, pids and compiler caches"
+  },
+  {
+   "what": "lane patches/ (per-change patches and before-copies)",
+   "why": "replaced by one patch per changed upstream file in engine/patches/, generated from the before-copies"
+  },
+  {
+   "what": "nvfp4-8r/research/kernels/ and nvfp4-8r/research/volta/",
+   "why": "copies of third-party sources; linked from docs/README.md instead"
+  },
+  {
+   "what": "production's own scripts (stop and restore, slot policy, launcher library) and everything under $PROD",
+   "why": "production's files; the harness scripts they call are published in the Volta sPLIt repository"
+  },
+  {
+   "what": "the private repository clone's git history and its other files",
+   "why": "not part of this build's public record"
+  },
+  {
+   "what": "plan 04 part B (its staged engine files and its new benchmark and gate files)",
+   "why": "work in progress; added when part B lands"
+  },
+  {
+   "what": "the campaign plan and three research notes",
+   "why": "not in this snapshot: they follow in a later update as documents written for public readers"
+  }
+ ],
+ "not_copied_from_watched_directories": {
+  "count": 61,
+  "upstream_engine_files": 31,
+  "this_build_work_in_progress": 30,
+  "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
+ }
+}

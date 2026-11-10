@@ -1,0 +1,256 @@
+NVFP4-8R change to vllm/model_executor/model_loader/gguf_loader.py.
+Base: the Volta sPLIt engine file, sha256 478b6872cc0d235211b019f19d581c0954af8882344d7f99df5e0f0d458d4fc2 (as deployed 2026-11-09).
+Result: sha256 1f0057c26a136f1d8160a828779a9a57b3a72faed57e4afe36ea62657c5fc976. Apply in the engine source root with: patch -p1 < this-file
+
+--- a/vllm/model_executor/model_loader/gguf_loader.py
++++ b/vllm/model_executor/model_loader/gguf_loader.py
+@@ -53,18 +53,181 @@
+ 
+     def __init__(self, load_config: LoadConfig):
+         super().__init__(load_config)
++        from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native
++
+         extra = load_config.model_loader_extra_config or {}
+-        if set(extra) - {"multimodal_safetensors", "engram_path"}:
++        if set(extra) - {
++            "multimodal_safetensors",
++            "engram_path",
++            *nvfp4_8r_native.EXTRA_KEYS,
++            *nvfp4_8r_native.CONDITIONAL_KEYS,
++        }:
+             raise ValueError(
+                 f"Model loader extra config is not supported for "
+                 f"load format {load_config.load_format}"
+             )
++        # NVFP4-8R: routed experts come from native packs, parsed once here.
++        self.nvfp4_8r = nvfp4_8r_native.NativePackConfig.from_extra(extra)
++        # Three-tier residency (plan 01): {layer: {w1|w3|w2: raw GGUF name}} of
++        # this stage's routed experts, kept when load_model drops them.
++        self._nvfp4_iq_names: dict[int, dict[str, str]] = {}
+         self.multimodal_weights: GGUFMultiModalWeights | None = None
+         if "multimodal_safetensors" in extra:
+             self.multimodal_weights = GGUFMultiModalWeights(
+                 extra["multimodal_safetensors"]
+             )
+ 
++    @staticmethod
++    def drop_routed_experts(name_map: dict[str, str]) -> dict[str, str]:
++        """The weight map without routed-expert tensors (NVFP4-8R packs)."""
++        from vllm.model_executor.layers.fused_moe.experts.nvfp4_8r_native import (
++            is_routed_expert_name,
++        )
++
++        return {
++            raw: name
++            for raw, name in name_map.items()
++            if not is_routed_expert_name(name)
++        }
++
++    def _attach_nvfp4_8r(
++        self, model: nn.Module, device: torch.device, prefill_tokens: int
++    ) -> None:
++        """Native routed experts for this stage's TP rank, sized to the HBM
++        actually free after dense weights load and post-process.
++        ``prefill_tokens`` is the prefill route group (plan 04 part B)."""
++        from vllm.model_executor.layers.fused_moe.experts import (
++            nvfp4_8r_native,
++            nvfp4_8r_tiers,
++        )
++        from vllm.model_executor.layers.fused_moe.layer import FusedMoE
++        from vllm.model_executor.layers.quantization.gguf_moe import (
++            GGUFNativeMoEMethod,
++        )
++
++        cfg = self.nvfp4_8r
++        assert cfg is not None
++        if device.type != "cuda":
++            raise ValueError(f"nvfp4_8r needs a CUDA device, got {device}")
++        if device.index is None:
++            # "cuda" names this TP worker's current card; the native sets
++            # (UVA host mapping, fragment order) need the card itself.
++            device = torch.device("cuda", torch.cuda.current_device())
++        layers: dict[int, FusedMoE] = {}
++        for module in model.modules():
++            if isinstance(module, FusedMoE):
++                if not isinstance(module.quant_method, GGUFNativeMoEMethod):
++                    raise TypeError(
++                        f"{module.layer_name}: nvfp4_8r needs the native GGUF "
++                        f"MoE method, got {type(module.quant_method).__name__}"
++                    )
++                if module.tp_size != 4 or module.expert_map is not None:
++                    raise ValueError("nvfp4_8r packs are TP4 slices without EP")
++                layers[module.layer_id] = module
++        torch.cuda.synchronize(device)
++        torch.cuda.empty_cache()
++        free, _ = torch.cuda.mem_get_info(device)
++        if not isinstance(cfg.residency, nvfp4_8r_tiers.TwoTier):
++            self._attach_nvfp4_8r_tiers(cfg, layers, device, free, prefill_tokens)
++            return
++        plan = nvfp4_8r_native.plan_stage(cfg, list(layers), free)
++        cold_total = 0
++        for layer_id, module in sorted(layers.items()):
++            hot, cold = plan.residency[layer_id]
++            module.quant_method.native_moe = nvfp4_8r_native.build_layer(
++                cfg,
++                layer_id,
++                module.tp_rank,
++                nvfp4_8r_native.two_tier_array(hot, cold),
++                None,
++                device,
++                max_tokens=6,
++                stage_prefill=None,
++            )
++            cold_total += len(cold)
++        torch.cuda.synchronize(device)
++        logger.info(
++            "nvfp4_8r: TP rank %d layers %d-%d free %.2f GiB reserve %.2f GiB "
++            "hot budget %.2f GiB, %d hot / %d cold experts, free after %.2f GiB",
++            next(iter(layers.values())).tp_rank,
++            plan.layers.start,
++            plan.layers.stop - 1,
++            free / 2**30,
++            plan.reserve_bytes / 2**30,
++            plan.hot_budget_bytes / 2**30,
++            len(layers) * nvfp4_8r_native.NUM_EXPERTS - cold_total,
++            cold_total,
++            torch.cuda.mem_get_info(device)[0] / 2**30,
++        )
++
++    def _attach_nvfp4_8r_tiers(
++        self, cfg, layers, device, free: int, prefill_tokens: int
++    ) -> None:
++        """Three-tier residency (plan 01): HOT native and WARM IQ records in
++        HBM, every non-HOT native record in host RAM. The stage's four TP
++        ranks run this together; its group calls are collectives. With
++        nvfp4_8r_prefill_warm iq (plan 04 part B) the card also holds
++        production's IQ prefill workspace, taken out of the record budget."""
++        from vllm.distributed import get_tp_group
++        from vllm.model_executor.layers.fused_moe.experts import (
++            nvfp4_8r_native,
++            nvfp4_8r_tiers,
++        )
++
++        group = get_tp_group()
++        rank = group.rank_in_group
++        if group.world_size != 4 or any(m.tp_rank != rank for m in layers.values()):
++            raise ValueError("nvfp4_8r tiers need the TP4 group's own rank on every layer")
++        if sorted(self._nvfp4_iq_names) != sorted(layers):
++            raise ValueError(
++                f"routed-expert GGUF tensors were kept for layers "
++                f"{sorted(self._nvfp4_iq_names)}, the stage has {sorted(layers)}"
++            )
++        sources = nvfp4_8r_native.iq_layer_sources(
++            self._native_tensors, self._nvfp4_iq_names, rank
++        )
++        least = nvfp4_8r_native.stage_min_free(group.cpu_group, free)
++        stage = nvfp4_8r_native.plan_tiers(
++            cfg,
++            list(layers),
++            least,
++            {layer: source.record_bytes for layer, source in sources.items()},
++            nvfp4_8r_native.warm_prefill_bytes(cfg, sources, prefill_tokens),
++        )
++        plan = stage.plan
++        built = nvfp4_8r_native.build_stage(
++            cfg, rank, plan, sources, device, group, max_tokens=6,
++            prefill_tokens=prefill_tokens,
++        )
++        for layer_id, module in layers.items():
++            module.quant_method.native_moe = built[layer_id]
++        torch.cuda.synchronize(device)
++        tier = nvfp4_8r_tiers.Tier
++        logger.info(
++            "nvfp4_8r: TP rank %d layers %d-%d residency %s prefill_warm %s "
++            "free %.2f GiB (stage least %.2f) reserve %.2f GiB prefill "
++            "workspace %.2f GiB budget %.2f GiB records %.2f GiB, "
++            "%d hot / %d warm / %d host experts, decode route share "
++            "%.4f / %.4f / %.4f, tier digest %s, free after %.2f GiB",
++            rank,
++            plan.layers.start,
++            plan.layers.stop - 1,
++            cfg.residency,
++            cfg.prefill_warm.value,
++            free / 2**30,
++            least / 2**30,
++            stage.reserve_bytes / 2**30,
++            stage.prefill_bytes / 2**30,
++            plan.budget_bytes / 2**30,
++            plan.hbm_bytes / 2**30,
++            plan.count(tier.HOT),
++            plan.count(tier.WARM),
++            plan.count(tier.HOST),
++            *stage.route_share,
++            plan.digest[:12],
++            torch.cuda.mem_get_info(device)[0] / 2**30,
++        )
++
+     def _prepare_weights(self, model_config: ModelConfig):
+         model_name_or_path = model_config.model
+         if os.path.isfile(model_name_or_path):
+@@ -567,6 +730,11 @@
+             "engram_path"
+         ) and model_config.hf_text_config.model_type != "deepseek_v41_text":
+             raise ValueError("engram_path is supported only by the V4.1 loader")
++        if (
++            self.nvfp4_8r is not None
++            and model_config.hf_text_config.model_type != "deepseek_v41_text"
++        ):
++            raise ValueError("nvfp4_8r packs are supported only by the V4.1 loader")
+         device_config = vllm_config.device_config
+         self._gguf_tp_size = vllm_config.parallel_config.tensor_parallel_size
+         local_model_path = self._prepare_weights(model_config)
+@@ -629,6 +797,7 @@
+                 and hasattr(torch.ops._C, "gguf_affine_grouped_gemm_sm70_out")
+             )
+             adapter.canonical_expert_storage = quant_config.canonical_expert_storage
++            quant_config.nvfp4_8r = self.nvfp4_8r
+             adapter.preserve_expert_blocks = quant_config.native_expert_storage
+             if "output.weight" not in self._native_tensors:
+                 model_config.hf_config.tie_word_embeddings = True
+@@ -690,11 +859,29 @@
+                 gguf_weights_map = self._stage_weights_map(
+                     adapter, weight_model, gguf_weights_map
+                 )
++            if self.nvfp4_8r is not None:
++                if adapter is None:
++                    raise ValueError("nvfp4_8r packs need the native GGUF adapter")
++                from vllm.model_executor.layers.fused_moe.experts import (
++                    nvfp4_8r_native,
++                    nvfp4_8r_tiers,
++                )
++
++                if not isinstance(self.nvfp4_8r.residency, nvfp4_8r_tiers.TwoTier):
++                    # The WARM tier reads this stage's IQ records from the
++                    # GGUF: keep their tensor names before the drop.
++                    self._nvfp4_iq_names = nvfp4_8r_native.routed_expert_shards(
++                        gguf_weights_map,
++                        lambda prefix: weight_model.get_submodule(prefix).layer_id,
++                    )
++                gguf_weights_map = self.drop_routed_experts(gguf_weights_map)
++                self._gguf_prepared_weights_map = gguf_weights_map
+             if (
+                 adapter is not None
+                 and quant_config.native_expert_storage
+                 and not quant_config.canonical_expert_storage
+                 and vllm_config.kernel_config.sm70_gguf.expert_arena
++                and self.nvfp4_8r is None
+             ):
+                 from vllm.model_executor.layers.quantization import (
+                     gguf_expert_storage,
+@@ -721,6 +908,16 @@
+                 logger.info("Loaded %d multimodal safetensors weights", len(loaded))
+ 
+             process_weights_after_loading(model, model_config, target_device)
++            if self.nvfp4_8r is not None:
++                # The route group of production's prefill (gguf_shared_storage).
++                self._attach_nvfp4_8r(
++                    weight_model,
++                    target_device,
++                    int(
++                        envs.VLLM_V41_PREFILL_GROUP
++                        or vllm_config.kernel_config.sm70_gguf.expert_cache_prefill_tokens
++                    ),
++                )
+             if finish is not None:
+                 finish()
+         return model

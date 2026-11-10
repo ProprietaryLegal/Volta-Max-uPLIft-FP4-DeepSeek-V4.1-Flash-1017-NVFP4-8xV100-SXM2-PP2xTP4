@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+build/
+*.pt
+*.npz
+*.npy
+*.jsonl
+*.bin
+*.gguf
+*.safetensors
+logs/
+private/
+packs/
+models/
+state/
+cache/
+*.so

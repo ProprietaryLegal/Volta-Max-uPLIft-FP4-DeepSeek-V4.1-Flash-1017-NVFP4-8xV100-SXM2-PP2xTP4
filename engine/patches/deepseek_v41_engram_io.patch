@@ -1,0 +1,158 @@
+NVFP4-8R change to vllm/model_executor/layers/deepseek_v41_engram_io.py.
+Base: the Volta sPLIt engine file, sha256 f1926f7a947a57effe9f48534e2ee93b5c9e9e89724709aeaa106aef3fc9b5cd (as deployed 2026-11-09).
+Result: sha256 f97b6a462a624a534d3052290d67fdd059be133c2ed6ec6e2e735fa613df6ff4. Apply in the engine source root with: patch -p1 < this-file
+
+--- a/vllm/model_executor/layers/deepseek_v41_engram_io.py
++++ b/vllm/model_executor/layers/deepseek_v41_engram_io.py
+@@ -25,9 +25,34 @@
+     path: str
+     offset: int
+     rows: int
++    # Row codec of the 144-byte rows: "iq4_nl" (GGUF type 20 sidecar) or
++    # "mxfp4" (NVFP4-8R repack of the checkpoint's MXFP4 table).
++    codec: str
++
++
++MXFP4_TABLE_FORMAT = "nvfp4-8r-engram-mxfp4-144-v1"
++
++
++def _mxfp4_table_specs(path):
++    with open(path) as source:
++        manifest = json.load(source)
++    if manifest.get("format") != MXFP4_TABLE_FORMAT or manifest.get("row_bytes") != 144:
++        raise ValueError(f"{path}: not an {MXFP4_TABLE_FORMAT} manifest")
++    tables = manifest["tables"]
++    if [t["layer"] for t in tables] != [1, 14]:
++        raise ValueError("V4.1 MXFP4 Engram must contain exactly layers 1 and 14")
++    binary = os.path.join(os.path.dirname(os.path.abspath(path)), manifest["file"])
++    if os.path.getsize(binary) != sum(t["rows"] * 144 for t in tables):
++        raise ValueError(f"{binary}: size does not match its manifest")
++    return tuple(
++        EngramTableSpec(binary, int(t["offset"]), int(t["rows"]), "mxfp4")
++        for t in tables
++    )
+ 
+ 
+ def engram_table_specs(path):
++    if path.endswith(".json"):
++        return _mxfp4_table_specs(path)
+     reader = gguf.GGUFReader(path, mode="r")
+     expected = ("blk.1.engram_embd.weight", "blk.14.engram_embd.weight")
+     tensors = {t.name: t for t in reader.tensors}
+@@ -39,7 +64,9 @@
+         if int(t.tensor_type) != 20 or len(t.shape) != 2 or int(t.shape[0]) != 256:
+             raise ValueError("V4.1 shared Engram requires IQ4_NL rows of width 256")
+         result.append(
+-            EngramTableSpec(os.path.abspath(path), int(t.data_offset), int(t.shape[1]))
++            EngramTableSpec(
++                os.path.abspath(path), int(t.data_offset), int(t.shape[1]), "iq4_nl"
++            )
+         )
+     return tuple(result)
+ 
+@@ -203,6 +230,9 @@
+         if rank not in range(4) or torch.accelerator.current_device_index() != rank:
+             raise ValueError("Select the TP rank's CUDA device before mapping Engram")
+         self.data, self.control, self.rank = data, control, rank
++        if {spec.codec for spec in specs} not in ({"iq4_nl"}, {"mxfp4"}):
++            raise ValueError("Both Engram tables must use one row codec")
++        self.codec = specs[0].codec
+         self.maximum = max_tokens * 24
+         self.native = _native()
+         words, self.channel_words, self.rank_words = (
+@@ -258,7 +288,6 @@
+         )
+ 
+     def warmup(self):
+-        from .quantization.gguf import dequantize_gguf_rows
+ 
+         dummy = torch.zeros(1, 2, 24, device=self.rank, dtype=torch.int64)
+         for channel in range(2):
+@@ -280,12 +309,8 @@
+                 grid=(1,),
+             )
+             _consume.warmup(self.control_view, self.counters, **meta, grid=(1,))
+-        dequantize_gguf_rows(
+-            torch.zeros(1, 144, device=self.rank, dtype=torch.uint8),
+-            20,
+-            256,
+-            torch.float16,
+-            True,
++        _decode_rows(
++            torch.zeros(1, 144, device=self.rank, dtype=torch.uint8), self.codec
+         )
+         torch.accelerator.synchronize(self.rank)
+         self.ready = True
+@@ -331,7 +356,7 @@
+         )
+         first = channel * self.maximum * 144
+         raw = self.mapped[first : first + count * 144].view(count, 144)
+-        result = dequantize_gguf_rows(raw, 20, 256, torch.float16, True)
++        result = _decode_rows(raw, self.codec)
+         _consume[(1,)](self.control_view, self.counters, **self._meta(channel))
+         return result.view(tokens, 6144)
+ 
+@@ -390,3 +415,63 @@
+             if self.data is not None:
+                 self.data.close()
+                 self.data = None
++
++
++# NVFP4-8R P4 arm 2: the checkpoint's MXFP4 Engram table in the reader's
++# 144-byte row (128 code bytes | 8 E8M0 scales | 8 zero bytes), dequantized on
++# the GPU. Same row size as IQ4_NL, so the node reader and shared buffers are
++# unchanged; only the table file and the row decoder differ.
++MXFP4_ROW_BYTES = 144
++_E2M1 = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0)
++_mxfp4_lut: dict[torch.device, torch.Tensor] = {}
++
++
++def _decode_rows(raw: torch.Tensor, codec: str) -> torch.Tensor:
++    if codec == "mxfp4":
++        return dequantize_mxfp4_rows(raw, torch.float16)
++    if codec == "iq4_nl":
++        from .quantization.gguf import dequantize_gguf_rows
++
++        return dequantize_gguf_rows(raw, 20, 256, torch.float16, True)
++    raise ValueError(f"unknown Engram row codec {codec!r}")
++
++
++def pack_mxfp4_rows(codes: torch.Tensor, scales: torch.Tensor) -> torch.Tensor:
++    """Checkpoint rows (codes [N, 128] u8, E8M0 scales [N, 8] u8) -> [N, 144]."""
++    if (
++        codes.dtype != torch.uint8
++        or scales.dtype != torch.uint8
++        or codes.ndim != 2
++        or codes.shape[1] != 128
++        or scales.shape != (codes.shape[0], 8)
++    ):
++        raise ValueError("MXFP4 Engram rows need u8 codes [N, 128] and scales [N, 8]")
++    if bool((scales == 255).any()):
++        raise ValueError("E8M0 NaN scale in MXFP4 Engram rows")
++    out = torch.zeros(
++        (codes.shape[0], MXFP4_ROW_BYTES), dtype=torch.uint8, device=codes.device
++    )
++    out[:, :128] = codes
++    out[:, 128:136] = scales
++    return out
++
++
++def dequantize_mxfp4_rows(raw: torch.Tensor, dtype: torch.dtype) -> torch.Tensor:
++    """[N, 144] packed rows -> [N, 256]: e2m1(nibble) x 2^(s - 127), the low
++    nibble holding the even element. Exact in fp32, rounded once to dtype.
++    Graph-capturable (no host sync)."""
++    if raw.dtype != torch.uint8 or raw.ndim != 2 or raw.shape[1] != MXFP4_ROW_BYTES:
++        raise ValueError("MXFP4 Engram rows must be uint8 [N, 144]")
++    lut = _mxfp4_lut.get(raw.device)
++    if lut is None:
++        lut = torch.tensor(
++            _E2M1 + tuple(-v for v in _E2M1), dtype=torch.float32, device=raw.device
++        )
++        _mxfp4_lut[raw.device] = lut
++    n = raw.shape[0]
++    codes = raw[:, :128]
++    nib = torch.stack((codes & 15, codes >> 4), dim=-1).view(n, 256)
++    values = lut[nib.long()]
++    # 2^(s - 127) built from the fp32 exponent bits: exact for s in 1..254.
++    block = (raw[:, 128:136].to(torch.int32) << 23).view(torch.float32)
++    return (values.view(n, 8, 32) * block[:, :, None]).view(n, 256).to(dtype)
