@@ -38,7 +38,7 @@ build's file exactly. Apply in the engine source root with `patch -p1`.
 | `configs/serve-nvfp4-pp2.yaml` | two-tier profile |
 | `configs/serve-nvfp4-pp2-t3.yaml` | three-tier profile (`hot_iq_host`, host route share 0.0) |
 | `configs/hot_iq.yaml.template` | the build of this release: the profile of the Hugging Face package (`hot_iq` on the mixed tally, one slot, reserves 4.5 / 7.5 GiB, tiers from the package's `tier_map.json`), with `${PKG}` for the package path. The package carries the same file as `serve/hot_iq.yaml.template` |
-| `configs/serve_hot_iq.sh` | its launcher (CPU check passed, eight-card boot check not yet run, 2026-11-10): `serve_hot_iq.sh PKG [PORT]` writes `serve-hot_iq.yaml` from the package's template, sets the load-time allocator setting the `hot_iq` measurements ran with (`VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0`) and starts `run_serve.sh` with one prompt slot |
+| `configs/serve_hot_iq.sh` | its launcher (CPU check passed 2026-11-10, eight-card boot check passed 2026-11-11): `serve_hot_iq.sh PKG [PORT]` writes `serve-hot_iq.yaml` from the package's template, sets the load-time allocator setting the `hot_iq` measurements ran with (`VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0`) and starts `run_serve.sh` with one prompt slot |
 | `configs/serve-nvfp4-pp2-t3n.yaml` | three-tier with no host tier (`hot_iq`) on the first tally: not accepted (quality not established) |
 | `configs/serve-nvfp4-pp2-t3-a3.yaml` | three-tier with three prompt slots (`max-num-seqs 3`, reserves 5.3 / 8.1 GiB): measured, not accepted (quality not established) |
 | `configs/serve-nvfp4-pp2-t3-a1r.yaml` | the three-slot profile's one-slot control: same reserves, `max-num-seqs 1` |

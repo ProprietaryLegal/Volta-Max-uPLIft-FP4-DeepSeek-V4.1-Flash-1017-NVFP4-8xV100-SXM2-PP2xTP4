@@ -3,6 +3,22 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-11: how close to NVFP4, and the package boot check
+
+- **Closeness test against NVIDIA's NVFP4 pack** (MEASURED, rules and script hashes fixed 2026-11-10 at 19:54 UTC
+  before any capture, 320 contexts and 513 MMLU questions, 1,475 MHz): `hot_iq` picks the same next token as the
+  reference on 95.1 % of compared tokens against Volta sPLIt's 92.2 %, KL divergence 0.0794 nats against 0.1958, and
+  on the shared tokens removes 63 % of Volta sPLIt's KL divergence. Changed multiple-choice answers 1.6 % against
+  15.4 % (on the 475 questions the reference answered, counted after scoring: 1.7 % against 8.8 %). HOT_IQ CLOSER on
+  all four comparisons fixed in advance. In the README: [How close to NVFP4](README.md#how-close-to-nvfp4).
+- **Published with it:** the receipts (no text), the scorer's output, the charts, the after-scoring count script and
+  a scrubbed public copy of the run decisions, in [quality/closeness-test/](quality/closeness-test/). Two
+  amendments to capture budgets were made before any score (decisions 8 and 9). The Volta sPLIt arm was captured on
+  2026-11-10, before three later changes to the Volta sPLIt build. This test makes no claim about their effect.
+- **Boot check of the exported package** (2026-11-11, eight cards, 1,475 MHz): ready after 263 s, no traceback,
+  tiers and tier digests equal the measured boot's, greedy output on 12 + 5 check prompts identical token for token.
+- **Hugging Face package:** still uploading on 2026-11-11, do not download yet.
+
 ## 2026-11-10: the speed bench of Volta Max uPLIft
 
 - **Speed bench** (MEASURED 2026-11-10, card clock ceiling 1,425 MHz, 169 requests, the prompts and method of Volta
@@ -50,7 +66,7 @@ Dates are UTC. Every number is MEASURED on the 8-card host unless labelled other
   profile template, 556 GB.
 - **Engine.** The engine files are now those the `hot_iq` measurements ran with: the reading step's new allocation
   order (the memory fix below) and the route counters (`nvfp4_8r_stats.py`, new). Added: the tier-map change
-  (`nvfp4_8r_tier_map` and the v2 pack format). Its CPU check passed. It has not yet booted on eight cards (2026-11-10). The boot check follows.
+  (`nvfp4_8r_tier_map` and the v2 pack format). Its CPU check passed. Its eight-card boot check passed on 2026-11-11 (entry above).
 - **The memory fix for part B.** The part B variant at the accepted tiers ran out of card memory on its first long
   read. The fix, checked on one card, is in this snapshot's engine file. The variant has not yet run at the
   accepted tiers with it and is not in this snapshot.

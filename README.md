@@ -1,7 +1,8 @@
 # Volta Max uPLIft FP4
 
-## Volta Max uPLIft: as much of the routed work at NVIDIA's NVFP4 precision as fits on eight V100s, every routed expert on the cards in decode · 6,087 of 15,360 routed experts at exactly NVFP4 precision on the mixed tally · 79 to 85 % of decode routes in the measured sets (in-sample) · 64.7 tok/s legal-style, 83.6 general · 8x V100 from 2018 · slower than Volta sPLIt
+## Volta Max uPLIft: as much of the routed work at NVIDIA's NVFP4 precision as fits on eight V100s, every routed expert on the cards in decode · 6,087 of 15,360 routed experts at exactly NVFP4 precision on the mixed tally · 79 to 85 % of decode routes in the measured sets (in-sample) · same next token as NVIDIA's NVFP4 pack 95.1 % (Volta sPLIt 92.2 %) · 64.7 tok/s legal-style, 83.6 general · 8x V100 from 2018 · slower than Volta sPLIt
 
+[![same next token as the NVFP4 pack: 95.1 %, Volta sPLIt 92.2 %](https://img.shields.io/badge/same%20next%20token%20as%20NVFP4-95.1%20%25%20(Volta%20sPLIt%2092.2%20%25)-76B900?style=for-the-badge)](#how-close-to-nvfp4)
 [![decode routes at NVFP4 precision: 79-85 %](https://img.shields.io/badge/routes%20at%20NVFP4%20precision-79--85%20%25-76B900?style=for-the-badge)](#how-close-to-nvfp4)
 [![Max uPLIft legal-style: 64.7 tok/s](https://img.shields.io/badge/Max%20uPLIft%20legal--style-64.7%20tok%2Fs-1F6FEB?style=for-the-badge)](#hot_iq-on-the-mixed-tally-the-build-of-this-release)
 [![Max uPLIft general: 83.6 tok/s](https://img.shields.io/badge/Max%20uPLIft%20general-83.6%20tok%2Fs-8250DF?style=for-the-badge)](#hot_iq-on-the-mixed-tally-the-build-of-this-release)
@@ -14,6 +15,8 @@ Built by **Nick Mermiges, Esq.**, founder of [PLI Labs](https://proprietarylegal
 
 [![proprietarylegal.ai](https://img.shields.io/badge/proprietarylegal.ai-website-0B3D91)](https://proprietarylegal.ai) [![PLI Labs](https://img.shields.io/badge/PLI%20Labs-research-1F6FEB)](https://proprietarylegal.ai/labs.html) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) [![Hardware: 8x V100-SXM2-32GB](https://img.shields.io/badge/hardware-8x%20V100--SXM2--32GB-76B900)](#hardware) [![Earlier build: Volta sPLIt](https://img.shields.io/badge/earlier%20build-Volta%20sPLIt-555555)](https://github.com/ProprietaryLegal/Volta-sPLIt-DeepSeek-V4.1-Flash-1017-8xV100-SXM2-PP2xTP4) [![Hugging Face: hot_iq package, upload in progress, do not download yet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-hot__iq%20package%2C%20upload%20in%20progress-FFD21E)](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4) [![Related build: Volta Full NVFP4](https://img.shields.io/badge/related%20build-Volta%20Full%20NVFP4-555555)](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100)
 
+[![Greedy continuations that stay identical to the NVFP4 reference: hot_iq, Volta sPLIt and the reference's own repeat](quality/closeness-test/charts/survival.svg)](#how-close-to-nvfp4)
+
 **Volta Max uPLIft is the build that puts as much of the routed work at NVIDIA's NVFP4 precision as fits on eight V100
 cards, with every routed expert held on the cards.** The configuration key is `hot_iq`. Every routed expert's compressed
 IQ2-class record is placed on the cards first. Then experts are promoted to their NVFP4 weights in order of use per
@@ -25,8 +28,15 @@ precision of NVIDIA's [DeepSeek-V4.1-Flash-1017-NVFP4](https://huggingface.co/nv
 unchanged. In the measured sets 79.0 to 85.0 % of decode routes ran on those experts (route counters, in-sample,
 [below](#hot_iq-on-the-mixed-tally-the-build-of-this-release)). The other 15.0 to 21.0 % ran on ISTA-DASLab's IQ2-class
 records. In decode all experts are in VRAM: no routed expert is read over PCIe. Prompt reading is different: it
-reads the compressed experts at NVFP4 precision from records staged in host RAM (`native_staged`). How close the
-output is to the all-NVFP4 reference is the next section.
+reads the compressed experts at NVFP4 precision from records staged in host RAM (`native_staged`).
+
+**How close to NVIDIA's NVFP4 pack** (MEASURED 2026-11-11, 320 contexts and 513 MMLU questions, rules fixed before
+any capture, [details](#how-close-to-nvfp4)). `hot_iq` picks the same next token as the NVFP4 reference on 95.1 % of
+compared tokens, Volta sPLIt on 92.2 %. Its KL divergence from the reference is 0.079 nats against Volta sPLIt's
+0.196, and on the tokens both builds still share with the reference it removes 63 % of Volta sPLIt's KL divergence.
+It changes 1.6 % of the multiple-choice answers, Volta sPLIt 15.4 %. 37 of Volta sPLIt's 79 changed answers are on
+the 38 questions the reference left unanswered: on the 475 it answered, the changed shares are 1.7 % and 8.8 %
+(counted after scoring, outside the preregistered rules).
 
 The pack is served on eight V100-SXM2-32GB cards (two 4-card NVLink boards, pipeline parallel 2 x tensor parallel 4).
 The promoted ("hot") routed experts run at the precision of DeepSeek's official weights: NVFP4 folds exactly to MXFP4 (4.25 bits
@@ -39,7 +49,7 @@ build, with part of the experts in host RAM. Its measurements are in the [histor
 
 **One download, upload in progress:** the [hot_iq package on Hugging Face](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4) (556 GB) will hold
 every weight file this build serves, the tier map that says which experts are hot, and the serving profile. As of
-2026-11-10 the weights are still uploading and the file list there is incomplete, so do not download it yet. A
+2026-11-11 the weights are still uploading and the file list there is incomplete, so do not download it yet. A
 dated line here and on the package card will say when the upload is complete. Then start it with
 [engine/configs/serve_hot_iq.sh](engine/configs/serve_hot_iq.sh) as [Reproduce](#reproduce) describes.
 
@@ -54,15 +64,145 @@ dated rows in the [measurement log](#measurement-log).
 
 ## How close to NVFP4
 
-**The closeness test is designed and its rules are public. Its results are not in yet.** It compares this
-build's output with NVIDIA's NVFP4 pack served with every routed expert at its own NVFP4 precision (the reference,
-[Volta Full NVFP4](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100)), with Volta sPLIt as the yardstick: tokens 2 to 32 of greedy continuations on 320 contexts of five kinds
-(same next token, log-probability gap, KL divergence, first difference) and 513 MMLU questions, on the same eight
-cards. Its rules and the sha256 of its scripts were fixed on 2026-11-10 at 19:54 UTC, before any capture, in
-[PREREGISTRATION.txt](quality/closeness-test/PREREGISTRATION.txt). The captures run on 2026-11-10 and 2026-11-11. The results will be added here and to the measurement
-log as dated rows, whatever they show.
-The scripts, the item ids, the sources and the rules are in [quality/closeness-test/](quality/closeness-test/).
-The check on the replaced 12-prompt set, which this build passed, is in [Quality](#quality).
+`hot_iq` runs the experts that carry most of the decode work (79 to 85 % of decode routes, in-sample) at exactly
+NVIDIA's NVFP4 precision and the rest from smaller IQ2-class records, so every routed expert fits on eight 32 GB
+Tesla V100 cards. This section measures how far that moves the model's output from the NVFP4 pack, and compares it
+with Volta sPLIt, the build that runs every routed expert from IQ2-class records. The reference throughout is **NVIDIA's NVFP4 pack**
+served on the same cards with every routed expert at its own NVFP4 precision. That pack is itself a quantization of
+the original model, so these figures say how close `hot_iq` is to the NVFP4 pack, not to the unquantized model.
+
+### What is exact by construction
+
+| Fact | Value | Evidence |
+|---|---|---|
+| Experts kept at NVFP4 precision (hot) | layers 0 to 19: 3,833 of 7,680. Layers 20 to 39: 2,254 of 7,680 | boot log tier lines on all four ranks of each stage of the exported package's boot (2026-11-11), tier digests 8e7829184090 and 5b09c0383a80 |
+| Hot experts equal NVIDIA's values | the NVFP4 to MXFP4 fold is exact: 44,696,862,720 values bit-equal, relative L2 error 0 | the fold check ([Volta Full NVFP4](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100#what-this-is)) |
+| Decode routes that land on hot experts (the share of the work done at exactly NVFP4 precision) | general text 79.0%, legal-style 83.3%, source code loop 85.0%, US Code loop 84.3% | route counters while serving the texts the hot experts were chosen from (in-sample) |
+| Prompt reading | every expert, hot or not, is computed from its full NVFP4 record | the engine's prompt-reading path |
+
+So the first token of every answer comes from the same weights as the reference. Only later tokens can be touched
+by the IQ records, on the 15 to 21% of expert routes that are not hot.
+
+### What was measured
+
+The test, its rules and its scripts are in [`quality/closeness-test/`](quality/closeness-test/README.md). The rules were fixed and
+their scripts hashed before any capture ([pre-registration](quality/closeness-test/PREREGISTRATION.txt)). Every figure
+below is reported as measured, with a 95% bootstrap interval. Temperature 0, thinking off, one request at a time.
+The receipts (hashes, log-probabilities, counts and timing, no text), the scorer's output
+[score-v1.json](quality/closeness-test/score-v1.json) and the run decisions
+([DECISIONS.md](quality/closeness-test/DECISIONS.md), a scrubbed public copy) are in the same folder.
+
+- **Captures.** MEASURED, all at the 1,475 MHz clock cap. Volta sPLIt on its production boot, 2026-11-10 from
+  21:32 UTC. `hot_iq` on a boot of the exported package (the files being uploaded), 2026-11-11 from 01:58 UTC. The reference on its own boot,
+  2026-11-11 from 02:44 UTC. Two amendments to the capture budgets are recorded before any score: the Volta sPLIt arm
+  and the `hot_iq` arm were each captured in two parts on one boot (15 and up to 75 minutes, decided 2026-11-10 at
+  21:36 UTC, and 30 and up to 20 minutes, decided 2026-11-11 at 02:05 UTC), each from a timing line only. No script,
+  rule or constant changed. The scorer accepted both continuations, which re-captured the first 10 contexts
+  identically. The Volta sPLIt arm was captured on 2026-11-10, before three later changes to the Volta sPLIt build.
+  This test makes no claim about their effect.
+
+- **320 contexts** of code, prose, legal-style, structured and chat text from
+  public sources, none of them used to choose the hot experts ([sources](quality/closeness-test/SOURCES.md)). Each build
+  writes 32 tokens greedily. Tokens 2 to 32 are compared while the text still equals the reference's.
+- **513 MMLU questions**, 9 from each of 57 subjects, answered as `Answer: X`.
+- **The noise floor.** The reference was run twice on 50 contexts and 50 questions. It was
+  identical on all 50 repeated contexts and all 50 repeated questions, so the noise floor is zero.
+
+### Next-token closeness
+
+| Measure | hot_iq | Volta sPLIt | Reference repeat (noise floor) |
+|---|---|---|---|
+| Contexts | 320 | 320 | 50 |
+| Tokens compared (after the first, up to the first difference) | 4818 | 2455 | 1550 |
+| Same next token as the reference | 95.1% (94.4% to 95.7%) | 92.2% (90.7% to 93.4%) | 100.0% (100.0% to 100.0%) |
+| Mean log-probability gap on the reference's token (nats) | 0.1163 (0.1009 to 0.1342) | 0.2451 (0.2053 to 0.2959) | 0.0000 (0.0000 to 0.0000) |
+| Mean KL divergence from the reference, top 20 (nats, lower bound) | 0.0794 (0.0687 to 0.0915) | 0.1958 (0.1648 to 0.2329) | 0.0000 (0.0000 to 0.0000) |
+| All 32 tokens identical | 25.6% (20.9% to 30.0%) | 10.9% (7.8% to 14.4%) | 100.0% (100.0% to 100.0%) |
+| First token identical (prompt reading, control) | 100.0% (100.0% to 100.0%) | 70.6% (65.9% to 75.6%) | 100.0% (100.0% to 100.0%) |
+
+On the tokens where both builds still matched the reference, measured on exactly the same tokens:
+
+| Measure (same tokens for both builds) | hot_iq | Volta sPLIt | Volta sPLIt minus hot_iq | Verdict |
+|---|---|---|---|---|
+| Next token differs from the reference | 4.3% (3.4% to 5.4%) | 7.8% (6.5% to 9.4%) | 3.5% (2.4% to 4.7%) | HOT_IQ CLOSER |
+| Mean log-probability gap (nats) | 0.1035 (0.0803 to 0.1324) | 0.2351 (0.1942 to 0.2869) | 0.1316 (0.0992 to 0.1690) | HOT_IQ CLOSER |
+| Mean KL divergence, top 20 (nats, lower bound) | 0.0693 (0.0536 to 0.0873) | 0.1887 (0.1570 to 0.2274) | 0.1194 (0.0921 to 0.1521) | HOT_IQ CLOSER |
+
+`hot_iq` removes 63.3% (95% interval 55.0% to 70.5%) of Volta sPLIt's KL divergence from the NVFP4 reference, and
+56.0% (95% interval 47.3% to 63.8%) of its log-probability gap.
+
+By text kind, on the same shared tokens:
+
+| Text kind | Contexts | Tokens compared | hot_iq KL | Volta sPLIt KL | hot_iq same token | Volta sPLIt same token |
+|---|---|---|---|---|---|---|
+| code | 64 | 626 | 0.0219 (0.0125 to 0.0359) | 0.0675 (0.0434 to 0.1071) | 97.3% (95.5% to 98.5%) | 96.2% (93.9% to 97.6%) |
+| prose | 64 | 223 | 0.2967 (0.1717 to 0.4755) | 0.6661 (0.4558 to 0.9473) | 89.2% (83.4% to 93.3%) | 79.8% (71.6% to 86.1%) |
+| legal | 64 | 368 | 0.0631 (0.0402 to 0.0955) | 0.2082 (0.1448 to 0.3017) | 94.0% (90.2% to 96.3%) | 89.9% (84.4% to 93.4%) |
+| structured | 64 | 591 | 0.0395 (0.0226 to 0.0625) | 0.0865 (0.0586 to 0.1285) | 97.5% (95.6% to 98.6%) | 94.9% (92.0% to 96.7%) |
+| chat | 64 | 359 | 0.0664 (0.0430 to 0.0974) | 0.2516 (0.1623 to 0.3773) | 95.8% (93.5% to 97.7%) | 91.1% (86.8% to 93.9%) |
+
+![Distance from the NVFP4 reference by text kind](quality/closeness-test/charts/kinds.svg)
+
+### How long the output stays identical
+
+Each build's 32 greedy tokens were compared with the reference's until the first token that differs. `hot_iq`
+stayed identical through all 32 tokens on 25.6% (95% interval 20.9% to 30.0%) of contexts, Volta sPLIt on
+10.9% (95% interval 7.8% to 14.4%). The median first differing token was 13.0 (95% interval 10.0 to 15.5)
+for `hot_iq` and 4.0 (95% interval 3.0 to 4.0) for Volta sPLIt. Context by context,
+hot_iq stayed identical longer on 200 contexts, Volta sPLIt on 31, and the two diverged at the same token on 89.
+
+![Greedy continuations identical to the NVFP4 reference](quality/closeness-test/charts/survival.svg)
+
+### Multiple choice
+
+| Build | Accuracy | Minus the reference | Answer differs from the reference | No answer |
+|---|---|---|---|---|
+| NVFP4 reference | 83.8% (80.7% to 86.7%) |  |  | 38 |
+| hot_iq | 83.6% (80.5% to 86.5%) | -0.2% (-1.4% to 0.8%) | 1.6% (0.6% to 2.7%) | 38 |
+| Volta sPLIt | 84.4% (81.3% to 87.5%) | 0.6% (-2.3% to 3.5%) | 15.4% (12.3% to 18.5%) | 1 |
+
+The reference answered 83.8% (95% interval 80.7% to 86.7%) correctly. `hot_iq`'s answer differed from the
+reference's on 1.6% (95% interval 0.6% to 2.7%) of the questions, Volta sPLIt's on
+15.4% (95% interval 12.3% to 18.5%). Against the reference, `hot_iq`'s accuracy is
+NOT DISTINGUISHABLE FROM THE REFERENCE AT THIS SAMPLE SIZE, and Volta sPLIt's is NOT DISTINGUISHABLE FROM THE REFERENCE AT THIS SAMPLE SIZE.
+
+**Counted after scoring, outside the rules fixed in advance** (answers only, from the receipts,
+[script](quality/closeness-test/after-scoring/mc_no_answer_counts.py)). The reference and `hot_iq` gave no answer on
+the same 38 questions. 37 of Volta sPLIt's 79 changed answers fall on those 38 questions, where Volta sPLIt answered
+and the reference did not. On the 475 questions the reference answered, `hot_iq` changed 8 answers (1.7 %) and
+Volta sPLIt 42 (8.8 %).
+
+![Multiple-choice accuracy by build](quality/closeness-test/charts/mc.svg)
+
+### Verdicts, by the rules fixed in advance
+
+| Question | Verdict |
+|---|---|
+| Is `hot_iq` closer to the NVFP4 reference than Volta sPLIt (KL divergence, shared tokens)? | HOT_IQ CLOSER |
+| The same, by log-probability gap | HOT_IQ CLOSER |
+| The same, by next-token disagreement | HOT_IQ CLOSER |
+| Does `hot_iq` change fewer multiple-choice answers than Volta sPLIt? | HOT_IQ CLOSER |
+| `hot_iq` against the reference's own repeat (KL divergence) | DIFFERS FROM THE REFERENCE |
+| Volta sPLIt against the reference's own repeat (KL divergence) | DIFFERS FROM THE REFERENCE |
+
+"Indistinguishable at this sample size" means the 95% interval reaches the noise floor. It does not mean equal. A
+difference smaller than this test can resolve may still exist.
+
+### What these numbers show and what they do not
+
+They show how often `hot_iq` picks the same next token as NVIDIA's NVFP4 pack on these cards, how far its
+probabilities move, how long its greedy output stays the same, and how many multiple-choice answers change, each
+next to the same figures for Volta sPLIt and next to the reference's own repeatability.
+
+They do not show closeness to the unquantized model (the reference is NVIDIA's quantization). They do not cover
+sampling at a temperature above 0, thinking, or long answers, because every test here is greedy, without thinking,
+and at most 32 tokens. The KL divergence is computed over each build's top 20 tokens, so it is a lower bound of the
+full value. The prompts are short (about 100 to 250 tokens). The figures come from one hardware layout, eight V100
+cards in two pipeline stages, where the reference's NVFP4 weights are computed by this engine, not by NVIDIA's own
+hardware path. With 513 questions, an accuracy difference of less than about 4 points
+cannot be resolved, which is why the share of changed answers is reported beside accuracy.
+
+The earlier check on the replaced 12-prompt set, which this build passed, is in [Quality](#quality).
 
 ## hot_iq on the mixed tally: the build of this release
 
@@ -150,8 +290,10 @@ comparison run of 2026-11-10. Prompt by prompt against Volta sPLIt's published b
   two cards completed without a fault. The cause is not yet known.
 - The engine reads the package's `tier_map.json` in place of a tally (the tier-map change of this release). Its
   CPU check passed: the map gives the measured tiers and digests on all 40 layers, and in layers 0 and 20 (first
-  tensor-parallel rank) every expert record of the package is byte-equal to the record that was measured. It has
-  not yet booted on eight cards (2026-11-10): that boot check follows and will be added as a dated row.
+  tensor-parallel rank) every expert record of the package is byte-equal to the record that was measured. On eight
+  cards (2026-11-11) a boot of the exported package was ready after 263 s with no traceback, its tier lines and both
+  tier digests equal the measured boot's on all eight ranks, and its greedy output on the 12 + 5 check prompts was
+  token for token identical to the measured build's (1,024 tokens each, mean log-probability difference 0.0).
 
 ## Tokens per second
 
@@ -335,13 +477,20 @@ accepted tiers they are measured but not accepted, quality not established), our
 back unchanged, the termination test for long thinking answers exists and has run, the load failure of the
 prompt-reading variant of plan 04 is fixed, and `hot_iq` on the mixed tally passed its closeness check on the
 replaced 12-prompt set and its long thinking chats and is the build of this release ([above](#hot_iq-on-the-mixed-tally-the-build-of-this-release)). The full speed bench
-of that build has run ([Tokens per second](#tokens-per-second)). Next, first: that reading variant at the accepted tiers on eight cards,
+of that build has run ([Tokens per second](#tokens-per-second)), and so has the closeness test against the NVFP4
+reference ([How close to NVFP4](#how-close-to-nvfp4)). Next, first: that reading variant at the accepted tiers on eight cards,
 with the fix for its memory shortfall (built, checked on one card, in this snapshot's engine file), the cause of its
 faults on one long chat, and fused kernels for route grouping and SwiGLU. The detailed plans are in [docs/plans/](docs/plans/), and the measured research on
 where the time goes is [docs/research/LANE-RESEARCH.md](docs/research/LANE-RESEARCH.md). Our target is 80 to 100
 tok/s at official expert precision on these eight cards.
 
 ## Quality
+
+**Closeness test against the NVFP4 reference (MEASURED 2026-11-11): HOT_IQ CLOSER on all four comparisons with
+Volta sPLIt fixed in advance** (KL divergence, log-probability gap and next-token disagreement on the shared tokens,
+changed multiple-choice answers). Against the reference's own repeat, both builds DIFFER FROM THE REFERENCE by KL
+divergence. Multiple-choice accuracy is not distinguishable from the reference's at 513 questions for either build.
+Figures, intervals and limits: [How close to NVFP4](#how-close-to-nvfp4).
 
 **Max uPLIft (`hot_iq` on the mixed tally): PASS on the replaced 12-prompt set.** MEASURED 2026-11-10, greedy,
 thinking off, 1,024 tokens each. The reference is the same NVFP4 pack with every routed expert at official
@@ -374,6 +523,10 @@ the mixed tally, "the accepted configuration" and "the accepted tiers" mean the 
 
 | Date | Build or profile | Test | Result | Basis |
 |---|---|---|---|---|
+| 2026-11-11 | `hot_iq`, a boot of the exported package (the build of this release) | closeness to the NVFP4 reference, 320 contexts | same next token 95.1 % (Volta sPLIt 92.2 %), KL divergence 0.0794 nats (0.1958), all 32 tokens identical on 25.6 % of contexts (10.9 %). On the shared tokens HOT_IQ CLOSER by KL divergence, log-probability gap and next-token disagreement. Both builds DIFFER FROM THE REFERENCE against its repeat ([How close to NVFP4](#how-close-to-nvfp4)) | MEASURED, greedy, thinking off, rules fixed before any capture, 1,475 MHz. Volta sPLIt captured 2026-11-10 |
+| 2026-11-11 | `hot_iq`, a boot of the exported package | closeness to the NVFP4 reference, 513 MMLU questions | accuracy 83.6 % (reference 83.8 %, Volta sPLIt 84.4 %), not distinguishable from the reference. Changed answers 1.6 % (Volta sPLIt 15.4 %): HOT_IQ CLOSER. Counted after scoring: on the 475 questions the reference answered, 1.7 % and 8.8 % ([Multiple choice](#multiple-choice)) | MEASURED, greedy, thinking off, 1,475 MHz |
+| 2026-11-11 | `hot_iq`, a boot of the exported package | same output as the measured build | 12 + 5 check prompts, 1,024 tokens each: token for token identical, mean log-probability difference 0.0, both checks SAME | MEASURED, greedy, thinking off, 1,475 MHz |
+| 2026-11-11 | `hot_iq`, a boot of the exported package on eight cards | boot check | ready after 263 s, 0 tracebacks, tier lines (3,833 / 3,847 and 2,254 / 5,426 hot / compressed) and tier digests `8e7829184090` and `5b09c0383a80` equal the measured boot's on all eight ranks: PASS | MEASURED, 1,475 MHz |
 | 2026-11-10 | `hot_iq` on the mixed tally, one slot (the build of this release) | speed bench, long prompts 1K to 256K, thinking off | code 123.3 tok/s at 1K to 103.8 at 256K, legal 71.9 to 61.8, prose and chat 59.6 to 67.9. First token 5.60 s at 1K, 106.4 s at 128K, 209.6 s at 256K. Greedy output byte-identical in 45 of 45 cells ([Tokens per second](#tokens-per-second)) | MEASURED, public text, 2 runs per cell, 1,425 MHz |
 | 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, long prompts 1K to 256K, thinking on | code 102.3 to 136.8 tok/s, structured 107.1 to 122.5, legal 67.8 to 81.8, prose 60.3 to 67.9, chat 54.6 to 66.6. First token 5.76 s at 1K to 210.2 s at 256K ([table](docs/measurements.md#speed-bench-1k-to-256k)) | MEASURED, public text, 1 run per cell, 1,425 MHz |
 | 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, prompt reading by kind | 175 to 247 tok/s at 1K, 1,030 to 1,055 at 32K, 1,221 to 1,263 at 128K, 1,243 to 1,276 at 256K ([table](docs/measurements.md#speed-bench-1k-to-256k)) | MEASURED, public text, 2 runs per cell, 1,425 MHz |
@@ -429,12 +582,12 @@ a read ceiling of about 879 GB/s on a V100-SXM2 and its QPN kernel at 77 % of it
 
 ### From the Hugging Face package (`hot_iq`)
 
-**When the upload is complete.** As of 2026-11-10 the package is still uploading: do not download it yet. Once
+**When the upload is complete.** As of 2026-11-11 the package is still uploading: do not download it yet. Once
 complete it holds the weights, the MXFP4 expert files and the tier map, so no tally and no pack build is needed.
-As of 2026-11-10 the public launcher and the tier-map reader have passed the CPU check (the tier map gives the
-measured tiers and digests on all 40 layers, and every expert record of layers 0 and 20 on the first rank is
-byte-equal to the measured one) but not yet an eight-card boot. The boot check follows and will be added as a
-dated row.
+The tier-map reader passed the CPU check on 2026-11-10 (the tier map gives the measured tiers and digests on all
+40 layers, and every expert record of layers 0 and 20 on the first rank is byte-equal to the measured one). On
+2026-11-11 the exported package booted on eight cards and gave the measured build's output token for token
+([measurement log](#measurement-log)).
 
 1. Build the engine as step 1 of [From source](#from-source-with-your-own-tally) describes.
 2. When the upload is complete, download and check the package (556 GB): `hf download ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4 --local-dir /path/to/pkg`,

@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "65d818628655541bc226f73ee7406dda880ff9e4e4c8dd32f084be8c1b92c60f",
+   "source_sha256": "80ed9e813ac0b3867641369468c908b14a1f793774568d953c1ac55b9a497ab0",
    "transform": "hand-written for publication; 3 wip block(s) removed",
-   "sha256": "72b9a8cb3c2ec7ffc7d71434e60b80cad78be80aa9445b31259d5d4d35b02ec0",
-   "bytes": 63470
+   "sha256": "dd0310cfe378355b4e49dc3497c61c4b60e850b5f44b64f57b8669326598292e",
+   "bytes": 76595
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "b57bf70c6bdc4a239013e9c2479c945b9dc3a96b45ae7985cba80a001019eb24",
+   "source_sha256": "cc1bb627dedc06649b88f37febce65e0774fc940fa0e6e58a2a6dfc64ca2a25d",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "87f4aef868557dca84d88909eedb9a5ca8afb5afbe9c9b1ebe3828960426ee52",
-   "bytes": 16486
+   "sha256": "aa2d909554c7ea4c86990f0ef2c1e7a1732c70db3daa1a4f1637a76256fe7e78",
+   "bytes": 17980
   },
   {
    "path": "CREDITS.md",
@@ -89,10 +89,10 @@
    "path": ".gitignore",
    "kind": "authored",
    "source": "$LANE/publish/authored/.gitignore",
-   "source_sha256": "87b9e994533f4a3c13713e9bc77837b9fac5cc582a0f39849d36c102b225fc8d",
+   "source_sha256": "963824976dd79818c963734ea84b8e0153c0f8b9faac8035c517c7019ab4345d",
    "transform": "hand-written for publication",
-   "sha256": "87b9e994533f4a3c13713e9bc77837b9fac5cc582a0f39849d36c102b225fc8d",
-   "bytes": 127
+   "sha256": "963824976dd79818c963734ea84b8e0153c0f8b9faac8035c517c7019ab4345d",
+   "bytes": 168
   },
   {
    "path": "docs/README.md",
@@ -107,10 +107,10 @@
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "e23d67d1438c2596e9b6b2b79d108ce4c81214810baeb2ab99ed184d97014dca",
+   "source_sha256": "3edd420fcb64c1f4321d0c748092ce3c72152e5b185437a8d051dd49a98da9ae",
    "transform": "hand-written for publication",
-   "sha256": "e23d67d1438c2596e9b6b2b79d108ce4c81214810baeb2ab99ed184d97014dca",
-   "bytes": 72655
+   "sha256": "3edd420fcb64c1f4321d0c748092ce3c72152e5b185437a8d051dd49a98da9ae",
+   "bytes": 73824
   },
   {
    "path": "docs/history.md",
@@ -125,10 +125,10 @@
    "path": "engine/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/README.md",
-   "source_sha256": "9b694025641f5aee1f131aa223c52be4861e59eee6261328bb4d54a8fee3555f",
+   "source_sha256": "6f4522cfedc05504df93b49f020173481db72f02298ae879ead20b97644caf50",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "40101c6f056b5e5d03d55743db16a7d189be45be4e4d80b18a392eaf5d86b3b3",
-   "bytes": 6695
+   "sha256": "b6fa6320bbd50739099787fbbd7427831ff825514d5bf8d39f303cad19cc3600",
+   "bytes": 6700
   },
   {
    "path": "harness/README.md",
@@ -147,6 +147,15 @@
    "transform": "hand-written for publication",
    "sha256": "9ac7f575d868c4f6e83375355f5b7992d49536bf060faee39bb9ac055f627e94",
    "bytes": 2042
+  },
+  {
+   "path": "quality/closeness-test/DECISIONS.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/DECISIONS.md",
+   "source_sha256": "4c436f8090f6e58f2b8c259566320b524a92988136def5ab1adcdade45ecb70c",
+   "transform": "hand-written for publication",
+   "sha256": "4c436f8090f6e58f2b8c259566320b524a92988136def5ab1adcdade45ecb70c",
+   "bytes": 3907
   },
   {
    "path": "quality/closeness-test/PREREGISTRATION.txt",
@@ -176,6 +185,15 @@
    "bytes": 4529
   },
   {
+   "path": "quality/closeness-test/after-scoring/mc_no_answer_counts.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/quality/closeness-test/after-scoring/mc_no_answer_counts.py",
+   "source_sha256": "aaa666aa8c19b31ca9b09f12a3dd20f05c1ed2b77a4b90dfedc669ffafc644a5",
+   "transform": "hand-written for publication",
+   "sha256": "aaa666aa8c19b31ca9b09f12a3dd20f05c1ed2b77a4b90dfedc669ffafc644a5",
+   "bytes": 3511
+  },
+  {
    "path": "quality/closeness-test/build_items.py",
    "kind": "authored",
    "source": "$LANE/publish/authored/quality/closeness-test/build_items.py",
@@ -192,6 +210,33 @@
    "transform": "hand-written for publication",
    "sha256": "bad9d50943e3ae8f86ecd69d3a7fee612d463ef1084f5df9df0e4fa622c48bb6",
    "bytes": 22782
+  },
+  {
+   "path": "quality/closeness-test/charts/kinds.svg",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/charts/kinds.svg",
+   "source_sha256": "c053a2ab3481a69e7c999ce6fa8448fa1883c58b6c3ec225eab2298971da9f50",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "c053a2ab3481a69e7c999ce6fa8448fa1883c58b6c3ec225eab2298971da9f50",
+   "bytes": 7026
+  },
+  {
+   "path": "quality/closeness-test/charts/mc.svg",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/charts/mc.svg",
+   "source_sha256": "cd15f473a3304ca0626aef045c2160df0b3f3885da0cb87caa4af7131aa93770",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "cd15f473a3304ca0626aef045c2160df0b3f3885da0cb87caa4af7131aa93770",
+   "bytes": 4094
+  },
+  {
+   "path": "quality/closeness-test/charts/survival.svg",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/charts/survival.svg",
+   "source_sha256": "31c14beb0a61bdf40611ea2e477cbcd1676956921c39e640978e487e5cb6f1e9",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "31c14beb0a61bdf40611ea2e477cbcd1676956921c39e640978e487e5cb6f1e9",
+   "bytes": 12041
   },
   {
    "path": "quality/closeness-test/closeness_lib.py",
@@ -212,6 +257,51 @@
    "bytes": 315462
   },
   {
+   "path": "quality/closeness-test/receipts/CLS1-HOT.part1.jsonl",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-HOT.part1.jsonl",
+   "source_sha256": "2230efd62dc752eb50568ebcfa8d4d7972d40fc5360f6d53f46aa0eaa29d6d93",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "2230efd62dc752eb50568ebcfa8d4d7972d40fc5360f6d53f46aa0eaa29d6d93",
+   "bytes": 7779649
+  },
+  {
+   "path": "quality/closeness-test/receipts/CLS1-HOT.part2.jsonl",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-HOT.part2.jsonl",
+   "source_sha256": "6817a5ab55846413aef8b0c8c42ca6400d65766c28eabfdf787e5e58610d71a2",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "6817a5ab55846413aef8b0c8c42ca6400d65766c28eabfdf787e5e58610d71a2",
+   "bytes": 728246
+  },
+  {
+   "path": "quality/closeness-test/receipts/CLS1-REF.part1.jsonl",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-REF.part1.jsonl",
+   "source_sha256": "14538ef16399ee6472f7fbfffff0d02b4b0b53278000c804375ec41cd6672718",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "14538ef16399ee6472f7fbfffff0d02b4b0b53278000c804375ec41cd6672718",
+   "bytes": 9499929
+  },
+  {
+   "path": "quality/closeness-test/receipts/CLS1-VOL.part1.jsonl",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-VOL.part1.jsonl",
+   "source_sha256": "d2d17634f982a4a5a407e384a579ace01c26d6f47949466f7cfc9ea6a5c914cf",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "d2d17634f982a4a5a407e384a579ace01c26d6f47949466f7cfc9ea6a5c914cf",
+   "bytes": 3266773
+  },
+  {
+   "path": "quality/closeness-test/receipts/CLS1-VOL.part2.jsonl",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-VOL.part2.jsonl",
+   "source_sha256": "562cb8881cd7209c848a3f5eae50f6ab8b75c5900bb823f34b7c9087b9cec996",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "562cb8881cd7209c848a3f5eae50f6ab8b75c5900bb823f34b7c9087b9cec996",
+   "bytes": 5180860
+  },
+  {
    "path": "quality/closeness-test/report.py",
    "kind": "authored",
    "source": "$LANE/publish/authored/quality/closeness-test/report.py",
@@ -219,6 +309,15 @@
    "transform": "hand-written for publication",
    "sha256": "b7b270a93329a757111b7f56c7d75fa68a91891135a5702c368563e53e7b8b4d",
    "bytes": 30123
+  },
+  {
+   "path": "quality/closeness-test/score-v1.json",
+   "kind": "data",
+   "source": "$LANE/publish/authored/quality/closeness-test/score-v1.json",
+   "source_sha256": "b15a3e512475def1112e1b6049efacfedcbc133ffbba4b263748eb8085874ded",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "sha256": "b15a3e512475def1112e1b6049efacfedcbc133ffbba4b263748eb8085874ded",
+   "bytes": 70761
   },
   {
    "path": "quality/closeness-test/score.py",
@@ -967,11 +1066,11 @@
   {
    "path": "tools/check_data_boundary.sh",
    "kind": "code",
-   "source": "$LANE/repo/tools/check_data_boundary.sh",
-   "source_sha256": "9d700cdf2f172bb082e0ac3dbb08ab012b62b90d3cdbb3b9a5399bd43e9e4356",
-   "transform": "scrubbed (1 replacements)",
-   "sha256": "0801374c1abfe7e3a35a766fc9b12e8c66583b79e9d7680dd0ac74d07de602f6",
-   "bytes": 1717
+   "source": "$LANE/stage/hf-pack/final-fill/check_data_boundary.sh",
+   "source_sha256": "cc0517a30d92a5fe90f9631cd5e26e8ca014ca86be4d81515ed62976e21644b5",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "cc0517a30d92a5fe90f9631cd5e26e8ca014ca86be4d81515ed62976e21644b5",
+   "bytes": 2331
   },
   {
    "path": "docs/research/LANE-RESEARCH.md",
@@ -1097,9 +1196,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 112,
+  "count": 118,
   "upstream_engine_files": 31,
-  "this_build_work_in_progress": 81,
+  "this_build_work_in_progress": 87,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }

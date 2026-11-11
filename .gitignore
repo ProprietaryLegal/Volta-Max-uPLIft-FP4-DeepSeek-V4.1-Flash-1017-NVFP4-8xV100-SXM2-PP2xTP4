@@ -15,3 +15,4 @@ models/
 state/
 cache/
 *.so
+!quality/closeness-test/receipts/*.jsonl

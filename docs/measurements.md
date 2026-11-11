@@ -2,8 +2,9 @@
 
 Every number here is MEASURED on 2026-11-09 unless its row or section gives another date or it is labelled
 ESTIMATED (arithmetic shown) or UPSTREAM (the named source). The raw receipts are private build logs and are not
-published; this page reduces them to tables and names the receipt each row comes from (paths under the build's
-`logs/`).
+published. This page reduces them to tables and names the receipt each row comes from (paths under the build's
+`logs/`). The one exception is the closeness test of 2026-11-11: its receipts, scorer output and scripts are
+published in [quality/closeness-test/](../quality/closeness-test/).
 
 The rows and sections of the two-tier mode are the all-NVFP4 build now published as
 [Volta Full NVFP4](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100). They stay here as the dated record, and that
@@ -16,6 +17,8 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 
 | Date | Build or profile | Test | Result | Receipt |
 |---|---|---|---|---|
+| 2026-11-11 | `hot_iq`, a boot of the exported package (the build of this release) | closeness to the NVFP4 reference, 320 contexts and 513 MMLU questions | same next token 95.1 % (Volta sPLIt 92.2 %), KL divergence 0.0794 nats (0.1958), all 32 tokens identical 25.6 % (10.9 %), changed multiple-choice answers 1.6 % (15.4 %), accuracy 83.6 % (reference 83.8 %, Volta sPLIt 84.4 %). HOT_IQ CLOSER on all four comparisons fixed in advance, 1,475 MHz ([README](../README.md#how-close-to-nvfp4)) | [`quality/closeness-test/score-v1.json`](../quality/closeness-test/score-v1.json) and its receipts |
+| 2026-11-11 | `hot_iq`, a boot of the exported package | boot check and same output as the measured build | ready after 263 s, 0 tracebacks, tier lines and both tier digests equal on all eight ranks. 12 + 5 check prompts, 1,024 tokens each, token for token identical, mean log-probability difference 0.0, 1,475 MHz | `baseline/window-cls1-20261111.out` |
 | 2026-11-10 | `hot_iq` on the mixed tally, one slot (the build of this release) | speed bench, long prompts 1K to 256K, thinking off | code 123.3 tok/s at 1K to 103.8 at 256K, legal 71.9 to 61.8, prose and chat 59.6 to 67.9. First token 5.60 s at 1K, 106.4 s at 128K, 209.6 s at 256K. Greedy output byte-identical in 45 of 45 cells, 1,425 MHz ([section](#speed-bench-1k-to-256k)) | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
 | 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, long prompts 1K to 256K, thinking on | code 102.3 to 136.8 tok/s, structured 107.1 to 122.5, legal 67.8 to 81.8, prose 60.3 to 67.9, chat 54.6 to 66.6. First token 5.76 s at 1K to 210.2 s at 256K, 1,425 MHz | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
 | 2026-11-10 | `hot_iq` on the mixed tally, one slot | speed bench, prompt reading by kind | 175 to 247 tok/s at 1K, 1,030 to 1,055 at 32K, 1,221 to 1,263 at 128K, 1,243 to 1,276 at 256K, 1,425 MHz | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
@@ -74,7 +77,8 @@ with the full-precision records (`native_staged`), the load-time allocator setti
 (`VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0`). Tiers from the mixed tally: stage 0 3,833 hot and 3,847 warm (compressed)
 experts, stage 1 2,254 and 5,426, no host tier (tier digests `8e7829184090` and `5b09c0383a80`). The engine file
 is this snapshot's without the tier-map change, which reads the same tiers from the Hugging Face package's map
-(not yet booted on eight cards as of 2026-11-10, the boot check follows).
+(booted on eight cards on 2026-11-11 with the same tiers and digests and the same output token for token, row at the
+top).
 
 The full speed bench of this configuration (prompt lengths 1K to 256K, five kinds of text) is its own section
 below ([Speed bench](#speed-bench-1k-to-256k)).
