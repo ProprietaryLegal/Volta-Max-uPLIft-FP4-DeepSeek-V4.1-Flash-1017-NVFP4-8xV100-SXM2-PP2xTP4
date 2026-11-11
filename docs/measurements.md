@@ -17,6 +17,12 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 
 | Date | Build or profile | Test | Result | Receipt |
 |---|---|---|---|---|
+| 2026-11-11 | `hot_iq` on the mixed tally, R1 tiers, group-plan kernel, one slot (repository only) | speed bench rerun (169 requests), short sets and 216K tool loop on the bench boot | thinking off, decode 149.6 and 122.5 tok/s on code after 1K and 256K prompts (first bench 123.3 and 103.8), legal 84.7 and 78.5 (71.9 and 61.8), first token after a 256K prompt 207.9 s (209.6 s). Short sets general 101.1 tok/s (28.29 ms per round) and legal-style 81.1 (28.07 ms) on the rerun's boot, against 87.0 (34.73 ms) and 67.3 (34.41 ms) on the first bench's boot. On the rerun's boot the 216K tool loop's final request ended with stop reason `end_turn` after 1,146 tokens. Counting it, that request has run to the limit in 1 of 2 runs with the group-plan kernel, 2 of 4 on R1's tiers and 3 of 6 on every build of this repository so far. | `benchvolta/W9C-t3n-mix4b-r700-gpk-20261111T122408Z/cells.jsonl`, `run.json`, `baseline/W9C-t3n-mix4b-r700-gpk-loop216k-think1.jsonl`, `-g1-tput.out`, `-l1-tput.out` |
+| 2026-11-11 | `hot_iq` on the mixed tally, R1 tiers, group-plan kernel against the chain (repository only, not the package as uploaded) | window 11c, the one replication, paired A1 B1 B2 A2 | decode ms per round A1 33.90, B1 29.17, B2 28.53, A2 33.88. p1 -4.514, p2 -5.364, mean -4.939, noise floor 1.135: ACCEPT. Whole request 85.5 to 85.9 tok/s (chain) against 98.3 to 101.2 (kernel). Token-exact in every compare. Report with the next row ([section](#2026-11-11-r1-tiers-and-the-group-plan-kernel)) | `baseline/window11c-20261111.out`, `dispatch/ab-W11c-*-tput.out`, `dispatch/w11c-verdict.out` |
+| 2026-11-11 | `hot_iq` on the mixed tally, R1 tiers, group-plan kernel against the chain (repository only) | window 11, paired A1 B1 B2 A2 | decode ms per round A1 34.29, B1 28.54, B2 30.79, A2 34.01. p1 -5.774, p2 -2.471, mean -4.123, noise floor 3.429 (B2r - B2): NO MEASURABLE CHANGE. Whole request 84.6 to 85.9 tok/s against 93.5 to 101.6. Token-exact in every compare | `baseline/window11-20261111.out`, `dispatch/ab-W11-*-tput.out`, `dispatch/w11-verdict.out` |
+| 2026-11-11 | `hot_iq` on the mixed tally, R1 tiers, group-plan kernel (repository only) | memory gate: 500K-token read and 216K tool loop | 498,099-token read 403.0 s, tool loop 7 of 7 follow-ups kept the prompt, decode mean 115.0 tok/s, no out-of-memory line, peak 31,694 MiB (stage 0) and 30,994 MiB (stage 1) against the limit 31,998: PASS. The final request ran to the 32,000-token limit inside thinking | `baseline/w11-gpkmem-20261111.out`, `baseline/W11-gpkmem-long500k.out`, `baseline/W11-gpkmem-loop216k-think1.out` |
+| 2026-11-11 | `hot_iq` on the mixed tally, stage-1 reserve 7.00 GiB (R1), chain (repository only) | memory gate: 500K-token read and 216K tool loop | 498,099-token read 400.6 s, tool loop decode mean 100.4 tok/s, no out-of-memory line, peak 31,732 MiB (stage 0) and 31,456 MiB (stage 1): PASS. The final request ran to the 32,000-token limit inside thinking | `baseline/w10a-mem-20261111.out`, `baseline/W10a-mem-long500k.out`, `baseline/W10a-mem-loop216k-think1.out` |
+| 2026-11-11 | `hot_iq` on the mixed tally, stage-1 reserve 7.00 GiB (R1), chain (repository only) | tiers, route shares, short sets, tool loops, closeness check | stage 1 2,459 hot / 5,221 compressed (digest `9473486077c6`), stage 0 unchanged. Decode routes on NVFP4 experts 80.28 / 84.37 / 86.39 / 85.36 % (in-sample). Short sets 81.6 / 65.4 tok/s, 31K loops 96.1 / 85.0, 216K loop decode mean 97.7 (final request ended normally). Closeness check on the replaced 12-prompt set PASS: 11 for and 1 against, 9 for and 3 against | `baseline/window10a-20261111.out`, `t3w/quality-wide-score-R1-W10Aw-W10Ap.json` |
 | 2026-11-11 | `hot_iq`, a boot of the exported package (the build of this release) | closeness to the NVFP4 reference, 320 contexts and 513 MMLU questions | same next token 95.1 % (Volta sPLIt 92.2 %), KL divergence 0.0794 nats (0.1958), all 32 tokens identical 25.6 % (10.9 %), changed multiple-choice answers 1.6 % (15.4 %), accuracy 83.6 % (reference 83.8 %, Volta sPLIt 84.4 %). HOT_IQ CLOSER on all four comparisons fixed in advance, 1,475 MHz ([README](../README.md#how-close-to-nvfp4)) | [`quality/closeness-test/score-v1.json`](../quality/closeness-test/score-v1.json) and its receipts |
 | 2026-11-11 | `hot_iq`, a boot of the exported package | boot check and same output as the measured build | ready after 263 s, 0 tracebacks, tier lines and both tier digests equal on all eight ranks. 12 + 5 check prompts, 1,024 tokens each, token for token identical, mean log-probability difference 0.0, 1,475 MHz | `baseline/window-cls1-20261111.out` |
 | 2026-11-10 | `hot_iq` on the mixed tally, one slot (the build of this release) | speed bench, long prompts 1K to 256K, thinking off | code 123.3 tok/s at 1K to 103.8 at 256K, legal 71.9 to 61.8, prose and chat 59.6 to 67.9. First token 5.60 s at 1K, 106.4 s at 128K, 209.6 s at 256K. Greedy output byte-identical in 45 of 45 cells, 1,425 MHz ([section](#speed-bench-1k-to-256k)) | `benchvolta/W9C-t3n-mix4bh-20261110T182114Z/cells.jsonl`, `run.json` |
@@ -68,6 +74,88 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 | 2026-11-09 | three-tier | context rows, 46 to 257,741 tokens | 60.9 to 75.9 tok/s; read 28.5 s (30,795), 83.1 s (106,531), 194.2 s (257,741) | `baseline/t3-T3a-ctx.jsonl` |
 | 2026-11-09 | three-tier | short sets, two runs | general 50.6 / 51.8 tok/s, legal-style 56.9 / 58.4 tok/s | `baseline/t3-T3a-g1-tput.out`, `-g2-`, `-l1-`, `-l2-` |
 | 2026-11-09 | two-tier, Volta sPLIt | short sets, context rows, long prompts, harness-shaped test | the sections below | private boot receipts of the same day |
+
+## 2026-11-11: R1 tiers and the group-plan kernel
+
+MEASURED 2026-11-11 on the eight cards, card clock ceiling 1,475 MHz, one request at a time. These rows are for the
+engine and template of this repository. **The Hugging Face package as uploaded is the build of the first release**
+(stage-1 reserve 7.5 GiB, chain), and no figure in this section is a measurement of it. The headline figures stay
+those of the package until its small-file update.
+
+### R1: stage-1 reserve 7.00 GiB
+
+The stage-1 reserve was set at 7.5 GiB from the peaks of the two-tier calibration boot (about 6.9 GiB needed plus
+0.5 GiB margin). R1 lowers it to 7.00 GiB and checks the peaks again on the `hot_iq` profile itself. The planner and
+the tally are unchanged. With 0.5 GiB more budget per card stage 1 holds 2,459 hot experts and 5,221 compressed
+(budget 22.03 GiB, tier digest `9473486077c6`), against 2,254 and 5,426 (21.53 GiB, `5b09c0383a80`). Stage 0 is
+unchanged (3,833 and 3,847, `8e7829184090`). So 6,292 of the 15,360 routed experts run at NVFP4 precision, against
+6,087. A local rerun of the planner on the private tally at this reserve gives the same two digests.
+
+| Test | R1 (7.00 GiB, chain, 1,475 MHz) | First release (7.5 GiB, chain, 1,425 MHz) |
+|---|---|---|
+| Decode routes on NVFP4 experts, general | 80.28 % | 79.04 % |
+| legal-style | 84.37 % | 83.26 % |
+| source loop | 86.39 % | 85.02 % |
+| US Code loop | 85.36 % | 84.31 % |
+| Short set, general | 81.6 tok/s (35.65 ms per round) | 83.6 tok/s (36.25 ms) |
+| Short set, legal-style | 65.4 tok/s (35.45 ms) | 64.7 tok/s (35.78 ms) |
+| 31K tool loop, source code | 96.1 tok/s (38.48 ms) | 90.9 tok/s (40.09 ms) |
+| 31K tool loop, US Code | 85.0 tok/s (39.17 ms) | 87.8 tok/s (38.18 ms) |
+
+Route shares from the route counters on a separate boot of the same profile (in-sample, as in the
+[build section](#hot_iq-on-the-mixed-tally-the-build-of-this-release)), host tier 0.000 %. The speeds are one boot
+each at different clock ceilings, so they show no change beyond run noise, not a gain or a loss. Memory: the
+498,099-token read and the 216K tool loop both completed with no out-of-memory line, stage-1 peak 31,456 MiB per card
+against the limit 31,998. Closeness on the replaced 12-prompt set, by the rule of the
+[Quality](../README.md#quality) section: first different token no earlier than Volta sPLIt's on 11 of 12 prompts (1
+against), smaller mean log-probability difference on 9 (3 against): PASS. Three long thinking chats at temperature 0:
+none at the 32,000-token limit. The full closeness test of 320 contexts and 513 questions was not rerun on these
+tiers.
+
+The 216K tool loop ran three times on R1's tiers that day. Its final request ended normally once (chain, decode mean
+97.7 tok/s) and ran to the 32,000-token limit inside thinking twice (chain 100.4, kernel 115.0). With the first
+release's two runs that is 3 of 5 runs at the limit. The speed bench rerun's boot adds one more run:
+[Speed bench rerun](#speed-bench-rerun-2026-11-11-kernel-build).
+
+### The group-plan kernel (plan 03 part B)
+
+Each decode step of a layer sorts its expert routes into groups before the expert launches: a permutation, the group
+of each launch block and the group offsets, as int32 tensors. Until now a chain of tensor operations built them
+(argsort, gathers, compares, a cumulative sum and scatters). The group-plan kernel
+(`engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_group_plan.py`) builds the same tensors in one Triton launch, bit for bit, inside the
+decode CUDA graphs. The profile key `nvfp4_8r_group_plan` chooses `chain` or `kernel`, with no default. Prompt
+reading always uses the chain. At the start of each window, on one card of the eight, the acceptance test
+`harness/benchmarks/nvfp4_8r/test_group_plan.py` passed (random tier arrays of the four layer kinds, 22,000 random
+routings and 464 edge cases, expected values computed route by route on the CPU, 0 violations), and so did the
+real-weight bit-equality check `check_layers_mt6.py` (layers 5, 12 and 27, 72 comparisons, chain against kernel, eager
+and CUDA-graph replay). Receipts `dispatch/w11-test_group_plan.log`, `dispatch/w11-check_layers_mt6.log` and their
+`w11c-` twins.
+
+Two windows, each A1 B1 B2 A2 with one boot per arm and the throughput run twice per boot, decided by one rule
+written before the first window's data ([rule](acceptance/WINDOW11-accept-rule.md)). Window 11 gave NO MEASURABLE
+CHANGE, and window 11c, the one replication declared before its data ([replication](acceptance/WINDOW11-replication.md)),
+gave ACCEPT. Both are reported.
+
+| Arm | Window 11, ms per round (repeat) | tok/s | Window 11c, ms per round (repeat) | tok/s |
+|---|---|---|---|---|
+| A1 chain | 34.29 (33.86) | 84.6 (85.6) | 33.90 (33.83) | 85.5 (85.7) |
+| B1 kernel | 28.54 (28.19) | 100.0 (101.2) | 29.17 (28.26) | 98.3 (101.2) |
+| B2 kernel | 30.79 (28.09) | 93.5 (101.6) | 28.53 (28.23) | 100.3 (101.2) |
+| A2 chain | 34.01 (33.79) | 85.3 (85.9) | 33.88 (33.81) | 85.7 (85.9) |
+| p1 (B1 - A1), p2 (B2 - A2), mean | -5.774, -2.471, -4.123 | | -4.514, -5.364, -4.939 | |
+| noise floor, twice it | 3.429, 6.858 | | 1.135, 2.270 | |
+| verdict | NO MEASURABLE CHANGE | | ACCEPT | |
+
+Decode ms per round is decode time over rounds (first to last streamed token). tok/s is output tokens over the whole
+request. Three public prompts, 1,024 tokens each, temperature 0, thinking off, `ignore_eos`. Every kernel arm's
+output was identical token for token to A1's, and the chain after the kernel patch was identical to window 10a's
+captures before it, so the quality results of the chain carry over to the kernel. In window 11 one kernel run (B2,
+first run) slowed during its second and third prompts (32.13 and 34.08 ms per round against 28.43 for its first).
+Its cause is not known. The kernel was measured on R1's tiers only.
+
+Memory gate on the kernel profile, fixed before its data: PASS (rows above). The 216K tool loop decoded at 115.0
+tok/s against 100.4 on the chain at the same tiers. That is one run each, in different windows, both with a final
+request that ran to the 32,000-token limit, so it is not a paired comparison.
 
 ## hot_iq on the mixed tally: the build of this release
 
@@ -227,6 +315,95 @@ The same 216,255-token loop as run 1 (section above), thinking on, on the bench 
 General 87.0 tok/s (34.73 ms per round, 3,072 tokens in 35.31 s), legal-style 67.3 tok/s (34.41 ms, 3,072 tokens in
 45.67 s), receipts `baseline/W9C-t3n-mix4bh-g1-tput.out`, `-l1-`. The earlier boot of the same profile measured 83.6
 and 64.7 (section above). Both at 1,425 MHz.
+
+## Speed bench rerun 2026-11-11 (kernel build)
+
+One run of each cell set (169 of 169 requests, status DONE), the prompts, method and request order of the first bench. Each cell is first bench / rerun (first bench: 7.50 GiB tiers, chain dispatch, 2026-11-10, 1,425 MHz / rerun: R1 tiers (7.00 GiB), group-plan kernel, 2026-11-11, 1,475 MHz). Not paired: the two runs differ in tier map, dispatch, clock ceiling and day at once, so a cell's difference is not the kernel's alone. The paired, dispatch-only comparison is windows 11 and 11c. Low-priority single-thread file jobs ran on the host for about 10 minutes, from 12:26 to 12:38 UTC, near the start of the long-prompt part (requests 10 to 40 of 169: long-off 1K to 8K). An upload of this package's last files to the Hugging Face Hub, about 7 MB/s on average by its own log, ran beside the bench from its start until 12:59 UTC (requests 1 to 69 of 169: long-off 1K to 64K). The 216K tool loop and the short sets ran after both.
+
+### Long prompts, thinking off
+
+| prompt | first token | prompt reading | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1K | 5.60 s / 5.49 s | 175-247 / 175-257 tok/s | 123.3 / 149.6 | 130.7 / 148.0 | 71.9 / 84.7 | 59.9 / 76.0 | 60.4 / 71.8 |
+| 2K | 7.02 s / 6.81 s | 274-324 / 282-333 tok/s | 118.9 / 148.6 | 119.5 / 148.3 | 65.2 / 78.9 | 64.5 / 73.7 | 67.9 / 76.3 |
+| 4K | 9.12 s / 8.94 s | 437-454 / 441-464 tok/s | 120.9 / 153.0 | 114.9 / 155.6 | 62.5 / 82.4 | 63.5 / 70.4 | 66.0 / 78.4 |
+| 8K | 13.3 s / 13.1 s | 595-622 / 594-634 tok/s | 127.0 / 152.9 | 126.4 / 144.7 | 69.7 / 79.3 | 67.8 / 73.2 | 63.7 / 72.8 |
+| 16K | 19.3 s / 19.2 s | 812-868 / 842-880 tok/s | 126.6 / 148.2 | 123.0 / 148.5 | 69.7 / 82.8 | 60.2 / 79.5 | 64.5 / 76.1 |
+| 32K | 31.4 s / 31.4 s | 1,030-1,055 / 997-1,065 tok/s | 119.3 / 153.4 | 124.4 / 147.9 | 66.7 / 81.9 | 61.8 / 74.1 | 67.2 / 79.6 |
+| 64K | 56.1 s / 56.0 s | 1,161-1,188 / 1,158-1,200 tok/s | 116.9 / 144.7 | 117.6 / 148.6 | 68.0 / 80.5 | 59.6 / 73.7 | 66.7 / 79.3 |
+| 128K | 106.4 s / 105.7 s | 1,221-1,263 / 1,220-1,274 tok/s | 115.4 / 130.2 | 116.9 / 141.5 | 67.9 / 73.4 | 59.9 / 74.0 | 61.8 / 79.5 |
+| 256K | 209.6 s / 207.9 s | 1,243-1,276 / 1,252-1,285 tok/s | 103.8 / 122.5 | 110.0 / 139.0 | 61.8 / 78.5 | 60.5 / 66.4 | 63.3 / 75.9 |
+
+First bench: 90 requests, largest difference between the two runs of a cell 6.3 tok/s, greedy output byte-identical in 45 of 45 cells. Rerun: 90 requests, largest difference between the two runs of a cell 23.3 tok/s, greedy output byte-identical in 45 of 45 cells.
+
+### Long prompts, thinking on
+
+| prompt | first token | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|---:|
+| 1K | 5.76 s / 5.58 s | 131.7 / 161.9 | 113.1 / 146.7 | 81.8 / 96.1 | 63.8 / 77.6 | 63.4 / 76.0 |
+| 2K | 7.17 s / 6.95 s | 134.2 / 164.1 | 107.2 / 143.6 | 75.6 / 99.1 | 62.9 / 82.6 | 64.1 / 80.4 |
+| 4K | 9.14 s / 8.93 s | 135.8 / 156.1 | 121.9 / 128.9 | 73.9 / 91.3 | 61.7 / 74.7 | 62.4 / 80.6 |
+| 8K | 13.2 s / 12.9 s | 135.2 / 169.3 | 122.5 / 118.6 | 77.3 / 91.0 | 67.9 / 78.8 | 66.5 / 73.8 |
+| 16K | 19.3 s / 19.1 s | 136.8 / 164.6 | 111.7 / 145.4 | 71.4 / 80.9 | 63.6 / 76.6 | 66.6 / 76.8 |
+| 32K | 31.3 s / 31.2 s | 102.3 / 143.6 | 112.3 / 139.9 | 77.6 / 91.2 | 63.9 / 78.0 | 60.0 / 73.5 |
+| 64K | 56.2 s / 55.4 s | 122.0 / 165.8 | 120.7 / 94.7 | 75.5 / 90.8 | 65.2 / 75.7 | 59.4 / 76.1 |
+| 128K | 106.8 s / 105.7 s | 110.8 / 154.9 | 114.6 / 132.7 | 71.5 / 91.3 | 60.5 / 79.0 | 58.0 / 73.6 |
+| 256K | 210.2 s / 208.5 s | 110.5 / 149.4 | 107.1 / 127.1 | 67.8 / 79.9 | 60.3 / 70.6 | 54.6 / 66.4 |
+
+One run per cell in both benches.
+
+### Prompt reading by text type
+
+| prompt | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|
+| 1K | 182 / 187 | 175 / 180 | 183 / 175 | 247 / 257 | 189 / 193 |
+| 2K | 279 / 285 | 274 / 282 | 292 / 301 | 324 / 333 | 301 / 308 |
+| 4K | 449 / 458 | 437 / 441 | 448 / 458 | 450 / 458 | 454 / 464 |
+| 8K | 595 / 594 | 622 / 634 | 617 / 631 | 616 / 625 | 609 / 617 |
+| 16K | 868 / 880 | 847 / 853 | 847 / 861 | 812 / 849 | 831 / 842 |
+| 32K | 1,055 / 1,065 | 1,045 / 1,033 | 1,049 / 1,055 | 1,034 / 1,043 | 1,030 / 997 |
+| 64K | 1,188 / 1,200 | 1,167 / 1,161 | 1,170 / 1,158 | 1,166 / 1,171 | 1,161 / 1,170 |
+| 128K | 1,263 / 1,274 | 1,255 / 1,258 | 1,232 / 1,240 | 1,221 / 1,220 | 1,227 / 1,236 |
+| 256K | 1,275 / 1,283 | 1,276 / 1,285 | 1,243 / 1,252 | 1,251 / 1,261 | 1,248 / 1,255 |
+
+Prompt tokens / first-token time, thinking off, mean of 2 runs, tok/s.
+
+### Short prompts, by text type
+
+| kind of output | greedy (T=0) | sampled (T=1) | tokens per round, T=0 | Volta sPLIt greedy | Volta sPLIt sampled |
+|---|---:|---:|---:|---:|---:|
+| code | 127.2 (125.0-127.4) / 158.3 (154.9-158.6) | 127.4 (113.8-129.5) / 149.6 (148.3-163.7) | 4.39 / 4.47 | 213.1 | 196.8 |
+| structured (JSON) | 129.5 (125.6-129.7) / 160.0 (155.5-160.1) | 127.5 (126.1-129.5) / 156.0 (152.8-157.8) | 4.45 / 4.48 | 209.4 | 205.4 |
+| legal | 74.9 (74.9-75.0) / 89.0 (88.8-89.1) | 68.0 (67.7-69.7) / 88.0 (85.1-93.0) | 2.59 / 2.51 | 115.7 | 108.4 |
+| prose | 65.2 (64.6-65.2) / 76.3 (75.8-76.3) | 60.7 (58.2-60.8) / 74.2 (72.9-76.9) | 2.26 / 2.16 | 98.0 | 87.2 |
+| chat | 59.9 (59.9-60.1) / 76.1 (76.0-76.3) | 58.4 (55.8-61.0) / 70.8 (67.3-74.3) | 2.06 / 2.13 | 96.2 | 93.8 |
+| thinking on, 4 prompts, token-weighted | - | 92.4 (84.7-130.8 per prompt) / 108.0 (96.5-145.6 per prompt) | - | - | 132.3 |
+
+Thinking-on prompts, first bench: t1-00 130.8 tok/s (215 tokens), t1-05 98.5 tok/s (544 tokens), t1-09 121.4 tok/s (368 tokens), t1-11 84.7 tok/s (2048 tokens).. Rerun: t1-00 145.6 tok/s (276 tokens), t1-05 120.3 tok/s (961 tokens), t1-09 136.4 tok/s (365 tokens), t1-11 96.5 tok/s (2048 tokens)..
+
+### Tool loop at 216K tokens on the rerun's boot
+
+| Request | Prompt tokens | Kept | First token | Output tokens | Decode | Stop |
+|---|---:|---:|---:|---:|---:|---|
+| 0 | 216,255 | 0 | 165.55 s | 48 | 204.12 tok/s | tool_use |
+| 1 | 219,315 | 216,240 | 9.28 s | 252 | 107.95 tok/s | tool_use |
+| 2 | 222,435 | 219,504 | 8.94 s | 213 | 102.70 tok/s | tool_use |
+| 3 | 225,642 | 222,592 | 9.03 s | 192 | 95.19 tok/s | tool_use |
+| 4 | 228,672 | 225,776 | 9.24 s | 209 | 113.33 tok/s | tool_use |
+| 5 | 232,246 | 228,816 | 9.67 s | 196 | 98.22 tok/s | tool_use |
+| 6 | 235,496 | 232,384 | 9.55 s | 227 | 124.01 tok/s | tool_use |
+| 7 | 238,471 | 235,664 | 9.21 s | 1,146 | 113.24 tok/s | end_turn |
+
+First read 165.55 s for 216,255 tokens (first bench boot 166.22 s). Follow-ups that kept the previous prompt: 7 of 7, first token median 9.24 s (9.47 s), decode mean 107.8 tok/s over the 7 (99.8). On the rerun's boot the 216K tool loop's final request ended with stop reason `end_turn` after 1,146 tokens. Counting it, that request has run to the limit in 1 of 2 runs with the group-plan kernel, 2 of 4 on R1's tiers and 3 of 6 on every build of this repository so far.
+
+### Short sets on the bench boot
+
+General 101.1 tok/s (28.29 ms per round) and legal-style 81.1 (28.07 ms) on the rerun's boot, against 87.0 (34.73 ms) and 67.3 (34.41 ms) on the first bench's boot.
+
+Receipts of the rerun: `benchvolta/W9C-t3n-mix4b-r700-gpk-20261111T122408Z/cells.jsonl` and `run.json`, `baseline/W9C-t3n-mix4b-r700-gpk-loop216k-think1.jsonl`,
+`baseline/W9C-t3n-mix4b-r700-gpk-g1-tput.out` and `-l1-tput.out`. Profile
+`serve-nvfp4-pp2-t3n-mix4b-r700-gpk.yaml` (R1 tiers, `nvfp4_8r_group_plan: kernel`), one prompt slot, power caps
+150 W per card.
 
 ## How it was measured
 

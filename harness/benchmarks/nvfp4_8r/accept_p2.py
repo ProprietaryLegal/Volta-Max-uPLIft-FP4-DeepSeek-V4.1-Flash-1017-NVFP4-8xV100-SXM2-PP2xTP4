@@ -23,6 +23,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as native
 
 REF_D_US = {
@@ -146,7 +147,8 @@ def run_layer(packs: Path, refs_path: Path, dev: torch.device) -> dict[str, obje
         experts = native.NativeExpertSet.from_raw(torch.from_numpy(raw), dev)
         del raw
         moe = native.NativeV41Moe(
-            experts, torch.arange(384, dtype=torch.int32, device=dev), max_tokens=16
+            experts, torch.arange(384, dtype=torch.int32, device=dev), max_tokens=16,
+            group_plan=gplan.GroupPlan.CHAIN,
         )
         load_s = time.monotonic() - t0
         worst = {}

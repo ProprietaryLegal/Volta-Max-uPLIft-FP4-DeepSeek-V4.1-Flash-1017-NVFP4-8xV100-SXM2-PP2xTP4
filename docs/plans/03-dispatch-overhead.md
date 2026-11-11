@@ -2,6 +2,8 @@
 
 > Public copy of a build record written on 2026-11-09. Host names, private paths, names and figures from our private traffic were replaced or removed (see `.publication/SOURCE.json`). "Production" means the earlier Volta sPLIt build. `$LANE` is this build's root and `$PROD` the Volta sPLIt checkout. Paths under `logs/` name private receipts that are not published; `research/kernels/` and `research/volta/` are private copies of public sources (links in [docs/README.md](../README.md)).
 
+Status 2026-11-11: Part B is ACCEPTED (`nvfp4_8r_group_plan: kernel`, the setting of this repository's package template). Window 11 gave NO MEASURABLE CHANGE by the rule, window 11c (one declared replication) gave ACCEPT, and the memory gate passed. Rules: [docs/acceptance/](../acceptance/). Measurements: [docs/measurements.md](../measurements.md#2026-11-11-r1-tiers-and-the-group-plan-kernel). The text below is the plan as written before the build.
+
 Read `README.md` and `00-WHERE-TIME-GOES.md` first. Paths are relative to `$LANE/`.
 Part A needs plan 01 built. Part B applies to any residency.
 

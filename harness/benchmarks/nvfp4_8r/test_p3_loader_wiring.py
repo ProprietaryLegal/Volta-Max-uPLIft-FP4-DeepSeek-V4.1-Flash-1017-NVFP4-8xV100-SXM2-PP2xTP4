@@ -35,6 +35,7 @@ GOOD = {
     "nvfp4_8r_reserve_bytes": {0: 5 * 1024**3, 20: 7 * 1024**3},
     "nvfp4_8r_residency": "two_tier",
     "nvfp4_8r_prefill_warm": "native_staged",
+    "nvfp4_8r_group_plan": "chain",
 }
 SHARE = "nvfp4_8r_host_route_share"
 
@@ -71,7 +72,7 @@ def main() -> int:
     if as_text is None or as_text.reserve_by_stage != GOOD["nvfp4_8r_reserve_bytes"]:
         fails.append("string stage keys not parsed to ints")
     for drop in ("nvfp4_8r_tally", "nvfp4_8r_reserve_bytes", "nvfp4_8r_residency",
-                 "nvfp4_8r_prefill_warm"):
+                 "nvfp4_8r_prefill_warm", "nvfp4_8r_group_plan"):
         if not refused({k: v for k, v in GOOD.items() if k != drop}):
             fails.append(f"packs without {drop} admitted")
     for bad in (0, -1, "6G", 1.5, 6 * 1024**3, {}, {0: 0}, {0: -5}, {"a": 1}, {0: "6G"}, {-1: 5}):

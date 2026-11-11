@@ -171,7 +171,8 @@ def run_layer(native, tiers, cfg, refs_path: Path, slices: Path, rank: int, dev)
                             "nan_prefill_effective": effective}
     raw = torch.from_numpy(native.read_rank_experts(cfg.packs, layer, rank))
     full = native.NativeV41Moe(native.NativeExpertSet.from_raw(raw, dev),
-                               torch.arange(384, dtype=torch.int32, device=dev), max_tokens=6)
+                               torch.arange(384, dtype=torch.int32, device=dev), max_tokens=6,
+                               group_plan=gplan.GroupPlan.CHAIN)
     del raw
     equal = True
     for s in range(samples):
@@ -260,6 +261,7 @@ def main() -> int:
             print(f"INCONCLUSIVE: {exc}", file=sys.stderr)
             return 3
         return 0
+    from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
     from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as native
     from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_tiers as tiers
 
@@ -270,7 +272,7 @@ def main() -> int:
     # loader's inputs and are not used here (the tally never leaves the 8-card host).
     cfg = native.NativePackConfig(a.packs, Path("/nonexistent/tally-stays-local"),
                                   {0: 1}, tiers.HotIqHost(0.0),
-                                  tiers.PrefillWarm.NATIVE_STAGED)
+                                  tiers.PrefillWarm.NATIVE_STAGED, gplan.GroupPlan.CHAIN)
     try:
         if not (a.packs / "manifest.json").is_file():
             raise Inconclusive(f"pack manifest absent in {a.packs}")

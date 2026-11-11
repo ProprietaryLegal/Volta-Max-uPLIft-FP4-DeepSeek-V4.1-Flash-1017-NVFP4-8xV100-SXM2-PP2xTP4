@@ -3,6 +3,40 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-11: a faster route-plan kernel and a larger NVFP4 tier map (repository only)
+
+Both MEASURED on the eight cards on 2026-11-11 at 1,475 MHz. **The Hugging Face package is unchanged** (stage-1
+reserve 7.5 GiB, chain), and so are the headline figures, until the package's small-file update. Details:
+[docs/measurements.md](docs/measurements.md#2026-11-11-r1-tiers-and-the-group-plan-kernel).
+
+- **Stage-1 reserve 7.50 to 7.00 GiB (plan R1).** Stage 1 holds 2,459 NVFP4 experts instead of 2,254, so 6,292 of
+  15,360 in all against 6,087. Decode routes on NVFP4 experts 80.3 / 84.4 / 86.4 / 85.4 % on the four measured sets
+  against 79.0 / 83.3 / 85.0 / 84.3 (in-sample). Speed unchanged within run noise. 500K-token read and 216K tool
+  loop with no out-of-memory error. Closeness check on the replaced 12-prompt set PASS (11 and 9 of 12). The full
+  closeness test was not rerun on this tier map.
+- **Group-plan kernel (plan 03).** One Triton launch builds the route plan of the expert launches, the same
+  tensors bit for bit as the chain of tensor operations, so output is identical token for token. Window 11: NO
+  MEASURABLE CHANGE by the rule fixed before its data (mean -4.12 ms per round, noise floor 3.43 set by one slow
+  kernel run). Window 11c, the one replication declared before its data: ACCEPT (decode 33.90 / 33.88 to 29.17 /
+  28.53 ms per round, mean -4.94, noise floor 1.14, whole request 85.5 to 85.9 tok/s to 98.3 to 101.2). Memory gate
+  on the kernel profile PASS. Measured on R1's tiers only.
+- **Engine:** new file `nvfp4_8r_group_plan.py`. The profile key `nvfp4_8r_group_plan` (`chain` or `kernel`) is now
+  required, with no default. The published profiles say `chain`. The package template here says `kernel` with the
+  7.00 GiB reserve. `serve_hot_iq.sh` takes `NVFP4_GROUP_PLAN` and requires it for the package as uploaded, which
+  has no such key (checked on the CPU, not yet in an eight-card boot).
+- **Published with it:** the two acceptance rules as scrubbed public copies ([docs/acceptance/](docs/acceptance/)),
+  the kernel's acceptance test, its real-weight check and two part benches in `harness/benchmarks/nvfp4_8r/`.
+- **216K tool loop:** on R1's tiers its final request ran to the 32,000-token limit inside thinking in 2 of 3 runs
+  (3 of 5 with the first release's runs) before the speed bench rerun. On the rerun's boot the 216K tool loop's final request ended with stop reason `end_turn` after 1,146 tokens. Counting it, that request has run to the limit in 1 of 2 runs with the group-plan kernel, 2 of 4 on R1's tiers and 3 of 6 on every build of this repository so far.
+- **Fixed: `tools/check_data_boundary.sh`.** It piped each file into `grep -q` under `pipefail`. On a file over
+  the 64 KiB pipe buffer an early match ended the pipe, so a credential pattern near the top of a large file was
+  missed and a correctly bound closeness receipt could be refused. It now reads each file to the end. It also
+  accepts the receipts of a second closeness scoring (`score-v2.json`) when one is published.
+- **Speed bench rerun on the kernel build** (R1's tiers and the group-plan kernel, one run, 1,475 MHz):
+  thinking off, decode 149.6 and 122.5 tok/s on code after 1K and 256K prompts (first bench 123.3 and 103.8), legal 84.7 and 78.5 (71.9 and 61.8), first token after a 256K prompt 207.9 s (209.6 s). Short sets on the bench boot: general 101.1 tok/s (28.29 ms per round) and legal-style 81.1 (28.07 ms) on the rerun's boot, against 87.0 (34.73 ms) and 67.3 (34.41 ms) on the first bench's boot. Not paired with the first bench (tier map,
+  dispatch, clock and day differ at once). Low-priority single-thread file jobs ran on the host for about 10 minutes, from 12:26 to 12:38 UTC, near the start of the long-prompt part (requests 10 to 40 of 169: long-off 1K to 8K). An upload of this package's last files to the Hugging Face Hub, about 7 MB/s on average by its own log, ran beside the bench from its start until 12:59 UTC (requests 1 to 69 of 169: long-off 1K to 64K). The 216K tool loop and the short sets ran after both. Tables: README
+  [Speed bench rerun](README.md#speed-bench-rerun-2026-11-11-kernel-build).
+
 ## 2026-11-11: how close to NVFP4, and the package boot check
 
 - **Closeness test against NVIDIA's NVFP4 pack** (MEASURED, rules and script hashes fixed 2026-11-10 at 19:54 UTC
@@ -17,7 +51,7 @@ Dates are UTC. Every number is MEASURED on the 8-card host unless labelled other
   2026-11-10, before three later changes to the Volta sPLIt build. This test makes no claim about their effect.
 - **Boot check of the exported package** (2026-11-11, eight cards, 1,475 MHz): ready after 263 s, no traceback,
   tiers and tier digests equal the measured boot's, greedy output on 12 + 5 check prompts identical token for token.
-- **Hugging Face package:** still uploading on 2026-11-11, do not download yet.
+- **Hugging Face package:** upload complete on 2026-11-11.
 
 ## 2026-11-10: the speed bench of Volta Max uPLIft
 
@@ -61,7 +95,7 @@ Dates are UTC. Every number is MEASURED on the 8-card host unless labelled other
   thinking chats at the 32,000-token limit (95 % Wilson interval 0.000 to 0.561), 83.6 tok/s general and 64.7 tok/s
   legal-style on the short sets, 87.8 to 90.9 tok/s in the 31K tool loops. The speeds are in-sample: three of the
   mixed tally's four kinds of text are made from the public prompt sets. The full speed bench followed (entry above).
-- **Hugging Face package** ([hot_iq package](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4), upload in progress on 2026-11-10, do not download yet): every weight file this build serves, the
+- **Hugging Face package** ([hot_iq package](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4), upload complete on 2026-11-11): every weight file this build serves, the
   MXFP4 expert files in expert-id order, the tier map (only whether each expert is hot or compressed) and the
   profile template, 556 GB.
 - **Engine.** The engine files are now those the `hot_iq` measurements ran with: the reading step's new allocation

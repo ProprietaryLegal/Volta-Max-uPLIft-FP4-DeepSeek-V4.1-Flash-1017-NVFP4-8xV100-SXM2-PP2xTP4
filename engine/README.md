@@ -1,7 +1,7 @@
 # Engine
 
 This build runs on the engine of [Volta sPLIt](https://github.com/ProprietaryLegal/Volta-sPLIt-DeepSeek-V4.1-Flash-1017-8xV100-SXM2-PP2xTP4)
-(1Cat-vLLM #1277 with Volta sPLIt's patch series and production patches). It adds three files and changes three.
+(1Cat-vLLM #1277 with Volta sPLIt's patch series and production patches). It adds four files and changes three.
 
 The files here are those the `hot_iq` measurements on the mixed tally ran with (2026-11-10), with the tier-map
 change of this release added: a profile can name a tier map (`nvfp4_8r_tier_map`, the Hugging Face package's
@@ -9,12 +9,21 @@ change of this release added: a profile can name a tier map (`nvfp4_8r_tier_map`
 in expert-id order. The measurements dated 2026-11-09 and the earlier ones of 2026-11-10 ran on the engine file of
 the first public commit, which is in this repository's history.
 
+Since 2026-11-11 the native path also carries the group-plan kernel (plan 03 part B, MEASURED on eight cards on
+2026-11-11, [docs/measurements.md](../docs/measurements.md#2026-11-11-r1-tiers-and-the-group-plan-kernel)). Every
+profile must name `nvfp4_8r_group_plan`: `kernel` builds each decode step's route plan in one Triton launch, and
+`chain` builds the same int32 tensors, bit for bit, with the chain of tensor operations every earlier measurement
+ran with. There is no default. The kernel is the setting of the package template here, and `chain` is the fallback
+and the setting of every other profile in `configs/`. The Hugging Face package as uploaded (2026-11-10) has no
+such key: `serve_hot_iq.sh` asks for `NVFP4_GROUP_PLAN` when it starts that package.
+
 ## New files (`src/`)
 
 | File | What it does |
 |---|---|
-| `src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py` | reads the MXFP4 packs, prepacks experts for the QPN kernel (into HBM, or into a page-aligned pinned host arena registered with CUDA), chooses residency per stage from free HBM and the tally, and runs the routed experts: one grouped QPN launch per projection and bank, V4.1's limited SwiGLU and the weighted sum in FP32, CUDA-graph safe for 1 to 6 rows; prompt chunks stage host experts into two shared HBM buffers per card. `VLLM_NVFP4_8R_LOAD_TRACE=1` logs card and allocator memory during the stage build (counts and bytes only). It was added after the measurements of 2026-11-09 and is off by default. The prompt-reading step allocates and frees its tensors in the order of the memory fix (checked on one card, [CHANGELOG](../CHANGELOG.md)). With a tier map it reads the v2 pack format (`nvfp4-8r-mxfp4-v2-id-order`: one file per layer and rank, all 384 records in expert-id order) and takes its tiers from the map. `VLLM_NVFP4_8R_STATS=1` switches on the route counters (next row) |
+| `src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py` | reads the MXFP4 packs, prepacks experts for the QPN kernel (into HBM, or into a page-aligned pinned host arena registered with CUDA), chooses residency per stage from free HBM and the tally, and runs the routed experts: one grouped QPN launch per projection and bank, V4.1's limited SwiGLU and the weighted sum in FP32, CUDA-graph safe for 1 to 6 rows; prompt chunks stage host experts into two shared HBM buffers per card. `VLLM_NVFP4_8R_LOAD_TRACE=1` logs card and allocator memory during the stage build (counts and bytes only). It was added after the measurements of 2026-11-09 and is off by default. The prompt-reading step allocates and frees its tensors in the order of the memory fix (checked on one card, [CHANGELOG](../CHANGELOG.md)). With a tier map it reads the v2 pack format (`nvfp4-8r-mxfp4-v2-id-order`: one file per layer and rank, all 384 records in expert-id order) and takes its tiers from the map. `VLLM_NVFP4_8R_STATS=1` switches on the route counters (the row after next). `nvfp4_8r_group_plan` (required, `chain` or `kernel`) chooses how decode builds the route plan of its expert launches. Prompt reading always uses the chain |
 | `src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py` | the three-tier planner (pure numpy): hot, warm and host tiers per stage from the tally and the HBM budget; logs counts of experts and shares of routes only. The tier-map reader: parses a tier map whole (format, layers, ascending ids, stated counts, a sha256 digest per stage), serves `hot_iq` only, and refuses to load when the stage's record budget cannot hold the map's hot experts or the digest differs |
+| `src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_group_plan.py` | the group-plan kernel (plan 03 part B): one Triton launch that turns a decode step's expert routes into the permutation, launch-block groups and group offsets of the QPN launches (all-resident, hot and host, and three-tier layers), the same int32 tensors as the chain bit for bit, CUDA-graph safe, compiled when the layer is built. Checked by `harness/benchmarks/nvfp4_8r/test_group_plan.py` and `check_layers_mt6.py` |
 | `src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_stats.py` | decode route counters per layer and tensor-parallel rank, off unless `VLLM_NVFP4_8R_STATS=1`: device tensors updated inside the decode CUDA graphs, snapshots written beside the tally on a label change. The route shares of the `hot_iq` measurements come from them. A tier-map profile refuses the switch (it has no tally directory to write to) |
 
 ## Changed files (`patches/`)
@@ -37,8 +46,8 @@ build's file exactly. Apply in the engine source root with `patch -p1`.
 | `configs/env.sh` | environment and import check |
 | `configs/serve-nvfp4-pp2.yaml` | two-tier profile |
 | `configs/serve-nvfp4-pp2-t3.yaml` | three-tier profile (`hot_iq_host`, host route share 0.0) |
-| `configs/hot_iq.yaml.template` | the build of this release: the profile of the Hugging Face package (`hot_iq` on the mixed tally, one slot, reserves 4.5 / 7.5 GiB, tiers from the package's `tier_map.json`), with `${PKG}` for the package path. The package carries the same file as `serve/hot_iq.yaml.template` |
-| `configs/serve_hot_iq.sh` | its launcher (CPU check passed 2026-11-10, eight-card boot check passed 2026-11-11): `serve_hot_iq.sh PKG [PORT]` writes `serve-hot_iq.yaml` from the package's template, sets the load-time allocator setting the `hot_iq` measurements ran with (`VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0`) and starts `run_serve.sh` with one prompt slot |
+| `configs/hot_iq.yaml.template` | the profile of the Hugging Face package (`hot_iq` on the mixed tally, one slot, tiers from the package's `tier_map.json`), with `${PKG}` for the package path. Here it carries the update of 2026-11-11: reserves 4.5 / 7.0 GiB and `nvfp4_8r_group_plan: kernel`. The package as uploaded carries the earlier file as `serve/hot_iq.yaml.template` (reserves 4.5 / 7.5 GiB, no group-plan key) until its small-file update |
+| `configs/serve_hot_iq.sh` | its launcher (CPU check passed 2026-11-10, eight-card boot check passed 2026-11-11): `serve_hot_iq.sh PKG [PORT]` writes `serve-hot_iq.yaml` from the package's template (with `NVFP4_GROUP_PLAN=chain` or `kernel` setting the group plan, required when the template has none. That option was added on 2026-11-11 and checked on the CPU against both templates with a stand-in server, not yet in an eight-card boot), sets the load-time allocator setting the `hot_iq` measurements ran with (`VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0`) and starts `run_serve.sh` with one prompt slot |
 | `configs/serve-nvfp4-pp2-t3n.yaml` | three-tier with no host tier (`hot_iq`) on the first tally: not accepted (quality not established) |
 | `configs/serve-nvfp4-pp2-t3-a3.yaml` | three-tier with three prompt slots (`max-num-seqs 3`, reserves 5.3 / 8.1 GiB): measured, not accepted (quality not established) |
 | `configs/serve-nvfp4-pp2-t3-a1r.yaml` | the three-slot profile's one-slot control: same reserves, `max-num-seqs 1` |

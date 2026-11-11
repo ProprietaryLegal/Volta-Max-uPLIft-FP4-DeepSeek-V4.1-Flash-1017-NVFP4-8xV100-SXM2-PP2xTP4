@@ -132,6 +132,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     a = parser.parse_args()
+    from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
     from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as nat
 
     rng = np.random.default_rng(20261109)
@@ -143,7 +144,7 @@ def main() -> int:
         moe = nat.NativeV41Moe.three_tier(
             placeholder_set(nat, n_hot), placeholder_set(nat, 384 - n_hot),
             placeholder_bank(nat, n_warm, type13, type2), tier, max_tokens=6,
-            prefill=None,
+            prefill=None, group_plan=gplan.GroupPlan.CHAIN,
         )
         pools = {
             "random": list(range(384)),

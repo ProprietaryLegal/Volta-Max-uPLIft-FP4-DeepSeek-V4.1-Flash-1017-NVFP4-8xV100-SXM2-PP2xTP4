@@ -1,7 +1,7 @@
 {
  "name": "Volta Max uPLIft FP4",
  "repository": "https://github.com/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-NVFP4-8xV100-SXM2-PP2xTP4",
- "assembled": "2026-11-10",
+ "assembled": "2026-11-11",
  "with_wip": false,
  "with_research": false,
  "assembler": "assemble.py (explicit manifest; scrub rules; generated engine patches checked by re-applying)",
@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "80ed9e813ac0b3867641369468c908b14a1f793774568d953c1ac55b9a497ab0",
+   "source_sha256": "658e3ccd8f5b6d54868aa729c4de5765d2636bca2d3e6e8363bd1994a3223a40",
    "transform": "hand-written for publication; 3 wip block(s) removed",
-   "sha256": "dd0310cfe378355b4e49dc3497c61c4b60e850b5f44b64f57b8669326598292e",
-   "bytes": 76595
+   "sha256": "2b3dba9b89bce6e244d2483580b05d4b064d434c9e7e069e4be77af6bf431932",
+   "bytes": 91275
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "cc1bb627dedc06649b88f37febce65e0774fc940fa0e6e58a2a6dfc64ca2a25d",
+   "source_sha256": "261982089dd3441acb7188a1652f1fc78355ae439b8a7e444bd940ffec8ae1af",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "aa2d909554c7ea4c86990f0ef2c1e7a1732c70db3daa1a4f1637a76256fe7e78",
-   "bytes": 17980
+   "sha256": "b97ee0761dad201ccb350b6f7157c2a3e7c3ba73f28e459c6cd96ee28876c1f7",
+   "bytes": 22108
   },
   {
    "path": "CREDITS.md",
@@ -107,10 +107,10 @@
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "3edd420fcb64c1f4321d0c748092ce3c72152e5b185437a8d051dd49a98da9ae",
+   "source_sha256": "8bd8894845aedac453777fe5634a881179d5a27d609fdcee351d54e87c6d3b06",
    "transform": "hand-written for publication",
-   "sha256": "3edd420fcb64c1f4321d0c748092ce3c72152e5b185437a8d051dd49a98da9ae",
-   "bytes": 73824
+   "sha256": "8bd8894845aedac453777fe5634a881179d5a27d609fdcee351d54e87c6d3b06",
+   "bytes": 91139
   },
   {
    "path": "docs/history.md",
@@ -125,10 +125,10 @@
    "path": "engine/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/README.md",
-   "source_sha256": "6f4522cfedc05504df93b49f020173481db72f02298ae879ead20b97644caf50",
+   "source_sha256": "caeaa33536c9b8a1b78a69f314d27d468e3195663d6a71604e4f3de53e74474c",
    "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "b6fa6320bbd50739099787fbbd7427831ff825514d5bf8d39f303cad19cc3600",
-   "bytes": 6700
+   "sha256": "e050adc731f49851a68a19dfb23f488f08c9a8c08316e89c0f59790c998e2dc0",
+   "bytes": 8506
   },
   {
    "path": "harness/README.md",
@@ -143,10 +143,28 @@
    "path": "engine/configs/serve_hot_iq.sh",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/configs/serve_hot_iq.sh",
-   "source_sha256": "9ac7f575d868c4f6e83375355f5b7992d49536bf060faee39bb9ac055f627e94",
+   "source_sha256": "77c2aacde02b8730d2f9589b10e265579e3afffefb4c4a5e9cef6fcd6b053640",
    "transform": "hand-written for publication",
-   "sha256": "9ac7f575d868c4f6e83375355f5b7992d49536bf060faee39bb9ac055f627e94",
-   "bytes": 2042
+   "sha256": "77c2aacde02b8730d2f9589b10e265579e3afffefb4c4a5e9cef6fcd6b053640",
+   "bytes": 3240
+  },
+  {
+   "path": "docs/acceptance/WINDOW11-accept-rule.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/acceptance/WINDOW11-accept-rule.md",
+   "source_sha256": "0f9f69d17ac5647f28d20b545c2d228d4866536685dc4be4abe3e0e7bff72697",
+   "transform": "hand-written for publication",
+   "sha256": "0f9f69d17ac5647f28d20b545c2d228d4866536685dc4be4abe3e0e7bff72697",
+   "bytes": 4909
+  },
+  {
+   "path": "docs/acceptance/WINDOW11-replication.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/acceptance/WINDOW11-replication.md",
+   "source_sha256": "de1dad57ef9c82ca94c828ae694f40666076abcd0b6ee98772c77c075c30553a",
+   "transform": "hand-written for publication",
+   "sha256": "de1dad57ef9c82ca94c828ae694f40666076abcd0b6ee98772c77c075c30553a",
+   "bytes": 3836
   },
   {
    "path": "quality/closeness-test/DECISIONS.md",
@@ -216,7 +234,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/charts/kinds.svg",
    "source_sha256": "c053a2ab3481a69e7c999ce6fa8448fa1883c58b6c3ec225eab2298971da9f50",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "c053a2ab3481a69e7c999ce6fa8448fa1883c58b6c3ec225eab2298971da9f50",
    "bytes": 7026
   },
@@ -225,7 +243,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/charts/mc.svg",
    "source_sha256": "cd15f473a3304ca0626aef045c2160df0b3f3885da0cb87caa4af7131aa93770",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "cd15f473a3304ca0626aef045c2160df0b3f3885da0cb87caa4af7131aa93770",
    "bytes": 4094
   },
@@ -234,7 +252,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/charts/survival.svg",
    "source_sha256": "31c14beb0a61bdf40611ea2e477cbcd1676956921c39e640978e487e5cb6f1e9",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "31c14beb0a61bdf40611ea2e477cbcd1676956921c39e640978e487e5cb6f1e9",
    "bytes": 12041
   },
@@ -261,7 +279,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-HOT.part1.jsonl",
    "source_sha256": "2230efd62dc752eb50568ebcfa8d4d7972d40fc5360f6d53f46aa0eaa29d6d93",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "2230efd62dc752eb50568ebcfa8d4d7972d40fc5360f6d53f46aa0eaa29d6d93",
    "bytes": 7779649
   },
@@ -270,7 +288,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-HOT.part2.jsonl",
    "source_sha256": "6817a5ab55846413aef8b0c8c42ca6400d65766c28eabfdf787e5e58610d71a2",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "6817a5ab55846413aef8b0c8c42ca6400d65766c28eabfdf787e5e58610d71a2",
    "bytes": 728246
   },
@@ -279,7 +297,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-REF.part1.jsonl",
    "source_sha256": "14538ef16399ee6472f7fbfffff0d02b4b0b53278000c804375ec41cd6672718",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "14538ef16399ee6472f7fbfffff0d02b4b0b53278000c804375ec41cd6672718",
    "bytes": 9499929
   },
@@ -288,7 +306,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-VOL.part1.jsonl",
    "source_sha256": "d2d17634f982a4a5a407e384a579ace01c26d6f47949466f7cfc9ea6a5c914cf",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "d2d17634f982a4a5a407e384a579ace01c26d6f47949466f7cfc9ea6a5c914cf",
    "bytes": 3266773
   },
@@ -297,7 +315,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/receipts/CLS1-VOL.part2.jsonl",
    "source_sha256": "562cb8881cd7209c848a3f5eae50f6ab8b75c5900bb823f34b7c9087b9cec996",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "562cb8881cd7209c848a3f5eae50f6ab8b75c5900bb823f34b7c9087b9cec996",
    "bytes": 5180860
   },
@@ -315,7 +333,7 @@
    "kind": "data",
    "source": "$LANE/publish/authored/quality/closeness-test/score-v1.json",
    "source_sha256": "b15a3e512475def1112e1b6049efacfedcbc133ffbba4b263748eb8085874ded",
-   "transform": "copied byte for byte (closeness test data, bound by sha256 in score-v1.json)",
+   "transform": "copied byte for byte (closeness test data, bound by sha256 in the score files)",
    "sha256": "b15a3e512475def1112e1b6049efacfedcbc133ffbba4b263748eb8085874ded",
    "bytes": 70761
   },
@@ -331,12 +349,12 @@
   {
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
    "kind": "code",
-   "source": "$LANE/stage/hf-pack/src-copy/after/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
-   "source_sha256": "e75848cff2d92c40cc1defe27cff640c8ed73b2f5a2b82910806640996f2d726",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
+   "source_sha256": "21eb5137af26dace283c1fe972252ed22bda961d3557a10ec9936bed0f93c329",
    "transform": "scrubbed (2 replacements; 1 per-file redaction rules)",
-   "sha256": "eed6eccc01a709d0be29f71b024969b3b32134021338ba895e245cd7d76eaa1c",
-   "bytes": 68256,
-   "note": "the engine file of the hot_iq measurements of 2026-11-10 with the tier-map change of the hot_iq release applied. The measurements dated 2026-11-09 and the earlier ones of 2026-11-10 ran on the file of the first public commit"
+   "sha256": "0a1c7388f4194d48eb8b988f97510fb3d0c7cbc4e7e817df01e28369e3656e95",
+   "bytes": 70576,
+   "note": "the engine file of the hot_iq measurements of 2026-11-10 with the tier-map change of the hot_iq release and the group-plan kernel of 2026-11-11 (plan 03 part B, key nvfp4_8r_group_plan) applied. With nvfp4_8r_group_plan: chain it computes what the file of candidate11 to candidate20 computed. The measurements dated 2026-11-09 and the earlier ones of 2026-11-10 ran on the file of the first public commit"
   },
   {
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
@@ -355,6 +373,15 @@
    "transform": "scrubbed (1 replacements)",
    "sha256": "d7fdd093b902aa036d63fdccfaaa43f5b557f7e9415f78492f011af2f93a5088",
    "bytes": 9494
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_group_plan.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_group_plan.py",
+   "source_sha256": "6fb51b36a8c3f9f1d068c330f6a2be00084951877da123a13a19c3b4a09ebcf0",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "dd6523061078f61446005cff1ab5718ec1ce8ac94549914ff1e513afffdbee00",
+   "bytes": 12828
   },
   {
    "path": "engine/patches/gguf_loader.patch",
@@ -398,11 +425,11 @@
   {
    "path": "engine/configs/hot_iq.yaml.template",
    "kind": "code",
-   "source": "$LANE/stage/hf-pack/out/serve/hot_iq.yaml.template",
-   "source_sha256": "97442899bcc5b74c3aaa6254f19b85d2e12c75ffd9199cd3497f2ba061f48977",
+   "source": "$LANE/stage/hf-pack/r1k/hot_iq.yaml.template",
+   "source_sha256": "96ec52988d36de321e222ffea53806bb52626af6b193619b316e4d974c9f767e",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "97442899bcc5b74c3aaa6254f19b85d2e12c75ffd9199cd3497f2ba061f48977",
-   "bytes": 2164
+   "sha256": "96ec52988d36de321e222ffea53806bb52626af6b193619b316e4d974c9f767e",
+   "bytes": 2194
   },
   {
    "path": "engine/configs/env.sh",
@@ -427,55 +454,55 @@
    "path": "engine/configs/serve-nvfp4-pp2.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2.yaml",
-   "source_sha256": "88bb1f99305f84d3899be422712c65af80a20fd29ebd060e99aa10a1de4073c9",
+   "source_sha256": "1dc792698469f6eced7f24d30cf813530c0e2c9f8165963001c9b4c4d3ccd706",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "b1dda56a6565e8667d16231978d26f0f342b275c466603a347df5b714591cdec",
-   "bytes": 3795
+   "sha256": "99164c18545f6b1669ee4ef44252afe8521e44d6b5bdcac24ff50c9bc76556c5",
+   "bytes": 4018
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3.yaml",
-   "source_sha256": "d4914effcca474757d591d7823403452f69b1d31bb114425eff99d2f16f9bd57",
+   "source_sha256": "ed637d0dead465896c8ed857f832dc4018849a427f35d417e454b5fbfe7eff00",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "b4768fad56d9b85fe756035c86b2f39043e3a9913ed080e429effc232a57d868",
-   "bytes": 3990
+   "sha256": "a2f533fa7b8a3cc35832a9968fee65d658a61198128a49906681c8eb69f2fa4f",
+   "bytes": 4213
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3n.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3n.yaml",
-   "source_sha256": "01916e8864bc5e115fb10607274f42a7105214b31da836178fe92289143d5dcb",
+   "source_sha256": "3e3bbc246cc8cc711d44f1f7c914e8b6da36c886e057ddb2808d55ca18a3b299",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "3a5ccb2c036fb19cd1c017c638e217ee42dfddb2457a7cc574e9026e4e5ba56c",
-   "bytes": 3879
+   "sha256": "fc676e9c773071cb6a51cf41438030b9d1431643ba9a5094b97633c728e1e408",
+   "bytes": 4102
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3-a3.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3-a3.yaml",
-   "source_sha256": "d5c94bbaa57746371acb1a211782223514dab31e27f7e7ec69b1e9d633bd9fd7",
+   "source_sha256": "cfa2e85246ca7fb9f04682f1b21e09d3a098ec960827684acd9ddab8fe66bf82",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "4c9f060ab8521e9a312d17245a5a500168b4cd26f830f7f0a62e8a0789452d5a",
-   "bytes": 4022
+   "sha256": "64693aca32ff1f4a9ae40f40a73901fd6c7735b57130e86bea8c772b0fbf7a65",
+   "bytes": 4245
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3-a1r.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3-a1r.yaml",
-   "source_sha256": "0f432fffb02dd4f6b6c213bb6538028bfb192c2eb2983338f0dbff7f7fa8959d",
+   "source_sha256": "a869f1358b7292a48f645a18afa8de0633ccfe7afd3a9e89be160c3476795b90",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "d13a4dca0f3624ed62bbac0d23175fa86df7a5d6a5c8f98590c5e95b22de27d4",
-   "bytes": 4078
+   "sha256": "02f29c1458a98f8aa3be4a1b50bb7faf8e4e9a2e3ed47838c6ffa401c1634b9d",
+   "bytes": 4301
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3n-a3.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3n-a3.yaml",
-   "source_sha256": "bc2282fa81901b7621ebfc5df193ea1db721ad718f43371f2ffc47a70041dcda",
+   "source_sha256": "0b950f8e1f1eaca8d39ddc63b168dce9421d17b81d97aaba6ace64043868f53d",
    "transform": "scrubbed (11 replacements; 3 per-file redaction rules)",
-   "sha256": "1fbefbccf28c64fa34f89099f34e7ef7e25a65424b4da1f61eb7c9ff66fb11d8",
-   "bytes": 3911
+   "sha256": "a24c044b41769d6a9a89c7bbe65e78e3522fbbf2b014e4b3f4ee8c5fc3a73b30",
+   "bytes": 4134
   },
   {
    "path": "harness/run/arm_measure.sh",
@@ -644,19 +671,19 @@
    "path": "harness/benchmarks/nvfp4_8r/accept_p2.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p2.py",
-   "source_sha256": "a7d73df881199b540158986415640707ba5b9cf7bc84e189339f9b0116fd3bb1",
+   "source_sha256": "483c1f763022d2518cad29e342ff90f37019b0c82df011129f3c4d6932d73b86",
    "transform": "scrubbed (7 replacements)",
-   "sha256": "9c5babb99a54bc333b9cd3883f04bfe023b5be5c718f4e8b122450ab5ac8edf2",
-   "bytes": 8035
+   "sha256": "8894a0ce7bdbab5d225637fee62506421ed0ddd36e1e8a288fb414a1ca9d9d5b",
+   "bytes": 8168
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/accept_p3_layer.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p3_layer.py",
-   "source_sha256": "053e1a4111411f1d9ffd90f5627ef799886c397cd26a630dc4928d210fb2dd2f",
+   "source_sha256": "90817b223e5eb41a055ec062e16c47e5b5f72300183c5af995e31042e40ad7bd",
    "transform": "scrubbed (1 replacements)",
-   "sha256": "9a35ebbe0107eecf5873d1bec9a7f2d68c1b88882d917b880257b90d9cca04c4",
-   "bytes": 10154
+   "sha256": "eac5cdf283b48ea0fef8d4586cbe9eee338664807db7e3ed36be2edeeb4e779c",
+   "bytes": 10308
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/accept_p4.py",
@@ -671,28 +698,28 @@
    "path": "harness/benchmarks/nvfp4_8r/accept_t3_layer.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_t3_layer.py",
-   "source_sha256": "c6e805040b3590ca3d88f593888877d5883878ffb97656a62a0dc0f4c90d8578",
+   "source_sha256": "0b90043af57495ef7faf5c842828bfa2912f2962feb71730b67887975a7520fc",
    "transform": "scrubbed (3 replacements)",
-   "sha256": "1faf2e4e09e47b04577fcf3562f05a7e34a3fc1e800d3f80f54b54b772afa9dd",
-   "bytes": 12695
+   "sha256": "d000143b4e859613428f3b890e9ced71ce57772e0dc227d5667d68f945e9e006",
+   "bytes": 12873
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/accept_t3_stage.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_t3_stage.py",
-   "source_sha256": "d0b692e2610878bb38bb728361023d4f296a58b930304cbe5891ff1575acce12",
+   "source_sha256": "93ebe578b5149cc57eec5a1853fe8faeb6d71ec3c75aac08337a9fe4428af4cc",
    "transform": "scrubbed (3 replacements)",
-   "sha256": "1896a388c91560b537090470cbc1143a222aee0bfeaf13ee993d8291c924f421",
-   "bytes": 7274
+   "sha256": "fe7f473d0b9edafe5aad328743041eda4134977aadcb41d0b040f9791594558e",
+   "bytes": 7387
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/bench_p3_miss_paths.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_p3_miss_paths.py",
-   "source_sha256": "56a87bfa623d7ee3a1c8db9ae5ff960db0582fdd819fa91bae335b8a4ea2bdb1",
+   "source_sha256": "c005d55c72c24149ff2b6c6e7159d805f04a2c80e0cf3ecd1f8de653c9f92607",
    "transform": "scrubbed (2 replacements; 1 per-file redaction rules)",
-   "sha256": "57e49085ab4c9c01649a8e33ac28dc3bcc27f944bd4ddc7241d925ec658af618",
-   "bytes": 8263
+   "sha256": "85debbdc315b470fb8248b91fb50b23c29513b9e693f2f61350c45446f93cb99",
+   "bytes": 8448
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/build_packs.py",
@@ -995,19 +1022,19 @@
    "path": "harness/benchmarks/nvfp4_8r/test_p3_loader_wiring.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_p3_loader_wiring.py",
-   "source_sha256": "ab9022e14250ba91f5ca1cbec58d09ac05977ec1b5664dabcf5294d4338c353a",
+   "source_sha256": "98598dbeff94ec5222ec8fce1319b16071e316bd7fb045b0b1d2d7718a8be298",
    "transform": "scrubbed (4 replacements; 1 per-file redaction rules)",
-   "sha256": "a9bec7d8ddb87398238b3a88703c40932ae816dc00290c5cd9f8dd88aa5e0e9f",
-   "bytes": 6122
+   "sha256": "2c88854f91b43d874962b61c98abe2dd0c4afddf579572973bf52d40b4cff007",
+   "bytes": 6181
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_p3_split_groups.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_p3_split_groups.py",
-   "source_sha256": "95d3b2fe7f8b13396b775ef3b7109f1a4c62eb7f46c320ba34ce3ba70b653565",
+   "source_sha256": "b0e4a7c710627c35f2473bfefcc82c3d3e672a23f95a2f92273e473c202cd219",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "95d3b2fe7f8b13396b775ef3b7109f1a4c62eb7f46c320ba34ce3ba70b653565",
-   "bytes": 3417
+   "sha256": "b0e4a7c710627c35f2473bfefcc82c3d3e672a23f95a2f92273e473c202cd219",
+   "bytes": 3568
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_residency.py",
@@ -1022,10 +1049,10 @@
    "path": "harness/benchmarks/nvfp4_8r/test_t3_dispatch.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_dispatch.py",
-   "source_sha256": "4c81aea9f136357444bf5de78ce10fa914f0d80aa8ef215fd1b8addd8a1c2686",
+   "source_sha256": "94a5303653d5dbd8ee1f688f57757bcf5a246fdeda76d479968f2c85485b085f",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "4c81aea9f136357444bf5de78ce10fa914f0d80aa8ef215fd1b8addd8a1c2686",
-   "bytes": 8306
+   "sha256": "94a5303653d5dbd8ee1f688f57757bcf5a246fdeda76d479968f2c85485b085f",
+   "bytes": 8430
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_t3_iq_bank.py",
@@ -1049,10 +1076,10 @@
    "path": "harness/benchmarks/nvfp4_8r/test_t3_stage_plan.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_stage_plan.py",
-   "source_sha256": "d1ffbed7a8db1bc52643ed35c0de6c27d9b2cb875e81238f009cc819d600787f",
+   "source_sha256": "23d2e36e630a05ab2cbb4bf6fa6c0f2e421282ea5367d68a27ef6390c0b61c96",
    "transform": "scrubbed (3 replacements)",
-   "sha256": "a5fb86ee48baa0591ac259f2263ae1b3a795d7ccd00dfca35c00f9acca3fa58f",
-   "bytes": 8936
+   "sha256": "9d40ef339006f18d9e0e152815675188eb6f39352b27433859c8f7d706a88f73",
+   "bytes": 8980
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_t3_tiers.py",
@@ -1064,13 +1091,49 @@
    "bytes": 16025
   },
   {
+   "path": "harness/benchmarks/nvfp4_8r/test_group_plan.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_group_plan.py",
+   "source_sha256": "09921585e1933f641ed47a0cb3f7579df9100d8b24000169bb455e19427b521b",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "4a399c35832fcef40e14c5aca93bc376501fdff14e8a5cfb2454aacdfb04501b",
+   "bytes": 19770
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/check_layers_mt6.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/check_layers_mt6.py",
+   "source_sha256": "da87d04dce0dd34b8bff800e88f713be6ed96d7e090fd6397f6492814f5974d8",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "da87d04dce0dd34b8bff800e88f713be6ed96d7e090fd6397f6492814f5974d8",
+   "bytes": 4508
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/bench_dispatch_parts.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_dispatch_parts.py",
+   "source_sha256": "bd313a8e9778a89a16217654f48da891c94e3feea8d9175fb24f527da435def1",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "a523a2018bd60a0e656b5f7ecf3db30a02e8983a5a6aac3a00196807a0f48dac",
+   "bytes": 10512
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/bench_tier_plan.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_tier_plan.py",
+   "source_sha256": "a57d0933ef56ab3ad2cab094a71cecd8e04aff91a3c9fb45fa7742f5282032c7",
+   "transform": "scrubbed (1 replacements; 1 per-file redaction rules)",
+   "sha256": "92dcd2b19209cbfe01749dd1278ac7f65842b9b5632e1c2437c96b04c99be9de",
+   "bytes": 4608
+  },
+  {
    "path": "tools/check_data_boundary.sh",
    "kind": "code",
    "source": "$LANE/stage/hf-pack/final-fill/check_data_boundary.sh",
-   "source_sha256": "cc0517a30d92a5fe90f9631cd5e26e8ca014ca86be4d81515ed62976e21644b5",
+   "source_sha256": "5ee793bf5e6fad35328a4f856a0fd308bbb536eed58470c3db194645f69d59ee",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "cc0517a30d92a5fe90f9631cd5e26e8ca014ca86be4d81515ed62976e21644b5",
-   "bytes": 2331
+   "sha256": "5ee793bf5e6fad35328a4f856a0fd308bbb536eed58470c3db194645f69d59ee",
+   "bytes": 2881
   },
   {
    "path": "docs/research/LANE-RESEARCH.md",
@@ -1121,10 +1184,10 @@
    "path": "docs/plans/03-dispatch-overhead.md",
    "kind": "doc",
    "source": "$LANE/repo/nvfp4-8r/plans/03-dispatch-overhead.md",
-   "source_sha256": "e6d48b3a8ae1e5f7bab4439c7c5f67bd1a84bfeff49c19166c80aae8abe858e4",
-   "transform": "scrubbed (9 replacements); banner added",
-   "sha256": "3ae2c35d286ab922d70eaadd5f1c01f9da18b10cbdaec171b4336e2f77e010d5",
-   "bytes": 10683
+   "source_sha256": "69a1301e18614b9f22c0532fbfedb4b4ea7a059987596d7d41f6b863d9d025db",
+   "transform": "scrubbed (10 replacements; 1 per-file redaction rules); banner added",
+   "sha256": "5af0b0a3aa2ec53732496099b6a33c734a0786937e2f0539d25c28af44d17583",
+   "bytes": 11137
   },
   {
    "path": "docs/plans/04-prefill-staging.md",
@@ -1196,9 +1259,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 118,
+  "count": 126,
   "upstream_engine_files": 31,
-  "this_build_work_in_progress": 87,
+  "this_build_work_in_progress": 95,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }

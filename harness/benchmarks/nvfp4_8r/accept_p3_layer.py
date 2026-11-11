@@ -29,6 +29,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as native
 
 from .accept_p2 import Inconclusive, gpu_gate, rel_l2, time_eager, time_graph
@@ -69,14 +70,14 @@ def run_layer(packs: Path, refs_path: Path, prefill_path: Path, dev: torch.devic
     raw = native.read_rank_experts(packs, layer, RANK)
     full = native.NativeV41Moe(
         native.NativeExpertSet.from_raw(torch.from_numpy(raw), dev),
-        torch.arange(384, dtype=torch.int32, device=dev), max_tokens=16,
+        torch.arange(384, dtype=torch.int32, device=dev), max_tokens=16, group_plan=gplan.GroupPlan.CHAIN,
     )
     hot_slot, cold_slot = native.split_maps(split["hot"], split["cold"], dev)
     hot = native.NativeExpertSet.from_raw(torch.from_numpy(raw[split["hot"]]), dev)
     cold = native.NativeExpertSet.from_raw_host(torch.from_numpy(raw[split["cold"]]), dev)
     del raw
     moe = native.NativeV41Moe(hot, hot_slot, max_tokens=16, cold=cold,
-                              cold_slot_of_expert=cold_slot)
+                              cold_slot_of_expert=cold_slot, group_plan=gplan.GroupPlan.CHAIN)
     cold_set = set(split["cold"])
     res: dict = {"layer": layer, "hot": len(split["hot"]), "cold": len(split["cold"]),
                  "bit_equal": {}, "worst_rel_l2": {}, "timing_us": {}, "graphs": {}}

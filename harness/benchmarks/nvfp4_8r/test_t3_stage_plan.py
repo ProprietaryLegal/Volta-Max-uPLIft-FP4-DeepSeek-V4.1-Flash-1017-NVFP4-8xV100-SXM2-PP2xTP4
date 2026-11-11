@@ -115,7 +115,8 @@ def main() -> int:
 
     # 3. Stage plans on the real tally.
     base = {"nvfp4_8r_packs": str(ROOT / "packs"), "nvfp4_8r_tally": str(TALLY),
-            "nvfp4_8r_reserve_bytes": RESERVE, "nvfp4_8r_prefill_warm": "native_staged"}
+            "nvfp4_8r_reserve_bytes": RESERVE, "nvfp4_8r_prefill_warm": "native_staged",
+            "nvfp4_8r_group_plan": "chain"}
     cfg = native.NativePackConfig.from_extra(
         {**base, "nvfp4_8r_residency": "hot_iq_host", "nvfp4_8r_host_route_share": 0.0})
     two = native.NativePackConfig.from_extra({**base, "nvfp4_8r_residency": "two_tier"})

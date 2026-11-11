@@ -29,6 +29,7 @@ import numpy as np
 import torch
 
 from vllm.logger import init_logger
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_stats as route_stats
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_tiers as tiers
 from vllm.model_executor.layers.fused_moe.experts.skinny_sm70_moe import (
@@ -611,6 +612,11 @@ class NativeV41Moe:
     With ``warm`` (plan 01, built by ``three_tier``) the cold set holds every
     non-HOT expert for prefill, but decode runs a WARM expert's routes in
     production's IQ op from the HBM bank; only HOST routes use the cold set.
+
+    ``group_plan`` (plan 03 part B, required) says how ``forward`` builds the
+    QPN launches' route plan: the tensor-op chain or the one-launch Triton
+    kernel of nvfp4_8r_group_plan (same int32 tensors, bit for bit).
+    ``forward_prefill`` always uses the chain (eager, any M).
     """
 
     def __init__(
@@ -621,7 +627,10 @@ class NativeV41Moe:
         cold: NativeExpertSet | None = None,
         cold_slot_of_expert: torch.Tensor | None = None,
         warm: WarmTier | None = None,
+        *,
+        group_plan: gplan.GroupPlan,
     ):
+        group_plan = gplan.check_group_plan(group_plan)
         if (cold is None) != (cold_slot_of_expert is None):
             raise ValueError("cold set and cold slot map come together")
         if warm is not None and cold is None:
@@ -686,6 +695,23 @@ class NativeV41Moe:
         self.out = torch.empty((max_tokens, HIDDEN), dtype=torch.float32, device=dev)
         self.split13 = grouped_splitk(HIDDEN, experts.order)
         self.split2 = grouped_splitk(W2_K, experts.order)
+        self.group_plan = group_plan
+        # Built (and its kernel compiled) here, before any graph capture.
+        self._planner = (
+            gplan.GroupPlanner(self._plan_keys(), max_tokens, dev)
+            if group_plan is gplan.GroupPlan.KERNEL else None
+        )
+
+    def _plan_keys(self) -> gplan.PlanKeys:
+        """The kernel's inputs: the same keys as _groups / _split_groups / _tier_groups."""
+        if self.cold is None:
+            return gplan.ResidentKeys(self.slot_of_expert)
+        assert self.cold_slot_of_expert is not None
+        nh, nc = self.experts.num_slots, self.cold.num_slots
+        if self.warm is None:
+            return gplan.SplitKeys(self.slot_of_expert, self.cold_slot_of_expert, nh, nc, True)
+        return gplan.SplitKeys(self.slot_of_expert, self.warm.host_slot_of_expert, nh, nc,
+                               self.warm.host_in_decode)
 
     @classmethod
     def three_tier(
@@ -696,6 +722,8 @@ class NativeV41Moe:
         tier: np.ndarray,
         max_tokens: int,
         prefill: IqLayerPrefill | None,
+        *,
+        group_plan: gplan.GroupPlan,
     ) -> NativeV41Moe:
         """The layer of one tier array (int8 [384] of tiers.Tier): ``experts``
         holds the HOT experts, ``cold`` every non-HOT one, ``iq`` the WARM
@@ -717,6 +745,7 @@ class NativeV41Moe:
         moe = cls(
             experts, to(maps.hot), max_tokens, cold=cold, cold_slot_of_expert=to(maps.cold),
             warm=WarmTier(iq, to(maps.iq), to(maps.host), counts[2] > 0, prefill),
+            group_plan=group_plan,
         )
         if _STATS:
             moe.stats = route_stats.RouteStats(tier, dev)
@@ -790,6 +819,21 @@ class NativeV41Moe:
             launches.append((self.cold, perm, gids_c, goff_c))
         return launches
 
+    def _launches(self, topk_ids: torch.Tensor):
+        """[(bank, perm, gids, goff)] of the QPN launches of one decode call."""
+        if self._planner is not None:
+            plan = self._planner.plan(topk_ids)
+            launches = [(self.experts, plan.perm, plan.gids_hot, plan.goff_hot)]
+            if plan.host is not None:
+                assert self.cold is not None
+                launches.append((self.cold, plan.perm, *plan.host))
+            return launches
+        if self.warm is not None:
+            return self._tier_groups(topk_ids)
+        if self.cold is None:
+            return self._groups(topk_ids)
+        return self._split_groups(topk_ids)
+
     def _iq_routes(
         self, topk_ids: torch.Tensor, topk_weights: torch.Tensor
     ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -819,14 +863,9 @@ class NativeV41Moe:
         if x.dtype != torch.float16 or topk_weights.dtype != torch.float32:
             raise ValueError("x must be fp16 and topk_weights fp32")
         s = m * TOP_K
-        if self.warm is not None:
-            launches = self._tier_groups(topk_ids)
-            if self.stats is not None:
-                self.stats.count(topk_ids)
-        elif self.cold is None:
-            launches = self._groups(topk_ids)
-        else:
-            launches = self._split_groups(topk_ids)
+        launches = self._launches(topk_ids)
+        if self.stats is not None:
+            self.stats.count(topk_ids)
         y13, inter, y2, out = self.y13[:s], self.inter[:s], self.y2[:s], self.out[:m]
         # Each launch writes only the slot rows of its own groups.
         for e, perm, gids, goff in launches:
@@ -1042,6 +1081,7 @@ def choose_residency(
 
 REQUIRED_KEYS = (
     "nvfp4_8r_packs", "nvfp4_8r_reserve_bytes", tiers.RESIDENCY_KEY, tiers.PREFILL_WARM_KEY,
+    gplan.GROUP_PLAN_KEY,
 )
 # Exactly one: the private tally the planner ranks by, or a fixed tier map.
 TIER_SOURCE_KEYS = ("nvfp4_8r_tally", tiers.TIER_MAP_KEY)
@@ -1104,6 +1144,8 @@ class NativePackConfig:
     record of a WARM expert prefill computes with (plan 04 part B); iq with
     two_tier cannot be constructed. ``tier_source`` says where the tiers come
     from: the tally (planned at load) or a tier map (hot_iq only).
+    ``group_plan`` says how decode builds the QPN route plan (plan 03 part B):
+    chain or kernel, no default, whichever the tier source.
     """
 
     packs: Path
@@ -1111,9 +1153,11 @@ class NativePackConfig:
     reserve_by_stage: dict[int, int]
     residency: tiers.Residency
     prefill_warm: tiers.PrefillWarm
+    group_plan: gplan.GroupPlan
 
     def __post_init__(self) -> None:
         tiers.check_prefill_warm(self.prefill_warm, self.residency)
+        gplan.check_group_plan(self.group_plan)
         if isinstance(self.tier_source, TierMapSource) and not isinstance(self.residency, tiers.HotIq):
             raise ValueError(
                 f"{tiers.TIER_MAP_KEY} serves {tiers.RESIDENCY_KEY} hot_iq only, got {self.residency!r}"
@@ -1166,7 +1210,7 @@ class NativePackConfig:
             source = TierMapSource(path, tiers.load_tier_map(path))
         residency = tiers.parse_residency(extra)
         return cls(packs, source, reserve, residency,
-                   tiers.parse_prefill_warm(extra, residency))
+                   tiers.parse_prefill_warm(extra, residency), gplan.parse_group_plan(extra))
 
     def decode_counts(self) -> np.ndarray:
         with np.load(self.tally, allow_pickle=False) as data:
@@ -1355,16 +1399,17 @@ def build_layer(
     cold_slot = torch.from_numpy(maps.cold).to(device)
     hot_set = NativeExpertSet.from_raw(raw[hot], device)
     if not cold:
-        return NativeV41Moe(hot_set, hot_slot, max_tokens)
+        return NativeV41Moe(hot_set, hot_slot, max_tokens, group_plan=cfg.group_plan)
     cold_set = NativeExpertSet.from_raw_host(raw[cold], device)
     if iq_source is None:
         return NativeV41Moe(hot_set, hot_slot, max_tokens, cold=cold_set,
-                            cold_slot_of_expert=cold_slot)
+                            cold_slot_of_expert=cold_slot, group_plan=cfg.group_plan)
     if device not in _IQ_PEER_CARDS:
         raise ValueError(f"L{layer}: attach_iq_peer has not run for {device}")
     bank = IqWarmBank.from_source(iq_source, warm, device)
     handle = None if stage_prefill is None else stage_prefill.layer(layer, bank)
-    return NativeV41Moe.three_tier(hot_set, cold_set, bank, tier, max_tokens, handle)
+    return NativeV41Moe.three_tier(hot_set, cold_set, bank, tier, max_tokens, handle,
+                                   group_plan=cfg.group_plan)
 
 
 # -- three-tier stage (plan 01): what the loader hands over ------------------

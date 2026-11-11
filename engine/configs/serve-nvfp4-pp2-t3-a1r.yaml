@@ -63,6 +63,9 @@ model-loader-extra-config:
   # RAM (the plan 01 build). Only native_staged is in this snapshot: the iq mode (plan 04 part B) and its
   # module follow in a later update.
   nvfp4_8r_prefill_warm: native_staged
+  # QPN route plan of a decode call (plan 03 part B). chain: the tensor-op chain (every build before
+  # part B). kernel: one Triton launch per call that writes the same int32 plan bit for bit.
+  nvfp4_8r_group_plan: chain
 speculative-config:
   method: dspark
   model: $LANE/models/dspark-v41
