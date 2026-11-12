@@ -54,6 +54,7 @@ import numpy as np
 import torch
 
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as nat
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_tiers as tiers
 from vllm.model_executor.layers.fused_moe.experts.skinny_sm70_moe import QpnFragmentOrder
 
@@ -91,14 +92,15 @@ def build(gp, kind: str, tier: np.ndarray, max_tokens: int, mode, dev: torch.dev
     to = lambda a: torch.from_numpy(a).to(dev)  # noqa: E731
     hot_set = placeholder_set(n_hot, dev)
     if kind == "resident":
-        return nat.NativeV41Moe(hot_set, to(maps.hot), max_tokens, group_plan=mode)
+        return nat.NativeV41Moe(hot_set, to(maps.hot), max_tokens, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2)
     cold_set = placeholder_set(int((tier != HOT).sum()), dev)
     if kind == "two_tier":
         return nat.NativeV41Moe(hot_set, to(maps.hot), max_tokens, cold=cold_set,
-                                cold_slot_of_expert=to(maps.cold), group_plan=mode)
+                                cold_slot_of_expert=to(maps.cold), group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2)
     iq = placeholder_iq(int((tier == WARM).sum()), dev)
     return nat.NativeV41Moe.three_tier(hot_set, cold_set, iq, tier, max_tokens, None,
-                                       group_plan=mode)
+                                       group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2,
+                                       iq_tail=nat.iqt.IqTail.TORCH)
 
 
 def random_tier(kind: str, rng: np.random.Generator) -> np.ndarray:
@@ -312,10 +314,10 @@ def run_layers(gp, packs: Path, refs_dir: Path, dev: torch.device) -> dict:
             objs = {}
             for mode in (gp.GroupPlan.CHAIN, gp.GroupPlan.KERNEL):
                 if kind == "resident":
-                    objs[mode] = nat.NativeV41Moe(full_set, ident, 16, group_plan=mode)
+                    objs[mode] = nat.NativeV41Moe(full_set, ident, 16, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2)
                 else:
                     objs[mode] = nat.NativeV41Moe(hot_set, hs, 16, cold=cold_set,
-                                                  cold_slot_of_expert=cs, group_plan=mode)
+                                                  cold_slot_of_expert=cs, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2)
             checks = []
             for s in (0, 1):
                 for m in (1, 6):

@@ -1,14 +1,14 @@
 # Volta Max uPLIft FP4
 
-## Volta Max uPLIft: as much of the routed work at NVIDIA's NVFP4 precision as fits on eight V100s, every routed expert on the cards in decode · 6,087 of 15,360 routed experts at exactly NVFP4 precision on the mixed tally · 79 to 85 % of decode routes in the measured sets (in-sample) · same next token as NVIDIA's NVFP4 pack 95.1 % (Volta sPLIt 92.2 %) · 64.7 tok/s legal-style, 83.6 general · 8x V100 from 2018 · slower than Volta sPLIt
+## Volta Max uPLIft: as much of the routed work at NVIDIA's NVFP4 precision as fits on eight V100s, every routed expert on the cards in decode · 5,949 of 15,360 routed experts at exactly NVFP4 precision in the two-slot default · about 78 to 85 % of decode routes (predicted for two slots, 80 to 86 % measured on one) · same next token as NVIDIA's NVFP4 pack 95.1 % (Volta sPLIt 92.2 %, first release) · 192.3 tok/s with three requests together on the three-slot option (1.62x one stream) · 97.3 tok/s legal-style, 123.2 general (short sets, one request at a time on the two-slot default) · 8x V100 from 2018 · slower than Volta sPLIt
 
 [![same next token as the NVFP4 pack: 95.1 %, Volta sPLIt 92.2 %](https://img.shields.io/badge/same%20next%20token%20as%20NVFP4-95.1%20%25%20(Volta%20sPLIt%2092.2%20%25)-76B900?style=for-the-badge)](#how-close-to-nvfp4)
-[![decode routes at NVFP4 precision: 79-85 %](https://img.shields.io/badge/routes%20at%20NVFP4%20precision-79--85%20%25-76B900?style=for-the-badge)](#how-close-to-nvfp4)
-[![Max uPLIft legal-style: 64.7 tok/s](https://img.shields.io/badge/Max%20uPLIft%20legal--style-64.7%20tok%2Fs-1F6FEB?style=for-the-badge)](#hot_iq-on-the-mixed-tally-the-build-of-this-release)
-[![Max uPLIft general: 83.6 tok/s](https://img.shields.io/badge/Max%20uPLIft%20general-83.6%20tok%2Fs-8250DF?style=for-the-badge)](#hot_iq-on-the-mixed-tally-the-build-of-this-release)
-[![31K tool loops: 88-91 tok/s](https://img.shields.io/badge/31K%20tool%20loops-88--91%20tok%2Fs-2EA043?style=for-the-badge)](#hot_iq-on-the-mixed-tally-the-build-of-this-release)
+[![decode routes at NVFP4 precision: about 78-85 % with two slots (predicted)](https://img.shields.io/badge/routes%20at%20NVFP4%20precision-78--85%20%25%20(2%20slots%2C%20predicted)-76B900?style=for-the-badge)](#serving-several-requests-at-once-window-18)
+[![three requests together on three slots: 192.3 tok/s, 1.62x one stream](https://img.shields.io/badge/3%20requests%20together%2C%203%20slots-192.3%20tok%2Fs%20(1.62x)-1F6FEB?style=for-the-badge)](#serving-several-requests-at-once-window-18)
+[![legal-style short set, one request at a time on the two-slot default: 97.3 tok/s](https://img.shields.io/badge/legal--style%20short%20set%2C%20one%20at%20a%20time-97.3%20tok%2Fs-1F6FEB?style=for-the-badge)](#speed-bench-2026-11-12-final-build)
+[![general short set, one request at a time on the two-slot default: 123.2 tok/s](https://img.shields.io/badge/general%20short%20set%2C%20one%20at%20a%20time-123.2%20tok%2Fs-8250DF?style=for-the-badge)](#speed-bench-2026-11-12-final-build)
+[![speed bench, code 1K to 256K, one request at a time on the two-slot default: 150-180 tok/s](https://img.shields.io/badge/speed%20bench%2C%20code%201K%20to%20256K%2C%20one%20at%20a%20time-150--180%20tok%2Fs-0969DA?style=for-the-badge)](#speed-bench-2026-11-12-final-build)
 [![Hugging Face package: hot_iq, 556 GB](https://img.shields.io/badge/%F0%9F%A4%97%20package-hot__iq%20556%20GB-FFD21E?style=for-the-badge)](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4)
-[![speed bench, code 1K to 256K: 104-127 tok/s](https://img.shields.io/badge/speed%20bench%2C%20code%201K%20to%20256K-104--127%20tok%2Fs-0969DA?style=for-the-badge)](#tokens-per-second)
 [![status: work in progress](https://img.shields.io/badge/status-work%20in%20progress-D29922?style=for-the-badge)](#what-did-not-work-or-is-not-yet-good)
 
 Built by **Nick Mermiges, Esq.**, founder of [PLI Labs](https://proprietarylegal.ai/labs.html) · [proprietarylegal.ai](https://proprietarylegal.ai)
@@ -27,8 +27,11 @@ tally's counts of decode routes, measured in-sample. On the mixed tally of this 
 precision of NVIDIA's [DeepSeek-V4.1-Flash-1017-NVFP4](https://huggingface.co/nvidia/DeepSeek-V4.1-Flash-1017-NVFP4) pack,
 unchanged. In the measured sets 79.0 to 85.0 % of decode routes ran on those experts (route counters, in-sample,
 [below](#hot_iq-on-the-mixed-tally-the-build-of-this-release)). The other 15.0 to 21.0 % ran on ISTA-DASLab's IQ2-class
-records. In decode all experts are in VRAM: no routed expert is read over PCIe. Prompt reading is different: it
-reads the compressed experts at NVFP4 precision from records staged in host RAM (`native_staged`).
+records. In decode all experts are in VRAM: no routed expert is read over PCIe. In the first release prompt reading
+read the compressed experts at NVFP4 precision from records staged in host RAM (`native_staged`). Since
+2026-11-12 the default reads them from their IQ2-class records on the cards (fast prompt reading, quality not
+established) and serves two prompt slots, which places 5,949 experts at NVFP4
+([update of 2026-11-12](#update-2026-11-12-two-prompt-slots-by-default-fast-prompt-reading-and-four-kernels)).
 
 **How close to NVIDIA's NVFP4 pack** (MEASURED 2026-11-11, 320 contexts and 513 MMLU questions, rules fixed before
 any capture, [details](#how-close-to-nvfp4)). `hot_iq` picks the same next token as the NVFP4 reference on 95.1 % of
@@ -49,25 +52,134 @@ build, with part of the experts in host RAM. Its measurements are in the [histor
 
 **One download:** the [hot_iq package on Hugging Face](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4) (556 GB) holds
 every weight file this build serves, the tier map that says which experts are hot, and the serving profile. Its
-upload was complete on 2026-11-11. Start it with
+upload was complete on 2026-11-11, and its small-file update of 2026-11-12 ([package history](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4/commits/main))
+added the serving files of this build: one profile template and one tier map per option. Start it with
 [engine/configs/serve_hot_iq.sh](engine/configs/serve_hot_iq.sh) as [Reproduce](#reproduce) describes.
 
 This repository is a public record of work in progress: the measurements, the code of the build as measured, what
 worked and what did not. The steps that led to this build, the three-tier mode and the first `hot_iq` profiles
 on the first tally (2026-11-09 and the earlier results of 2026-11-10), are dated rows of the
 [measurement log](#measurement-log), with their tables and checks in [docs/history.md](docs/history.md). They stay
-as published. The unfinished prompt-reading variant of plan 04 part B is not in this snapshot.
+as published.
 The build is slower than Volta sPLIt in decode speed and in prompt reading speed. We publish it now because
 the method works, the numbers are measured, and the next steps are planned piece by piece. New results are added as
 dated rows in the [measurement log](#measurement-log).
 
+## Update 2026-11-12: two prompt slots by default, fast prompt reading and four kernels
+
+Six changes were measured on the eight cards on 2026-11-11 and 2026-11-12 and are in this repository's engine and
+templates. Each was measured under a rule fixed before its data, with public prompts only. Details and receipts:
+[docs/measurements.md](docs/measurements.md#prompt-slots-fast-prompt-reading-and-four-kernels-2026-11-12).
+
+- **Two prompt slots are the published default.** The server keeps two requests' prompts and decodes both at once.
+  With three requests running together on the three-slot profile it delivers **192.3 tok/s in all, 1.62x one
+  stream** (118.9 tok/s). Two requests on the two-slot default give 159.0 tok/s in all (1.34x). The one- and
+  three-slot profiles ship as options (window 18 measured one to three). A four-slot profile was measured on 2026-11-12, before the prompt-reading
+  kernels, and is not shipped. [Serving several requests at once](#serving-several-requests-at-once-window-18)
+  has the full table, the price in NVFP4 experts and the limits.
+- **Fast prompt reading is the default.** Prompt reading now reads each compressed expert from its IQ2-class record on
+  the card, in place of its NVFP4 record staged from host RAM. Near 200K tokens a first read took 86 to 119 s
+  (nine long chats, all ended normally), against 155 to 165 s for the native reading of the first release, measured
+  on another day and build. **Quality not established**: it changes the output from the first token, the closeness
+  figures of this page were all measured with native reading, and the window's rule made no verdict (its native arm
+  was not run, and its memory check failed on stage 1 by 64 MiB, which the slot profiles answer with 192 MiB more
+  reserve). Native reading stays available as the `native-slots1` option.
+- **Fused IQ tail (patch G1).** One Triton launch does the weighted sum of the compressed experts' step. Token for
+  token the same output. About 1.3 ms less per decode round on second runs in two windows (first-run verdict: no
+  measurable change, the first runs of a boot carry 2 to 3 ms of noise).
+- **SwiGLU kernel.** One Triton launch computes V4.1's limited SwiGLU of the NVFP4 experts in decode. Token for token
+  the same output. About 1.3 ms less per decode round on second runs (first-run verdict: no measurable change).
+- **Two request-path switches from Volta sPLIt (window 16).** The launcher exports `VLLM_V41_SYSTEM_IN_PLACE=1`,
+  so a system message sent in the middle of a chat stays where it was sent and the server keeps the prompt it
+  holds: a follow-up turn that adds one to a 30,779-token chat reused 30,752 tokens and took 0.45 s, against
+  14.84 s with the switch off. And `VLLM_V41_TOPK_SEG=1024`, the segment width of the decode top-k kernel. Token
+  for token the same output with the switches off and on, decode speed no measurable change ([details](docs/measurements.md#two-request-path-switches-window-16)).
+- **Two prompt-reading kernels (window 17).** A one-launch SwiGLU and the RB 4 expert kernel, which handles 32
+  token rows per block of weights it loads instead of 16. Both run only while a prompt is read and give the same
+  output bits as the path they replace (one card, 90 cases each, then token-exact on eight cards). Second reads
+  of a 215,847-token prompt took 4.43 s less (89.3 to 89.8 s against 93.7 to 94.2 s, noise 0.50 s). First reads:
+  no measurable change by the rule (-8.9 and -4.2 s, inside a noise floor of 11.6 s). Peak memory on the fullest
+  card 31,736 MiB against 31,688 MiB. The RB 4 kernel's compiled library is not in this repository, its source
+  and build script are ([engine/kernels/prefill-rb4/](engine/kernels/prefill-rb4/README.md), [details](docs/measurements.md#two-prompt-reading-kernels-window-17)).
+- **Speed bench on the final build (window 18).** One request at a time on the two-slot default: short sets
+  123.2 tok/s general and 97.3 legal-style, code 150 to 180 tok/s from 1K to 256K prompts, first
+  token 108.4 s after 256K. The previous public bench, the kernel build of 2026-11-11 (one slot, native reading),
+  gave 101.1 and 81.1 tok/s and a first token 207.9 s after 256K: build against build, not one change
+  ([before and after](#before-and-after)). On the bench boot the cards of stage 1 went 2 MiB over the build's
+  memory line, with no out-of-memory line ([speed bench](#speed-bench-2026-11-12-final-build)).
+
+**The Hugging Face package as uploaded on 2026-11-11 held the build of the first release**, which does not boot on this engine: its
+profile template lacks the keys `nvfp4_8r_swiglu`, `nvfp4_8r_iq_tail`, `nvfp4_8r_prefill_swiglu` and
+`nvfp4_8r_prefill_rb`, and its tier map is the first release's,
+which the planner refuses at the budgets of two or more slots. On 2026-11-12 the package moved to this update with
+small files only: one profile template and one tier map per option (`serve/` and `tier_maps/`), the first
+release's `tier_map.json` kept as its record. No weight file changed ([package history](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4/commits/main)).
+
+### Serving several requests at once (window 18)
+
+MEASURED 2026-11-12, 175 W and 1,522 MHz per card, on the installed build of this update (the switches of window 16 and
+the kernels of window 17 included), under a rule fixed before its data ([rule](docs/acceptance/WINDOW18-accept-rule.md), WINDOW W18 VALID). Three boots, one,
+two and three prompt slots, each with fast prompt reading, the fused IQ tail and the SwiGLU kernel, by window 15's
+procedure. Each level runs the three public short prompts, thinking off, temperature 0, 1,024 tokens out per request,
+started together. Aggregate tok/s = all tokens over the time from the first start to the last end. One request = the
+three prompts one after another. Run 2 of each level is the reading, declared before the data. The tier maps of the three boots equal window
+15's for the same slot count (tier counts and digests), so the expert counts and predicted shares above still hold.
+
+![Aggregate and per-request decode tok/s by prompt slots and requests running together](docs/charts/concurrency-light.svg#gh-light-mode-only)
+![Aggregate and per-request decode tok/s by prompt slots and requests running together](docs/charts/concurrency-dark.svg#gh-dark-mode-only)
+
+Aggregate tok/s (ratio to one slot, one stream), mean decode tok/s of each request, ms per decode round:
+
+| Slots | 1 request | 2 together | 3 together |
+|---|---|---|---|
+| 1 | 118.9 (1.00x), 137.0, 25.08 |  |  |
+| **2 (default)** | 124.2 (1.04x), 143.2, 24.90 | **159.0 (1.34x)**, 107.5, 27.23 |  |
+| 3 | 123.5 (1.04x), 138.5, 24.87 | 164.8 (1.39x), 108.4, 27.20 | **192.3 (1.62x)**, 87.8, 38.68 |
+
+The engine runs one request per step, and the two pipeline stages hold two steps. A second request fills the stage
+that idles with one, so two requests add 33.4 % on the three-slot profile and a third adds 16.7 %. Each request gets
+slower as more share the stages: 138.5 tok/s alone, 108.4 with two and 87.8 with three (three-slot profile, means).
+Window 15 also measured four slots, on 2026-11-12 before the prompt-reading kernels (that profile is not shipped): a
+fourth request added 2.6 % to three. The run-1
+table, the per-request ranges and the receipts are in
+[docs/measurements.md](docs/measurements.md#prompt-slots-and-the-final-bench-window-18).
+
+- **Same output.** Every request with others running gave the same token ids as the same prompt alone on the same
+  boot: 4 of 4, 8 of 8 and 14 of 14.
+- **Memory.** Every card at most 31,754 MiB (stage 0, one slot) against the 31,998 MiB line, no out-of-memory line on
+  any slot boot. Margins to the line on stage 0: 244, 296 and 742 MiB for one to three slots. Stage 1: 1,072 to 1,180 MiB. These samples cover
+  short requests and one 209K-token read per boot, not the 500K read or the 216K tool loop. The bench boot of the
+  same window (two slots, one request at a time) went 2 MiB over the line on stage 1
+  ([speed bench](#speed-bench-2026-11-12-final-build)).
+- **One long read and one short request.** A 209,175-token prompt, then a short request 10 s later. With one
+  slot the short request waits 76.73 s for the read, then decodes at 82.4 tok/s. With two or three slots it
+  starts in 4.73 to 9.41 s but decodes at 9.4 to 9.7 tok/s while the read goes on, and the read takes 30.9 to 39.3 s
+  longer. Both end later than with one slot, so slots do not help a short request during a long read.
+- **The price in NVFP4 experts.** Each slot keeps its own state and CUDA graphs, so fewer experts fit at NVFP4: 6,215,
+  5,949, 5,663 and 5,376 of the 15,360 routed experts for one to four slots (tier lines at boot). The share of decode
+  routes that run at exactly NVFP4 precision falls with them. PREDICTED (not measured) from the slope of that share per
+  GiB of budget, method error about ±1.3 points:
+
+| Kind of text | 1 slot, R1 profile: measured | 1 slot (window 15) | **2 slots (default)** | 3 slots | 4 slots |
+|---|---|---|---|---|---|
+| general | 80.3 % | about 79.9 % | about 78.2 to 78.3 % | about 76.6 to 76.8 % | about 74.9 to 75.3 % |
+| legal-style | 84.4 % | about 84.1 % | about 82.6 to 82.7 % | about 81.1 to 81.4 % | about 79.6 to 80.0 % |
+| source loop | 86.4 % | about 85.7 % | about 84.5 to 84.6 % | about 83.4 to 83.5 % | about 82.2 to 82.5 % |
+| US Code loop | 85.4 % | about 85.1 % | about 83.7 to 83.8 % | about 82.4 to 82.5 % | about 81.0 to 81.3 % |
+
+The boots placed as many HOT experts as predicted or slightly more, so the measured shares should sit at or slightly
+above these ranges. No route counter ran on a slot profile.
+
+**Quality not established** for every slot profile: they hold fewer NVFP4 experts than any configuration with a
+closeness or long-chat test, and none of those tests ran on them. They also read prompts the fast way.
+
 ## Update 2026-11-11: a faster route-plan kernel and a larger NVFP4 tier map
 
 Two changes were measured on the eight cards on 2026-11-11 (card clock ceiling 1,475 MHz) and are in this
-repository's engine. **The Hugging Face package is unchanged**, and every figure outside this section, the
+repository's engine. **The Hugging Face package was unchanged by this update**, and every figure outside this section, the
 [speed bench rerun](#speed-bench-rerun-2026-11-11-kernel-build) and the dated rows of 2026-11-11 below is for the build of the first release (stage-1 reserve 7.5 GiB, route plan built by
-the chain of tensor operations). The package moves to the new tier map and the kernel in a later small-file update,
-and a dated line here will say when.
+the chain of tensor operations). The package moved on to the build of 2026-11-12 with its small-file update of that day
+([update of 2026-11-12](#update-2026-11-12-two-prompt-slots-by-default-fast-prompt-reading-and-four-kernels)).
 
 - **Stage-1 reserve 7.50 to 7.00 GiB (plan R1).** The freed half GiB per card holds 205 more NVFP4 experts on
   stage 1, 2,459 instead of 2,254 (tier digest `9473486077c6`), so 6,292 of the 15,360 routed experts in all,
@@ -123,10 +235,13 @@ the original model, so these figures say how close `hot_iq` is to the NVFP4 pack
 | Experts kept at NVFP4 precision (hot) | layers 0 to 19: 3,833 of 7,680. Layers 20 to 39: 2,254 of 7,680 | boot log tier lines on all four ranks of each stage of the exported package's boot (2026-11-11), tier digests 8e7829184090 and 5b09c0383a80 |
 | Hot experts equal NVIDIA's values | the NVFP4 to MXFP4 fold is exact: 44,696,862,720 values bit-equal, relative L2 error 0 | the fold check ([Volta Full NVFP4](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100#what-this-is)) |
 | Decode routes that land on hot experts (the share of the work done at exactly NVFP4 precision) | general text 79.0%, legal-style 83.3%, source code loop 85.0%, US Code loop 84.3% | route counters while serving the texts the hot experts were chosen from (in-sample) |
-| Prompt reading | every expert, hot or not, is computed from its full NVFP4 record | the engine's prompt-reading path |
+| Prompt reading, native (the first release and the `native-slots1` option) | every expert, hot or not, is computed from its full NVFP4 record | the engine's prompt-reading path |
+| Prompt reading, fast (the default since 2026-11-12) | hot experts from their NVFP4 records, compressed experts from their IQ2-class records | the engine's prompt-reading path |
 
-So the first token of every answer comes from the same weights as the reference. Only later tokens can be touched
-by the IQ records, on the 15 to 21% of expert routes that are not hot.
+With native reading, the reading of every figure in this section, the first token of every answer comes from the
+same weights as the reference. Only later tokens can be touched by the IQ records, on the 15 to 21% of expert
+routes that are not hot. With fast reading the IQ records also touch the prompt and the first token, and no
+closeness test has run with it: quality not established.
 
 ### What was measured
 
@@ -326,7 +441,13 @@ comparison run of 2026-11-10. Prompt by prompt against Volta sPLIt's published b
 - The hot set is fixed. No expert is promoted during a chat, and text unlike the tally's four kinds may route more
   often to compressed records.
 - The 216K tool loop's final request ran to the 32,000-token limit in 1 of 2 runs on this build
-  ([The 216K tool loop](#the-216k-tool-loop)).
+  ([The 216K tool loop](#the-216k-tool-loop)), and again on the final build's bench boot of 2026-11-12: 2 of 3 runs with the group-plan kernel, 4 of 7 on every build so far
+  ([final bench](#the-216k-tool-loop-on-the-final-builds-boot)).
+- Memory: on the final build's bench boot (two-slot default, one request at a time, 2026-11-12) the cards of stage 1
+  reached 32,000 MiB against the build's own 31,998 MiB line (the card's 32,510 MiB less 512), 2 MiB over it and
+  510 MiB below the card's capacity, in 38 of 359 samples, all during prompts of 8K to 256K tokens. No out-of-memory
+  line in any of the 169 requests. The one-, two- and three-slot boots of the same window stayed under the line
+  ([final bench](#speed-bench-2026-11-12-final-build)).
 - Compressed records are not official precision: on synthetic inputs an expert's IQ2-class record is far from its
   official record (relative L2 0.60 to 0.69, [What did not work](#what-did-not-work-or-is-not-yet-good)).
 - Prompts are read with the full-precision records of all experts. The compressed experts' records are staged from
@@ -366,10 +487,11 @@ cell was 6.3 tok/s.
 **What does not.** Prompt reading is slow. It rises with length and tops out at 1,243 to 1,276 tok/s at 256K. The
 first token comes 5.60 s after a 1K prompt, 106.4 s after 128K and 209.6 s after 256K. Every prompt is read with
 the official records of all experts, the compressed experts' records staged from pinned host RAM
-([Limits](#hot_iq-on-the-mixed-tally-the-build-of-this-release)). This build is slower than Volta sPLIt in every thinking-off cell, every prompt-reading cell,
+([Limits](#hot_iq-on-the-mixed-tally-the-build-of-this-release)). On 2026-11-10 this build was slower than Volta sPLIt in every thinking-off cell, every prompt-reading cell,
 every first-token time and every short-prompt row of the bench ([below](#beside-volta-split)). With thinking on (one
 run per cell in both benches), code at 4K, 8K, 16K and 256K decoded 1.9 to 8.2 tok/s faster than Volta sPLIt's
-cells, and the other 41 thinking-on cells were slower.
+cells, and the other 41 thinking-on cells were slower. The final build of 2026-11-12, at 1,522 MHz, gives its first token sooner than Volta sPLIt's bench at every length from 1K to 256K (108.4 s against 118.7 s at 256K) and still decodes slower in every code and legal cell and every short-prompt row
+([final bench](#speed-bench-2026-11-12-final-build)).
 
 ### Long prompts: 1K to 256K
 
@@ -490,6 +612,88 @@ General 101.1 tok/s (28.29 ms per round) and legal-style 81.1 (28.07 ms) on the 
 
 First read 165.55 s for 216,255 tokens (first bench boot 166.22 s). Follow-ups that kept the previous prompt: 7 of 7, first token median 9.24 s (9.47 s), decode mean 107.8 tok/s over the 7 (99.8). On the rerun's boot the 216K tool loop's final request ended with stop reason `end_turn` after 1,146 tokens. Counting it, that request has run to the limit in 1 of 2 runs with the group-plan kernel, 2 of 4 on R1's tiers and 3 of 6 on every build of this repository so far.
 
+### Speed bench 2026-11-12 (final build)
+
+MEASURED 2026-11-12, 175 W and 1,522 MHz per card, window 18 ([rule](docs/acceptance/WINDOW18-accept-rule.md)): the build of this update as published, two prompt slots (the default), fast prompt reading, the fused IQ tail, the SwiGLU kernel, the two request-path switches and the two prompt-reading kernels. One request at a time with a fresh cache salt each, so the slots do not change what it measures. 169 of 169 requests, status DONE, the prompts, method and request order of the first bench. Each cell is kernel build / final build (kernel build: one slot, native prompt reading, 2026-11-11, 1,475 MHz). Not paired: the two runs differ in slots, tier map, prompt reading, kernels, switches, clock and day at once, so a cell's difference is not one change's alone. Fast prompt reading changes the output from the first token: quality not established. The chart and the tables above are the first release's bench and the kernel build's, kept as their record.
+
+**Memory on the bench boot: 2 MiB over the line.** The highest sample on the cards of stage 1 was 32,000 MiB, against the 31,998 MiB line this build is held to (the card's 32,510 MiB less 512): 2 MiB over the line and 510 MiB below the card's capacity. It came in 38 of 359 samples, all while prompts of 8K to 256K tokens were served. Stage 0 peaked at 31,736 MiB. No out-of-memory line in any of the 169 requests, and all 169 finished. The rule of window 18 counts this boot as a memory FAIL. The one-, two- and three-slot boots of the same window stayed under the line.
+
+Decode, thinking off, one request at a time, 1K to 256K: code 150 to 180 tok/s (kernel build 122 to 153), legal 86 to 106 (73 to 85). First token after a 128K prompt 54.3 s (kernel build 105.7 s), after 256K 108.4 s (207.9 s).
+
+#### Before and after
+
+Against the previous public bench, the kernel build of 2026-11-11. Both are one request at a time. The profile
+differs (one slot then, the two-slot default now), and so do the tier map, prompt reading, the kernels, the two
+switches and the clock ceiling, so this compares build with build, not the effect of one change.
+
+| | before: kernel build, 2026-11-11 | after: final build, 2026-11-12 |
+|---|---:|---:|
+| profile | one slot, native prompt reading, 1,475 MHz | two-slot default, fast prompt reading, fused IQ tail, SwiGLU kernel, both switches, both prompt-reading kernels, 175 W and 1,522 MHz |
+| general short set | 101.1 tok/s (28.29 ms per round) | 123.2 tok/s (25.10 ms) |
+| legal-style short set | 81.1 tok/s (28.07 ms) | 97.3 tok/s (24.92 ms) |
+| first token after 1K / 32K / 128K / 256K | 5.49 / 31.4 / 105.7 / 207.9 s | 1.00 / 16.0 / 54.3 / 108.4 s |
+| prompt reading at 256K | 1,252 to 1,285 tok/s | 2,329 to 2,430 tok/s |
+| decode 1K to 256K, code, thinking off | 122 to 153 tok/s | 150 to 180 tok/s |
+| decode 1K to 256K, legal, thinking off | 73 to 85 tok/s | 86 to 106 tok/s |
+| 216K tool loop, first read | 165.55 s | 86.87 s |
+| 216K tool loop, follow-ups: first token median, decode mean | 9.24 s, 107.8 tok/s | 3.54 s, 126.8 tok/s |
+
+![Decode speed by prompt length on the final build, one request at a time on the two-slot default, against Volta sPLIt's published bench](docs/charts/decode-by-length-final-light.png#gh-light-mode-only)
+![Decode speed by prompt length on the final build, one request at a time on the two-slot default, against Volta sPLIt's published bench](docs/charts/decode-by-length-final-dark.png#gh-dark-mode-only)
+
+#### Long prompts: 1K to 256K, thinking off
+
+| prompt | first token | prompt reading | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1K | 5.49 s / 1.00 s | 175-257 / 987-1,174 tok/s | 149.6 / 150.1 | 148.0 / 169.2 | 84.7 / 105.5 | 76.0 / 81.2 | 71.8 / 88.2 |
+| 2K | 6.81 s / 1.67 s | 282-333 / 1,180-1,294 tok/s | 148.6 / 167.1 | 148.3 / 188.4 | 78.9 / 97.2 | 73.7 / 82.9 | 76.3 / 82.6 |
+| 4K | 8.94 s / 2.97 s | 441-464 / 1,305-1,425 tok/s | 153.0 / 180.3 | 155.6 / 162.3 | 82.4 / 85.9 | 70.4 / 80.4 | 78.4 / 81.0 |
+| 8K | 13.1 s / 6.23 s | 594-634 / 1,076-1,341 tok/s | 152.9 / 177.0 | 144.7 / 166.0 | 79.3 / 87.3 | 73.2 / 85.5 | 72.8 / 78.4 |
+| 16K | 19.2 s / 9.51 s | 842-880 / 1,678-1,788 tok/s | 148.2 / 155.0 | 148.5 / 170.7 | 82.8 / 93.8 | 79.5 / 85.1 | 76.1 / 89.4 |
+| 32K | 31.4 s / 16.0 s | 997-1,065 / 1,896-2,149 tok/s | 153.4 / 165.1 | 147.9 / 164.5 | 81.9 / 93.4 | 74.1 / 78.2 | 79.6 / 81.0 |
+| 64K | 56.0 s / 28.4 s | 1,158-1,200 / 2,196-2,355 tok/s | 144.7 / 170.3 | 148.6 / 162.8 | 80.5 / 86.9 | 73.7 / 84.4 | 79.3 / 84.7 |
+| 128K | 105.7 s / 54.3 s | 1,220-1,274 / 2,295-2,448 tok/s | 130.2 / 151.4 | 141.5 / 153.3 | 73.4 / 87.3 | 74.0 / 78.4 | 79.5 / 75.5 |
+| 256K | 207.9 s / 108.4 s | 1,252-1,285 / 2,329-2,430 tok/s | 122.5 / 154.6 | 139.0 / 150.0 | 78.5 / 93.5 | 66.4 / 80.8 | 75.9 / 71.2 |
+
+Thinking off, each cell the mean of 2 runs. Kernel build: 90 requests, largest difference between the two runs of a cell 23.3 tok/s, greedy output byte-identical in 45 of 45 cells. Final build: 90 requests, largest difference 54.6 tok/s, greedy output byte-identical in 45 of 45 cells.
+
+#### Beside Volta sPLIt
+
+Each cell is final build / Volta sPLIt's published bench of 2026-11-05 at a 1,522 MHz ceiling, thinking off, mean of 2 runs.
+
+| prompt | first token | prompt reading | code | legal |
+|---|---:|---:|---:|---:|
+| 1K | 1.00 s / 1.22 s | 987-1,174 / 820-948 | 150.1 / 215.0 | 105.5 / 117.6 |
+| 2K | 1.67 s / 1.95 s | 1,180-1,294 / 1,024-1,082 | 167.1 / 203.6 | 97.2 / 114.8 |
+| 4K | 2.97 s / 3.26 s | 1,305-1,425 / 1,245-1,264 | 180.3 / 194.9 | 85.9 / 111.6 |
+| 8K | 6.23 s / 6.94 s | 1,076-1,341 / 1,178-1,188 | 177.0 / 207.9 | 87.3 / 109.1 |
+| 16K | 9.51 s / 10.4 s | 1,678-1,788 / 1,574-1,583 | 155.0 / 201.8 | 93.8 / 105.6 |
+| 32K | 16.0 s / 17.2 s | 1,896-2,149 / 1,894-1,913 | 165.1 / 200.5 | 93.4 / 116.5 |
+| 64K | 28.4 s / 30.9 s | 2,196-2,355 / 2,111-2,132 | 170.3 / 194.1 | 86.9 / 108.3 |
+| 128K | 54.3 s / 59.2 s | 2,295-2,448 / 2,198-2,220 | 151.4 / 182.8 | 87.3 / 110.9 |
+| 256K | 108.4 s / 118.7 s | 2,329-2,430 / 2,197-2,222 | 154.6 / 160.0 | 93.5 / 103.1 |
+
+#### Short prompts, by text type
+
+| kind of output | greedy (T=0) | sampled (T=1) | tokens per round, T=0 | Volta sPLIt greedy | Volta sPLIt sampled |
+|---|---:|---:|---:|---:|---:|
+| code | 158.3 (154.9-158.6) / 172.9 (170.4-173.2) | 149.6 (148.3-163.7) / 173.8 (162.1-178.4) | 4.47 / 4.35 | 213.1 | 196.8 |
+| structured (JSON) | 160.0 (155.5-160.1) / 191.9 (187.5-192.4) | 156.0 (152.8-157.8) / 183.7 (179.1-187.9) | 4.48 / 4.75 | 209.4 | 205.4 |
+| legal | 89.0 (88.8-89.1) / 103.2 (103.2-103.2) | 88.0 (85.1-93.0) / 95.6 (90.3-102.1) | 2.51 / 2.59 | 115.7 | 108.4 |
+| prose | 76.3 (75.8-76.3) / 85.9 (85.7-86.1) | 74.2 (72.9-76.9) / 82.6 (80.3-83.5) | 2.16 / 2.16 | 98.0 | 87.2 |
+| chat | 76.1 (76.0-76.3) / 81.5 (81.3-81.6) | 70.8 (67.3-74.3) / 80.1 (79.1-82.6) | 2.13 / 2.03 | 96.2 | 93.8 |
+| thinking on, 4 prompts, token-weighted | - | 108.0 (96.5-145.6 per prompt) / 116.1 (99.9-173.8 per prompt) | - | - | 132.3 |
+
+Up to 1,024 tokens with a natural stop, thinking off, median of 3 runs with range. Greedy repeats were byte-identical for every kind. Volta sPLIt's columns are its published bench of 2026-11-05.
+
+#### Short sets on the bench boot
+
+General 123.2 tok/s (25.10 ms per round) and legal-style 97.3 (24.92 ms) on the final build's bench boot (one request at a time on the two-slot default), against 101.1 (28.29 ms) and 81.1 (28.07 ms) on the kernel build's. Three prompts each, output tokens over the whole request time.
+
+#### The 216K tool loop on the final build's boot
+
+One request at a time on the two-slot default. First read 86.87 s for 216,255 tokens (kernel build 165.55 s). Follow-ups that kept the previous prompt: 7 of 7, first token median 3.54 s (9.24 s), decode mean 126.8 tok/s over the 7 (107.8). On the final build's boot the 216K tool loop's final request ran to the 32,000-token limit (stop reason `max_tokens`) and gave no final answer. Counting it, that request has run to the limit in 2 of 3 runs with the group-plan kernel and 4 of 7 on every build of this repository so far.
+
 ## What this is
 
 **The question.** DeepSeek-V4.1-Flash-1017 has 384 routed experts in each of 40 layers. At the official MXFP4
@@ -537,14 +741,14 @@ non-expert tensors). Only the routed-expert path is new.
 | Host RAM | 363 GiB available with no server running (MEASURED). `hot_iq` keeps the compressed experts' official records, 180.8 GB, in pinned host RAM for prompt reading, plus the Engram tables |
 | Routed experts | [nvidia/DeepSeek-V4.1-Flash-1017-NVFP4](https://huggingface.co/nvidia/DeepSeek-V4.1-Flash-1017-NVFP4) @ `480550d3`, folded to MXFP4 (E8M0 scale per 32) packs per layer and TP rank for the hot experts. Compressed experts: the GSQ-RCO records below |
 | Other weights | as Volta sPLIt: [ISTA-DASLab GSQ-RCO GGUF](https://huggingface.co/ISTA-DASLab/DeepSeek-V4.1-Flash-1017-GSQ-RCO-GGUF) for attention, dense and shared-expert tensors (Q5_K 4.76 GiB, Q8_0 0.36 GiB, BF16 0.26 GiB, F32 0.15 GiB by tensor bytes, MEASURED from the file header) and the IQ4_NL Engram tables; its routed-expert records are IQ1_M 55.37 GiB, IQ2_XXS 45.68 GiB and IQ2_XS 21.95 GiB; config, tokenizer and DSpark drafter (FP8) from [deepseek-ai/DeepSeek-V4.1-Flash-1017](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017) |
-| Expert kernel | v100-skinny's QPN kernel as packaged in 1Cat-vLLM ([#742](https://github.com/1CatAI/1Cat-vLLM/pull/742)): `skinny_moe_qpn_sm70`, E8M0 scale mode, W4A16, FP16 `mma.sync`; V4.1's limited SwiGLU and the weighted sum in FP32; CUDA graphs for 1 to 6 rows |
-| Prompt reading | the compressed experts' official records in pinned host RAM, staged into two 32-expert HBM buffers on a copy stream, one staging pair per card |
+| Expert kernel | v100-skinny's QPN kernel as packaged in 1Cat-vLLM ([#742](https://github.com/1CatAI/1Cat-vLLM/pull/742)): `skinny_moe_qpn_sm70`, E8M0 scale mode, W4A16, FP16 `mma.sync`, V4.1's limited SwiGLU and the weighted sum in FP32, CUDA graphs for 1 to 6 rows. Since 2026-11-12 the prompt-reading path runs it at RB 4 (32 token rows per weight load, same output bits, [engine/kernels/prefill-rb4/](engine/kernels/prefill-rb4/README.md)) |
+| Prompt reading | default since 2026-11-12: fast, the compressed experts from their IQ2-class records on the cards, with a prompt-reading workspace of 0.33 / 0.34 GiB per card (quality not established). Option `native-slots1` and the first release: the compressed experts' official records in pinned host RAM, staged into two 32-expert HBM buffers on a copy stream, one staging pair per card |
 | Compressed experts | Volta sPLIt's IQ expert op over the IQ2-class records kept on the cards |
-| Engine | the Volta sPLIt engine (1Cat-vLLM #1277 + its patch series and production patches) plus this build: four new files (the native expert path with the tier-map reader, the tier planner, the route counters and the group-plan kernel) and three changed files ([engine/](engine/)) |
+| Engine | the Volta sPLIt engine (1Cat-vLLM #1277 + its patch series and production patches) plus this build: nine new files (the native expert path with the tier-map reader, the tier planner, the route counters, the group-plan kernel, the SwiGLU kernels of decode and prompt reading, the fused IQ tail, fast prompt reading, the RB 4 prompt-reading launcher and tally mixing) and three changed files ([engine/](engine/)) |
 | Layout | PP2 x TP4: layers 0-19 and the Engram lookup on one board, layers 20-39, the head and the drafter on the other |
-| Card reserve | per stage, from measured peaks plus about 0.5 GiB: 4.5 GiB per card on stage 0, 7.5 GiB on stage 1 (the package as uploaded). This repository's template keeps 7.0 GiB on stage 1 ([update of 2026-11-11](#update-2026-11-11-a-faster-route-plan-kernel-and-a-larger-nvfp4-tier-map)) |
-| Context | max-model-len 524,288, one request at a time (`max-num-seqs 1`) |
-| Serving profiles | the build of this release: the [package profile template](engine/configs/hot_iq.yaml.template) (`hot_iq` on the mixed tally, one slot, tiers from the package's `tier_map.json`), started by [serve_hot_iq.sh](engine/configs/serve_hot_iq.sh). In this repository it has the reserves 4.5 / 7.0 GiB and `nvfp4_8r_group_plan: kernel` of the update of 2026-11-11. The package as uploaded carries reserves 4.5 / 7.5 GiB and no group-plan key. Earlier steps, whose profiles read a tally: [three-tier](engine/configs/serve-nvfp4-pp2-t3.yaml) (`hot_iq_host`), [`hot_iq`](engine/configs/serve-nvfp4-pp2-t3n.yaml) (no host tier, first tally; speeds measured, quality not established, not accepted), [three prompt slots](engine/configs/serve-nvfp4-pp2-t3-a3.yaml) (`max-num-seqs 3`, reserves 5.3 / 8.1 GiB), [its one-slot control](engine/configs/serve-nvfp4-pp2-t3-a1r.yaml) (same reserves, one slot), and [no host tier with three prompt slots](engine/configs/serve-nvfp4-pp2-t3n-a3.yaml) (`hot_iq`, `max-num-seqs 3`, reserves 5.3 / 8.1 GiB; measured, not accepted). The first-tally `hot_iq` profiles are not accepted (see above). The two host-tier slot profiles are measured (rows of 2026-11-10 in the [measurement log](#measurement-log)): three slots on the accepted tiers are not accepted (quality not established), and the one-slot control ran the traced tool loop. The all-NVFP4 profile [serve-nvfp4-pp2.yaml](engine/configs/serve-nvfp4-pp2.yaml) is Volta Full NVFP4's ([Related builds](#related-builds)). It stays here because the closeness test boots it as the reference |
+| Card reserve | per stage, from measured peaks plus about 0.5 GiB: 4.5 GiB per card on stage 0, 7.5 GiB on stage 1 (the package as uploaded). The two-slot default keeps 4.32 / 7.00 GiB (4,643,356,672 / 7,517,241,344 bytes) plus the fast-reading workspace of 0.33 / 0.34 GiB: the one-slot fast-reading reserves, 160 MiB more per extra slot on both stages for its CUDA graphs and 192 MiB more on stage 1 for the fast-reading peak ([templates](engine/configs/)) |
+| Context | max-model-len 524,288. Default since 2026-11-12: two prompt slots (`max-num-seqs 2`), options one and three. The first release served one request at a time |
+| Serving profiles | the published default since 2026-11-12: the [package profile template](engine/configs/hot_iq.yaml.template), a copy of [two slots](engine/configs/hot_iq-slots2.yaml.template) (`hot_iq` on the mixed tally, fast prompt reading, group-plan kernel, SwiGLU kernel, fused IQ tail, the two prompt-reading kernels, tiers from the package's `tier_maps/slots2.json`), started by [serve_hot_iq.sh](engine/configs/serve_hot_iq.sh). Options: [one slot](engine/configs/hot_iq-slots1.yaml.template), [three](engine/configs/hot_iq-slots3.yaml.template) and [`native-slots1`](engine/configs/hot_iq-native-slots1.yaml.template) (one slot, native reading, the R1 tiers, the prompt-reading kernels' fallbacks `chain` and `rb2`). Quality of the slot profiles and of fast reading: not established. The package as uploaded carries the first release's template: reserves 4.5 / 7.5 GiB, native reading, no group-plan, SwiGLU or IQ-tail key. Earlier steps, whose profiles read a tally: [three-tier](engine/configs/serve-nvfp4-pp2-t3.yaml) (`hot_iq_host`), [`hot_iq`](engine/configs/serve-nvfp4-pp2-t3n.yaml) (no host tier, first tally, speeds measured, quality not established, not accepted), [three prompt slots](engine/configs/serve-nvfp4-pp2-t3-a3.yaml) (`max-num-seqs 3`, reserves 5.3 / 8.1 GiB), [its one-slot control](engine/configs/serve-nvfp4-pp2-t3-a1r.yaml) (same reserves, one slot), and [no host tier with three prompt slots](engine/configs/serve-nvfp4-pp2-t3n-a3.yaml) (`hot_iq`, `max-num-seqs 3`, reserves 5.3 / 8.1 GiB, measured, not accepted). The first-tally `hot_iq` profiles are not accepted (see above). The two host-tier slot profiles are measured (rows of 2026-11-10 in the [measurement log](#measurement-log)): three slots on the accepted tiers are not accepted (quality not established), and the one-slot control ran the traced tool loop. The all-NVFP4 profile [serve-nvfp4-pp2.yaml](engine/configs/serve-nvfp4-pp2.yaml) is Volta Full NVFP4's ([Related builds](#related-builds)). It stays here because the closeness test boots it as the reference |
 
 ## What worked
 
@@ -552,6 +756,11 @@ MEASURED on the dates given.
 
 | Item | Result |
 |---|---|
+| Prompt slots (2026-11-12, windows 15 and 18) | two requests together 159.0 tok/s on two slots (1.34x one stream), three together 192.3 on three slots (1.62x), four together 198.3 on four (1.67x, window 15, before the prompt-reading kernels). Same token ids as each prompt alone on every boot, memory PASS on every slot boot. Quality not established ([details](#serving-several-requests-at-once-window-18)) |
+| Fast prompt reading (2026-11-11, window 13b) | nine long chats of 191,812 to 319,936 tokens read with no fault, every final answer ended normally, first read 86 to 119 s near 200K tokens. Quality not established, memory check failed by 64 MiB ([update](#update-2026-11-12-two-prompt-slots-by-default-fast-prompt-reading-and-four-kernels)) |
+| Two request-path switches from Volta sPLIt (2026-11-12, window 16), exported by the launcher: `VLLM_V41_SYSTEM_IN_PLACE=1` and `VLLM_V41_TOPK_SEG=1024` | the first keeps a system message that arrives in the middle of a chat where it was sent, so the prompt the server already holds still matches and is not read again. The second sets the segment width of the decode top-k kernel to 1024. Result: token-exact with the switches off and on. A follow-up turn that adds a system message to a 30,779-token chat reused 30,752 of those tokens (99.9 %) and took 0.45 s. With the switch off it reused none and took 14.84 s. Decode speed: no measurable change ([details](docs/measurements.md#two-request-path-switches-window-16)) |
+| Two prompt-reading kernels (2026-11-12, window 17): one-launch SwiGLU and the RB 4 expert kernel | Same output bits as before (checked on one card, then token-exact on eight). Second reads of a 215,847-token prompt took 4.43 s less (89.3 to 89.8 s against 93.7 to 94.2 s). The first-read rule found no measurable change because first reads are noisy (noise floor 11.6 s). Peak memory on the fullest card 31,736 MiB against 31,688 MiB. Both run only while a prompt is read. Two new required profile keys: `nvfp4_8r_prefill_swiglu: kernel` and `nvfp4_8r_prefill_rb: rb4` ([details](docs/measurements.md#two-prompt-reading-kernels-window-17)) |
+| Fused IQ tail and SwiGLU kernel (2026-11-11 and 11-12, windows 12, 14 and 14c) | token for token the same output, about 1.3 ms less per decode round each on second runs. No measurable change by the first-run rule |
 | `hot_iq` on the mixed tally (2026-11-10) | the build of this release: closeness PASS on the replaced 12-prompt set, 0 of 3 long thinking chats at the limit, 64.7 tok/s legal-style and 83.6 general on the short sets (in-sample, [above](#hot_iq-on-the-mixed-tally-the-build-of-this-release)) |
 | The native expert path | the exact NVFP4 to MXFP4 fold, the scale range on Volta, the QPN expert layer on one card and the bit-equal hot and host split (MEASURED 2026-11-09) are shared with Volta Full NVFP4 and stated there ([What worked](https://github.com/ProprietaryLegal/Volta-Full-NVFP4-DeepSeek-V4.1-Flash-8xV100#what-worked)) |
 | Dropping the host tier (2026-11-09) | the host-tier profile's slow general text was host-RAM reads: without a host tier (`hot_iq`) general text decodes at 33.4 ms per round against 58.0 to 59.4 ms with it. Speed only: that profile is not accepted (its quality is not established) |
@@ -563,17 +772,27 @@ MEASURED on the dates given.
 
 | Item | Result |
 |---|---|
-| Slower than Volta sPLIt | on the mixed tally 64.7 tok/s legal-style and 83.6 general (2026-11-10, 1,425 MHz) against Volta sPLIt's 118 to 119 and 137 to 138 (2026-11-09, 1,522 MHz) ([How it compares](#hot_iq-on-the-mixed-tally-the-build-of-this-release)). In the speed bench, slower in every thinking-off cell, every prompt-reading cell and every short-prompt row against Volta sPLIt's bench of 2026-11-05 at 1,522 MHz ([Beside Volta sPLIt](#beside-volta-split)) |
-| Slow prompt reading | 1,243 to 1,276 tok/s at 256K, first token 5.60 s after a 1K prompt, 106.4 s after 128K and 209.6 s after 256K (speed bench, 2026-11-10, 1,425 MHz, [Tokens per second](#tokens-per-second)) |
-| The 216K tool loop's final request | ran to the 32,000-token limit inside thinking on the bench boot, ended normally on the earlier boot: 1 of 2 runs at the limit (2026-11-10, [The 216K tool loop](#the-216k-tool-loop)) |
-| Prompt reading | prompts are read with the official records of all experts, the compressed experts' records staged from pinned host RAM. The faster reading variant of plan 04 part B is not used: its first read of one long chat stopped the host or a card three times out of three on eight cards, and the cause is not yet known ([Limits](#hot_iq-on-the-mixed-tally-the-build-of-this-release)) |
+| Slower than Volta sPLIt | on the mixed tally 64.7 tok/s legal-style and 83.6 general (2026-11-10, 1,425 MHz) against Volta sPLIt's 118 to 119 and 137 to 138 (2026-11-09, 1,522 MHz) ([How it compares](#hot_iq-on-the-mixed-tally-the-build-of-this-release)). In the speed bench, slower in every thinking-off cell, every prompt-reading cell and every short-prompt row against Volta sPLIt's bench of 2026-11-05 at 1,522 MHz ([Beside Volta sPLIt](#beside-volta-split)). On the final build (2026-11-12, 1,522 MHz) decode is still slower in every code and legal cell and every short-prompt row, and the first token comes sooner than Volta sPLIt's at every length ([final bench](#speed-bench-2026-11-12-final-build)) |
+| Slow prompt reading (first release) | 1,243 to 1,276 tok/s at 256K, first token 5.60 s after a 1K prompt, 106.4 s after 128K and 209.6 s after 256K (speed bench, 2026-11-10, 1,425 MHz, [Tokens per second](#tokens-per-second)). On the final build (2026-11-12, 1,522 MHz): 2,329 to 2,430 tok/s at 256K, first token 54.3 s after 128K and 108.4 s after 256K ([final bench](#speed-bench-2026-11-12-final-build)) |
+| The 216K tool loop's final request | ran to the 32,000-token limit inside thinking on the bench boot, ended normally on the earlier boot: 1 of 2 runs at the limit (2026-11-10, [The 216K tool loop](#the-216k-tool-loop)). It ran to the limit again on the final build's bench boot of 2026-11-12: 2 of 3 runs with the group-plan kernel, 4 of 7 on every build so far |
+| Prompt reading | in the first release prompts were read with the official records of all experts, and the faster variant's first read of one long chat stopped the host or a card three times out of three. After a change to the host's power delivery it read nine of nine long chats with no fault (2026-11-11), and it is the default since 2026-11-12. Its quality is not established, and its first long-chat window failed its memory check by 64 MiB on stage 1 ([update of 2026-11-12](#update-2026-11-12-two-prompt-slots-by-default-fast-prompt-reading-and-four-kernels)) |
+| Slots and a long read | with two or three slots a short request sent during a 209K-token read starts in about 7 s but decodes at about 9.6 tok/s until the read ends, and the read takes about 35 s longer. Both end later than with one slot ([window 18](#serving-several-requests-at-once-window-18)) |
+| HOT-path decode kernel (2026-11-12, closed, not done) | the earlier 1.45 ms per round was an upper bound on headroom, not a prediction. Measured on one card, the candidate launch variants predicted 0.000 ms per round by a rule fixed before the data, and the remaining cast fold 0.066 ms per round, below what an eight-card run can resolve. No eight-card run was spent on it ([details](docs/measurements.md#hot-path-decode-kernel-closed-not-done)) |
+| RB 8 for prompt reading (2026-11-12, one card) | 64 rows per weight load gives the same bits but is slower: the kernel needs 204 registers per thread and 41,728 bytes of shared memory per block, and on the evenly routed prompt shape its second timed half ran up to 1.39 times the old kernel's per-cycle time. Not shipped ([details](docs/measurements.md#two-prompt-reading-kernels-window-17)) |
+| Memory on the final bench boot (2026-11-12, two slots) | the cards of stage 1 reached 32,000 MiB, 2 MiB over the build's 31,998 MiB line and 510 MiB below the card's capacity, during prompts of 8K to 256K tokens, with no out-of-memory line in any of the 169 requests. The one-, two- and three-slot boots stayed under the line ([final bench](#speed-bench-2026-11-12-final-build)) |
 | Compressed records are not official precision | on synthetic inputs an expert's IQ2-class record is far from its official record (relative L2 0.60 to 0.69 in layers 5, 12 and 27, MEASURED 2026-11-09) |
 | The hot set is fixed | it is chosen once, from the mixed tally. Text unlike the tally's four kinds may route more often to compressed records |
 | Earlier steps | what did not work in the three-tier mode, the first-tally profiles and the prompt-reading variant: [history](docs/history.md#what-did-not-work-or-is-not-yet-good) |
 
 ## Next
 
-The ranked campaign and the research notes behind it follow in the next update. Each piece is built and measured
+Since the update of 2026-11-12: two prompt slots, fast prompt reading, the fused IQ tail, the SwiGLU kernel, the
+two request-path switches and the two prompt-reading kernels are done ([update](#update-2026-11-12-two-prompt-slots-by-default-fast-prompt-reading-and-four-kernels)). The HOT-path decode kernel is closed without a change
+([What did not work](#what-did-not-work-or-is-not-yet-good)). Their open
+questions are quality: a closeness test with fast reading and on the slot profiles' tiers.
+The speed bench on the final build has run (window 18, [speed bench](#speed-bench-2026-11-12-final-build)).
+
+Earlier, as published on 2026-11-11: the ranked campaign and the research notes behind it follow in the next update. Each piece is built and measured
 alone, biggest expected improvement first. Done so far: three prompt slots work (no host tier, "What worked"; on the
 accepted tiers they are measured but not accepted, quality not established), our router now sends earlier thinking
 back unchanged, the termination test for long thinking answers exists and has run, the load failure of the
@@ -625,6 +844,15 @@ the mixed tally, "the accepted configuration" and "the accepted tiers" mean the 
 
 | Date | Build or profile | Test | Result | Basis |
 |---|---|---|---|---|
+| 2026-11-12 | `hot_iq`, final build: the speed bench on the two-slot default, then one to three prompt slots (repository only) | window 18, run 2 declared, 175 W and 1,522 MHz | bench, one request at a time: short sets 123.2 general and 97.3 legal-style tok/s, code 150 to 180 tok/s 1K to 256K, memory 2 MiB over the line on stage 1, no out-of-memory line. Slots: one 118.9 tok/s, two together 159.0 (1.34x), three together 192.3 (1.62x). Token-exact, memory PASS on every slot boot. Quality not established | [bench](#speed-bench-2026-11-12-final-build), [slots](#serving-several-requests-at-once-window-18), [rule](docs/acceptance/WINDOW18-accept-rule.md) |
+| 2026-11-12 | `hot_iq`, R1 budget, two-slot default, fast reading, fused IQ tail, SwiGLU kernel: the two prompt-reading kernels (`kernel`, `rb4`) against the old path (`chain`, `rb2`) (repository only) | window 17, boots old, new, new, old, a 215,847-token prompt read twice per boot, 175 W | second reads 4.45 and 4.41 s faster (noise 0.50 s), first reads -8.9 and -4.2 s inside a noise floor of 11.6 s: NO MEASURABLE CHANGE by the first-read rule, the second-read gain resolved. Token-exact, peak 31,736 against 31,688 MiB. Installed. Quality not established (fast reading) | [measurements](docs/measurements.md#two-prompt-reading-kernels-window-17) |
+| 2026-11-12 | `hot_iq`, R1 tiers, one slot, fast reading, fused IQ tail, SwiGLU kernel: switches `VLLM_V41_SYSTEM_IN_PLACE` and `VLLM_V41_TOPK_SEG=1024` off against on (repository only) | window 16, boots off, on, on, off | token-exact with the switches off and on. A follow-up turn that adds a system message to a 30,779-token chat reused 30,752 of those tokens (99.9 %) and took 0.45 s. With the switch off it reused none and took 14.84 s. Decode speed: no measurable change. Both ACCEPT, installed in the launcher | [measurements](docs/measurements.md#two-request-path-switches-window-16) |
+| 2026-11-12 | HOT-path decode kernel, one card | launch variants and cast fold, rule fixed before the data | 0.000 ms per round predicted for the launch variants, 0.066 ms for the cast fold, below what eight cards resolve. Closed, no eight-card run | [measurements](docs/measurements.md#hot-path-decode-kernel-closed-not-done) |
+| 2026-11-12 | `hot_iq`, R1 budget, fast reading, fused IQ tail, SwiGLU kernel, 1 to 4 prompt slots (repository only) | window 15: aggregate throughput by slots and requests running together, run 2 declared | one slot 118.7 tok/s. Two together on two slots 160.1 (1.35x), three together on three 194.0 (1.63x), four together on four 198.3 (1.67x). Token-exact on every boot, memory PASS (stage 0 margins 292 to 624 MiB), 6,215 / 5,949 / 5,663 / 5,376 HOT experts. Quality not established | [window 15](docs/measurements.md#prompt-slots-window-15), [rule](docs/acceptance/WINDOW15-accept-rule.md) |
+| 2026-11-12 | `hot_iq`, R1 tiers, fast reading, fused IQ tail against the torch tail (repository only) | window 14c, paired A B B A | p1 -3.449, p2 -1.333 ms per round, noise floor 2.220: NO MEASURABLE CHANGE. Second runs -1.297 ms per round, cross-boot repeat 0.070. Token for token identical | [docs/measurements.md](docs/measurements.md#fused-iq-tail-patch-g1-windows-14-and-14c) |
+| 2026-11-11 | `hot_iq`, R1 tiers, fast reading, fused IQ tail against the torch tail (repository only) | window 14, paired A B B A | p1 -3.167, p2 +0.085 ms per round, noise floor 2.616: NO MEASURABLE CHANGE. Second runs -1.273 ms per round, cross-boot repeat 0.111. Token for token identical, 12 MiB less per card | [docs/measurements.md](docs/measurements.md#fused-iq-tail-patch-g1-windows-14-and-14c) |
+| 2026-11-11 | `hot_iq`, R1 tiers, fast (iq) prompt reading, one slot (repository only) | window 13b: nine long chats, 191,812 to 319,936 tokens, thinking on | 9 of 9 final answers ended normally, every follow-up kept the prompt. First read 85.71 to 118.90 s near 200K tokens. Memory FAIL by 64 MiB on stage 1, no out-of-memory line. No verdict: native arm not run. Quality not established | [docs/measurements.md](docs/measurements.md#fast-prompt-reading-windows-13b-and-9d) |
+| 2026-11-11 | `hot_iq`, R1 tiers, SwiGLU kernel against the chain (repository only) | window 12, paired A B B A | p1 -2.634, p2 -3.847 ms per round, noise floor 2.605: NO MEASURABLE CHANGE. Second runs -1.279 and -1.288 ms per round. Token for token identical | [docs/measurements.md](docs/measurements.md#swiglu-kernel-window-12) |
 | 2026-11-11 | `hot_iq` on the mixed tally, R1 tiers, group-plan kernel, one slot (repository only) | speed bench rerun, 169 requests, short sets and the 216K tool loop on the bench boot | thinking off, decode 149.6 and 122.5 tok/s on code after 1K and 256K prompts (first bench 123.3 and 103.8), legal 84.7 and 78.5 (71.9 and 61.8), first token after a 256K prompt 207.9 s (209.6 s). Short sets general 101.1 tok/s (28.29 ms per round) and legal-style 81.1 (28.07 ms) on the rerun's boot, against 87.0 (34.73 ms) and 67.3 (34.41 ms) on the first bench's boot. On the rerun's boot the 216K tool loop's final request ended with stop reason `end_turn` after 1,146 tokens. Counting it, that request has run to the limit in 1 of 2 runs with the group-plan kernel, 2 of 4 on R1's tiers and 3 of 6 on every build of this repository so far. | [Speed bench rerun](#speed-bench-rerun-2026-11-11-kernel-build) |
 | 2026-11-11 | `hot_iq` on the mixed tally, R1 tiers, group-plan kernel against the chain (repository only, not the package as uploaded) | window 11c, the one replication of window 11, paired A B B A | decode 33.90 / 33.88 ms per round on the chain, 29.17 / 28.53 on the kernel, mean difference -4.94 ms, noise floor 1.14: ACCEPT. Whole request 85.5 to 85.9 tok/s against 98.3 to 101.2. Token for token identical in every compare ([update](#update-2026-11-11-a-faster-route-plan-kernel-and-a-larger-nvfp4-tier-map)) | MEASURED, three public prompts, greedy, thinking off, 1,475 MHz. Rule fixed before the data ([docs/acceptance/](docs/acceptance/)). Report with the next row |
 | 2026-11-11 | `hot_iq` on the mixed tally, R1 tiers, group-plan kernel against the chain (repository only) | window 11, paired A B B A | decode 34.29 / 34.01 ms per round on the chain, 28.54 / 30.79 on the kernel, mean difference -4.12 ms, noise floor 3.43 from one slow kernel run: NO MEASURABLE CHANGE. Whole request 84.6 to 85.9 tok/s against 93.5 to 101.6. Token for token identical in every compare | MEASURED, same rule and method, 1,475 MHz |
@@ -695,26 +923,32 @@ The tier-map reader passed the CPU check on 2026-11-10 (the tier map gives the m
 2026-11-11 the exported package booted on eight cards and gave the measured build's output token for token
 ([measurement log](#measurement-log)).
 
-1. Build the engine as step 1 of [From source](#from-source-with-your-own-tally) describes.
+1. Build the engine as step 1 of [From source](#from-source-with-your-own-tally) describes, and the RB 4
+   prompt-reading library as [engine/kernels/prefill-rb4/](engine/kernels/prefill-rb4/README.md) describes. Or
+   change the line `nvfp4_8r_prefill_rb: rb4` of the template you use to `rb2`: same output bits, without the
+   second-read gain of window 17.
 2. Download and check the package (556 GB): `hf download ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4 --local-dir /path/to/pkg`,
    then `cd /path/to/pkg && sha256sum -c SHA256SUMS`. Its card: [Hugging Face](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4).
 3. Lay out the run directory as step 5 there describes.
 4. Start: `cd "$LANE/run" && CUDA_VISIBLE_DEVICES=... bash serve_hot_iq.sh /path/to/pkg 8000`. The launcher writes
-   `serve-hot_iq.yaml` from the package's profile template, sets the load-time allocator setting the measurements
-   ran with, and starts `run_serve.sh` with one prompt slot. The package as uploaded has no `nvfp4_8r_group_plan`,
-   which this repository's engine requires: start it with `NVFP4_GROUP_PLAN=chain` (the configuration it was
-   measured with) or `NVFP4_GROUP_PLAN=kernel` (measured on the later tiers only) before `bash serve_hot_iq.sh`.
-   At load each rank logs its tiers: stage 0 3,833 hot and
-   3,847 warm experts with tier digest `8e7829184090`, stage 1 2,254 and 5,426 with `5b09c0383a80`. With a tier map
-   the engine does not plan tiers: a card with less free memory after the dense weights than the measured cards had
-   refuses to load and names the bytes it is short.
+   `serve-hot_iq.yaml` from the package's profile template of the chosen option and starts `run_serve.sh` with that
+   option's slot count (`run_serve.sh` sets the load-time allocator setting the measurements ran with).
+   `NVFP4_OPTION` picks the option: `slots2` (the default), `slots1`, `slots3` (fast prompt reading) or
+   `native-slots1` (one slot, native reading, the reading of the closeness figures). Each option needs the package's
+   `serve/hot_iq-OPTION.yaml.template` and `tier_maps/OPTION.json`, in the package since its small-file update of
+   2026-11-12 (the first release's `tier_map.json` stays as its record, and this engine refuses it). At load each rank
+   logs its tiers. Two slots: stage 0 3,691 hot and 3,989 compressed experts with tier digest `0b6440ce205f`, stage 1
+   2,258 and 5,422 with `f67e73174ded`. One slot: `8e7829184090` and `7f442956514b`. Three: `a5d4b7a514d1` and
+   `7cad74ab15b9`. With a tier map the engine does not plan tiers: a card
+   with less free memory after the dense weights than the measured cards had refuses to load and names the bytes it
+   is short.
 
 ### From source, with your own tally
 
 1. Build the Volta sPLIt engine as its
    [Reproduce section](https://github.com/ProprietaryLegal/Volta-sPLIt-DeepSeek-V4.1-Flash-1017-8xV100-SXM2-PP2xTP4#reproduce)
-   describes. Then apply [engine/patches/](engine/patches/) in the engine source root (`patch -p1`; each header gives
-   the sha256 of the base file and of the result) and copy the three new files from [engine/src/](engine/src/) into
+   describes, with its production patches through 0059. Then apply [engine/patches/](engine/patches/) in the engine source root (`patch -p1`; each header gives
+   the sha256 of the base file and of the result) and copy the new files from [engine/src/](engine/src/) into
    the same paths of the vllm tree. See [engine/README.md](engine/README.md).
 2. Download NVIDIA's NVFP4 pack (revision `480550d3`), the ISTA-DASLab GSQ-RCO GGUF and the DeepSeek config,
    tokenizer and DSpark drafter. [harness/run/copy_weights.sh](harness/run/copy_weights.sh) checks every pack file
@@ -741,8 +975,10 @@ The tier-map reader passed the CPU check on 2026-11-10 (the tier map gives the m
 6. Start with `cd "$LANE/run" && PROFILE=serve-nvfp4-pp2-t3n.yaml CUDA_VISIBLE_DEVICES=... bash run_serve.sh nvfp4` (the last word names the server's log and pid files).
    That profile plans `hot_iq` tiers from your tally: no host tier, every compressed record on the cards, the
    most-used experts promoted until the next does not fit. Tiers from another tally are not the measured tiers, and
-   their quality is yours to establish. The other profiles of [What runs](#what-runs) start the same way. The three-slot profiles (`serve-nvfp4-pp2-t3-a3.yaml`, `serve-nvfp4-pp2-t3n-a3.yaml`) also need `NVFP4_SLOTS=3`
-   on that command line: `run_serve.sh` refuses a profile whose `max-num-seqs` differs from it.
+   their quality is yours to establish. The other profiles of [What runs](#what-runs) start the same way. A profile
+   with more than one slot (`max-num-seqs` 2, 3 or 4) also needs `NVFP4_SLOTS` set to that number on the command line,
+   for example `NVFP4_SLOTS=3` for the three-slot profiles `serve-nvfp4-pp2-t3-a3.yaml` and
+   `serve-nvfp4-pp2-t3n-a3.yaml`: `run_serve.sh` refuses a profile whose `max-num-seqs` differs from it.
 7. Measure with `$LANE/run/`[measure_boot.sh](harness/run/measure_boot.sh) (short sets, long prompts, repeat),
    [ctx_tput.py](harness/run/ctx_tput.py) (context rows) and [harness_loop.py](harness/run/harness_loop.py) (tool
    loop). The legal-style prompt file is not published; any file of one public prompt per line works, saved as
@@ -753,8 +989,9 @@ The tier-map reader passed the CPU check on 2026-11-10 (the tier map gives the m
 | Path | What it is |
 |-|-|
 | `docs/` | [measurements](docs/measurements.md), [history](docs/history.md) (the steps that led to this build), [acceptance rules](docs/acceptance/) of the group-plan kernel, [plans](docs/plans/), [research](docs/research/LANE-RESEARCH.md) (where the time goes); [index](docs/README.md) |
-| `engine/src/` | the four new engine files: the native expert path (with the tier-map reader), the tier planner, the route counters and the group-plan kernel |
-| `engine/patches/` | one patch per changed engine file (loader, GGUF MoE method, Engram reader), against the Volta sPLIt engine |
+| `engine/src/` | the nine new engine files: the native expert path (with the tier-map reader), the tier planner, the route counters, the group-plan kernel, the SwiGLU kernels, the fused IQ tail, fast prompt reading, the RB 4 prompt-reading launcher and tally mixing |
+| `engine/kernels/prefill-rb4/` | source and build script of the RB 4 prompt-reading library (the compiled library is not in this repository) |
+| `engine/patches/` | one patch per changed engine file (loader, GGUF MoE method, Engram reader). The two request-path switches come with the Volta sPLIt engine's production patches 0058 and 0059 |
 | `engine/configs/` | launcher, environment and serving profiles: the `hot_iq` package's profile template with its launcher `serve_hot_iq.sh`, the earlier steps' profiles, and Volta Full NVFP4's profile, the closeness reference |
 | `harness/run/` | measurement scripts: boots, short sets, long prompts, context rows, harness-shaped tests, card memory |
 | `harness/benchmarks/nvfp4_8r/` | pack builder, acceptance checks, single-card benches and CPU tests |

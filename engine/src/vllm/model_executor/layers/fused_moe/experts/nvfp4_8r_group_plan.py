@@ -36,6 +36,12 @@ first n entries and goff[n] is written on every call, so a stale tail from a
 larger M is never read. Nothing syncs with the host and the buffers are
 fixed, so the plan captures into a CUDA graph; ``GroupPlanner`` compiles and
 runs every M's variant at construction, before any capture.
+
+For a three-tier layer with the fused IQ tail (plan 06, ``TierKeys``) the
+same launch also writes ``iq``: the IQ bank slot of every route, -1 for a
+route that is not WARM. It is what the tensor-op chain
+``iq_slot_of_expert[ids]`` gives, and the IQ op and the tail kernel of
+nvfp4_8r_iq_tail read it.
 """
 
 from __future__ import annotations
@@ -100,7 +106,16 @@ class SplitKeys:
     host_launch: bool
 
 
-PlanKeys = ResidentKeys | SplitKeys
+@dataclass(frozen=True)
+class TierKeys:
+    """A three-tier layer's SplitKeys plus its IQ slot map: the plan also
+    writes each route's IQ slot (plan 06)."""
+
+    split: SplitKeys
+    iq_slot: torch.Tensor  # int32 [384], -1 where not WARM
+
+
+PlanKeys = ResidentKeys | SplitKeys | TierKeys
 
 
 @dataclass(frozen=True)
@@ -120,15 +135,18 @@ class GroupPlanBuffers:
     host: HostPlanBuffers | None
     scratch_key: torch.Tensor  # [S], the kernel's own: key[j] for its loops
     scratch_start: torch.Tensor  # [S], the kernel's own: start flag of route j
+    iq: torch.Tensor | None  # [S], TierKeys only: the IQ slot of route i, -1 if not WARM
 
     @classmethod
-    def allocate(cls, slots: int, host: bool, device: torch.device) -> GroupPlanBuffers:
+    def allocate(
+        cls, slots: int, host: bool, iq: bool, device: torch.device
+    ) -> GroupPlanBuffers:
         def z(n: int) -> torch.Tensor:
             return torch.zeros(n, dtype=torch.int32, device=device)
 
         return cls(z(slots), z(slots), z(slots + 1),
                    HostPlanBuffers(z(slots), z(slots + 1)) if host else None,
-                   z(slots), z(slots))
+                   z(slots), z(slots), z(slots) if iq else None)
 
 
 @dataclass(frozen=True)
@@ -139,19 +157,24 @@ class PlanViews:
     gids_hot: torch.Tensor
     goff_hot: torch.Tensor
     host: tuple[torch.Tensor, torch.Tensor] | None  # (gids, goff) of the host launch
+    iq: torch.Tensor | None  # TierKeys only: int32 [n], the IQ slot of each route or -1
 
 
 @triton.jit(do_not_specialize=["n", "n_hot", "n_second"])
 def _group_plan_kernel(
     ids_ptr, hot_ptr, second_ptr,
     perm_ptr, gids_h_ptr, goff_h_ptr, gids_c_ptr, goff_c_ptr,
-    skey_ptr, sstart_ptr,
+    skey_ptr, sstart_ptr, iq_map_ptr, iq_out_ptr,
     n, n_hot, n_second,
-    SPLIT: tl.constexpr, HOST: tl.constexpr, BLOCK: tl.constexpr,
+    SPLIT: tl.constexpr, HOST: tl.constexpr, IQ: tl.constexpr, BLOCK: tl.constexpr,
 ):
     offs = tl.arange(0, BLOCK)
     valid = offs < n
     expert = tl.load(ids_ptr + offs, mask=valid, other=0)
+    if IQ:
+        # Plan 06: the IQ slot of every route (-1: not WARM), for the IQ op
+        # and the fused tail. Nothing below reads it.
+        tl.store(iq_out_ptr + offs, tl.load(iq_map_ptr + expert, mask=valid, other=0), mask=valid)
     hot = tl.load(hot_ptr + expert, mask=valid, other=0)
     if SPLIT:
         second = tl.load(second_ptr + expert, mask=valid, other=0)
@@ -235,24 +258,36 @@ class GroupPlanner:
             raise ValueError(f"the group-plan kernel runs on CUDA, not {device}")
         if not 0 < max_tokens <= MAX_TOKENS:
             raise ValueError(f"max_tokens must be 1..{MAX_TOKENS}")
-        _check_map("hot slot map", keys.hot_slot, device)
-        if isinstance(keys, SplitKeys):
-            _check_map("second slot map", keys.second_slot, device)
-            if keys.n_hot < 1 or keys.n_second < 1:
-                raise ValueError(f"a split layer needs both banks ({keys.n_hot}, {keys.n_second})")
-            self._second, self._n_hot, self._n_second = keys.second_slot, keys.n_hot, keys.n_second
-            self._split, host = True, keys.host_launch
-        elif isinstance(keys, ResidentKeys):
+        self._iq_map: torch.Tensor | None = None
+        maps = keys
+        if isinstance(keys, TierKeys):
+            _check_map("IQ slot map", keys.iq_slot, device)
+            self._iq_map = keys.iq_slot
+            maps = keys.split
+            if not isinstance(maps, SplitKeys):
+                raise TypeError(f"TierKeys.split must be SplitKeys, got {type(maps)}")
+        if isinstance(maps, SplitKeys):
+            _check_map("hot slot map", maps.hot_slot, device)
+            _check_map("second slot map", maps.second_slot, device)
+            if maps.n_hot < 1 or maps.n_second < 1:
+                raise ValueError(f"a split layer needs both banks ({maps.n_hot}, {maps.n_second})")
+            self._second, self._n_hot, self._n_second = maps.second_slot, maps.n_hot, maps.n_second
+            self._split, host = True, maps.host_launch
+        elif isinstance(maps, ResidentKeys):
+            _check_map("hot slot map", maps.hot_slot, device)
             # No second map: the kernel never reads it; pass the hot map.
-            self._second, self._n_hot, self._n_second = keys.hot_slot, NUM_EXPERTS, 1
+            self._second, self._n_hot, self._n_second = maps.hot_slot, NUM_EXPERTS, 1
             self._split, host = False, False
         else:
-            raise TypeError(f"plan keys must be ResidentKeys or SplitKeys, got {type(keys)}")
+            raise TypeError(
+                f"plan keys must be ResidentKeys, SplitKeys or TierKeys, got {type(keys)}"
+            )
+        self._hot = maps.hot_slot
         self.keys = keys
         self.max_tokens = max_tokens
         self.device = device
         slots = max_tokens * TOP_K
-        self.buffers = GroupPlanBuffers.allocate(slots, host, device)
+        self.buffers = GroupPlanBuffers.allocate(slots, host, self._iq_map is not None, device)
         # Compile (and run once) every M's variant before any CUDA graph capture.
         # {M: (BLOCK, warps, registers, spills)} of the compiled variants.
         self.compiled: dict[int, tuple[int, int, int, int]] = {}
@@ -276,12 +311,16 @@ class GroupPlanner:
         goff_c = host.goff if host is not None else b.goff_hot
         block = _block_for(n)
         warps = _warps_for(block)
+        # Without an IQ map the kernel reads and writes neither of the two
+        # pointers; pass the hot map and the key scratch.
+        iq_map = self._iq_map if self._iq_map is not None else self._hot
+        iq_out = b.iq if b.iq is not None else b.scratch_key
         compiled = _group_plan_kernel[(1,)](
-            ids, self.keys.hot_slot, self._second,
+            ids, self._hot, self._second,
             b.perm, b.gids_hot, b.goff_hot, gids_c, goff_c,
-            b.scratch_key, b.scratch_start,
+            b.scratch_key, b.scratch_start, iq_map, iq_out,
             n, self._n_hot, self._n_second,
-            SPLIT=self._split, HOST=host is not None, BLOCK=block,
+            SPLIT=self._split, HOST=host is not None, IQ=b.iq is not None, BLOCK=block,
             num_warps=warps,
         )
         if m not in self.compiled:
@@ -289,4 +328,5 @@ class GroupPlanner:
         return PlanViews(
             b.perm[:n], b.gids_hot[:n], b.goff_hot[: n + 1],
             (host.gids[:n], host.goff[: n + 1]) if host is not None else None,
+            b.iq[:n] if b.iq is not None else None,
         )

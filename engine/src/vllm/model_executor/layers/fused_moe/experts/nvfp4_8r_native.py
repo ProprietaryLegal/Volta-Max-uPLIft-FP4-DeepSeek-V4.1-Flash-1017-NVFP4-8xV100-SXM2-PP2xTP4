@@ -30,7 +30,10 @@ import torch
 
 from vllm.logger import init_logger
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_iq_tail as iqt
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_qpn_rb as qrb
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_stats as route_stats
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_tiers as tiers
 from vllm.model_executor.layers.fused_moe.experts.skinny_sm70_moe import (
     _QPN_MAX_M,
@@ -589,13 +592,18 @@ class WarmTier:
     ``host_in_decode`` is true when the layer has one (a second QPN launch
     per projection over the host-RAM set). ``prefill`` is the layer's handle
     on production's IQ prefill over this bank (plan 04 part B), or None when
-    prefill runs a WARM expert from its native record staged from host RAM."""
+    prefill runs a WARM expert from its native record staged from host RAM.
+    ``tail`` (plan 06, required) says how decode joins the native and the IQ
+    partial: the torch-op chain, or IQ slots from the group-plan kernel and
+    one launch of nvfp4_8r_iq_tail (same FP32 output, bit for bit; needs the
+    group-plan kernel)."""
 
     iq: IqWarmBank
     iq_slot_of_expert: torch.Tensor
     host_slot_of_expert: torch.Tensor
     host_in_decode: bool
     prefill: IqLayerPrefill | None
+    tail: iqt.IqTail
 
 
 class NativeV41Moe:
@@ -617,6 +625,16 @@ class NativeV41Moe:
     QPN launches' route plan: the tensor-op chain or the one-launch Triton
     kernel of nvfp4_8r_group_plan (same int32 tensors, bit for bit).
     ``forward_prefill`` always uses the chain (eager, any M).
+
+    ``swiglu`` (CAMPAIGN 8.4, required) says how ``forward`` computes the
+    limited SwiGLU between the two QPN projections: the torch-op chain or the
+    one-launch Triton kernel of nvfp4_8r_swiglu (same FP16 output, bit for
+    bit). ``prefill_swiglu`` (D3, required) makes the same choice for
+    ``forward_prefill`` (eager, any M).
+
+    ``prefill_rb`` (RB 4 patch, required) says which op runs
+    ``forward_prefill``'s QPN launches: the installed op (rb2) or
+    nvfp4_8r_qpn_rb's library at RB 4 (rb4; same FP16 output, bit for bit).
     """
 
     def __init__(
@@ -629,8 +647,14 @@ class NativeV41Moe:
         warm: WarmTier | None = None,
         *,
         group_plan: gplan.GroupPlan,
+        swiglu: swig.Swiglu,
+        prefill_swiglu: swig.Swiglu,
+        prefill_rb: qrb.PrefillRb,
     ):
         group_plan = gplan.check_group_plan(group_plan)
+        swiglu = swig.check_swiglu(swiglu)
+        prefill_swiglu = swig.check_swiglu(prefill_swiglu)
+        prefill_rb = qrb.check_prefill_rb(prefill_rb)
         if (cold is None) != (cold_slot_of_expert is None):
             raise ValueError("cold set and cold slot map come together")
         if warm is not None and cold is None:
@@ -680,8 +704,12 @@ class NativeV41Moe:
                 raise ValueError("the IQ bank and the hot set sit on different devices")
             if warm.prefill is not None and not warm.prefill.serves(warm.iq):
                 raise ValueError("the IQ prefill handle was made for another bank")
+            if type(warm.tail) is not iqt.IqTail:
+                raise ValueError(f"{iqt.IQ_TAIL_KEY}: {warm.tail!r} is not an IqTail")
+            if warm.tail is iqt.IqTail.FUSED and group_plan is not gplan.GroupPlan.KERNEL:
+                raise ValueError(f"{iqt.IQ_TAIL_KEY} fused needs {gplan.GROUP_PLAN_KEY} kernel")
             self.warm = WarmTier(
-                warm.iq, iq_slot, host_slot, warm.host_in_decode, warm.prefill
+                warm.iq, iq_slot, host_slot, warm.host_in_decode, warm.prefill, warm.tail
             )
         s = max_tokens * TOP_K
         # Three-tier: the QPN launches never write a WARM route's slot rows, so
@@ -701,6 +729,20 @@ class NativeV41Moe:
             gplan.GroupPlanner(self._plan_keys(), max_tokens, dev)
             if group_plan is gplan.GroupPlan.KERNEL else None
         )
+        self.swiglu = swiglu
+        self.prefill_swiglu = prefill_swiglu
+        self.prefill_rb = prefill_rb
+        if prefill_rb is qrb.PrefillRb.RB4:
+            qrb.load_library()  # refuses a missing or different library
+        # Compiled here too, before any graph capture.
+        self._swiglu_kernel = (
+            swig.SwigluKernel(max_tokens, TOP_K, dev) if swiglu is swig.Swiglu.KERNEL else None
+        )
+        # Plan 06: the fused tail of a three-tier layer, compiled here as well.
+        self._iq_tail = (
+            iqt.IqTailKernel(max_tokens, dev)
+            if self.warm is not None and self.warm.tail is iqt.IqTail.FUSED else None
+        )
 
     def _plan_keys(self) -> gplan.PlanKeys:
         """The kernel's inputs: the same keys as _groups / _split_groups / _tier_groups."""
@@ -710,8 +752,12 @@ class NativeV41Moe:
         nh, nc = self.experts.num_slots, self.cold.num_slots
         if self.warm is None:
             return gplan.SplitKeys(self.slot_of_expert, self.cold_slot_of_expert, nh, nc, True)
-        return gplan.SplitKeys(self.slot_of_expert, self.warm.host_slot_of_expert, nh, nc,
-                               self.warm.host_in_decode)
+        split = gplan.SplitKeys(self.slot_of_expert, self.warm.host_slot_of_expert, nh, nc,
+                                self.warm.host_in_decode)
+        if self.warm.tail is iqt.IqTail.FUSED:
+            # The same plan, and the IQ slot of every route in the same launch.
+            return gplan.TierKeys(split, self.warm.iq_slot_of_expert)
+        return split
 
     @classmethod
     def three_tier(
@@ -724,11 +770,16 @@ class NativeV41Moe:
         prefill: IqLayerPrefill | None,
         *,
         group_plan: gplan.GroupPlan,
+        swiglu: swig.Swiglu,
+        prefill_swiglu: swig.Swiglu,
+        prefill_rb: qrb.PrefillRb,
+        iq_tail: iqt.IqTail,
     ) -> NativeV41Moe:
         """The layer of one tier array (int8 [384] of tiers.Tier): ``experts``
         holds the HOT experts, ``cold`` every non-HOT one, ``iq`` the WARM
         ones, each in ascending expert id. All four slot maps come from the
-        one array, so they cannot disagree. ``prefill``: see WarmTier."""
+        one array, so they cannot disagree. ``prefill`` and ``iq_tail``: see
+        WarmTier."""
         maps = tiers.slot_maps(tier)
         counts = [int((tier == t).sum()) for t in (tiers.Tier.HOT, tiers.Tier.WARM, tiers.Tier.HOST)]
         if counts[0] == 0 or counts[1] == 0:
@@ -744,8 +795,9 @@ class NativeV41Moe:
         to = lambda a: torch.from_numpy(a).to(dev)  # noqa: E731
         moe = cls(
             experts, to(maps.hot), max_tokens, cold=cold, cold_slot_of_expert=to(maps.cold),
-            warm=WarmTier(iq, to(maps.iq), to(maps.host), counts[2] > 0, prefill),
-            group_plan=group_plan,
+            warm=WarmTier(iq, to(maps.iq), to(maps.host), counts[2] > 0, prefill, iq_tail),
+            group_plan=group_plan, swiglu=swiglu, prefill_swiglu=prefill_swiglu,
+            prefill_rb=prefill_rb,
         )
         if _STATS:
             moe.stats = route_stats.RouteStats(tier, dev)
@@ -819,20 +871,26 @@ class NativeV41Moe:
             launches.append((self.cold, perm, gids_c, goff_c))
         return launches
 
-    def _launches(self, topk_ids: torch.Tensor):
-        """[(bank, perm, gids, goff)] of the QPN launches of one decode call."""
+    def _route_plan(self, topk_ids: torch.Tensor):
+        """([(bank, perm, gids, goff)] of the QPN launches of one decode call,
+        the IQ slot of every route as int32 [6 M] when the plan kernel writes
+        it (a three-tier layer with the fused tail) and None otherwise)."""
         if self._planner is not None:
             plan = self._planner.plan(topk_ids)
             launches = [(self.experts, plan.perm, plan.gids_hot, plan.goff_hot)]
             if plan.host is not None:
                 assert self.cold is not None
                 launches.append((self.cold, plan.perm, *plan.host))
-            return launches
+            return launches, plan.iq
         if self.warm is not None:
-            return self._tier_groups(topk_ids)
+            return self._tier_groups(topk_ids), None
         if self.cold is None:
-            return self._groups(topk_ids)
-        return self._split_groups(topk_ids)
+            return self._groups(topk_ids), None
+        return self._split_groups(topk_ids), None
+
+    def _launches(self, topk_ids: torch.Tensor):
+        """[(bank, perm, gids, goff)] of the QPN launches of one decode call."""
+        return self._route_plan(topk_ids)[0]
 
     def _iq_routes(
         self, topk_ids: torch.Tensor, topk_weights: torch.Tensor
@@ -856,14 +914,14 @@ class NativeV41Moe:
         self, x: torch.Tensor, topk_ids: torch.Tensor, topk_weights: torch.Tensor
     ) -> torch.Tensor:
         """x fp16 [M, 5120] -> this rank's FP32 partial [M, 5120] (a buffer
-        view; a new tensor for a three-tier layer)."""
+        view; a new tensor for a three-tier layer with the torch tail)."""
         m = x.size(0)
         if not 0 < m <= self.max_tokens or topk_ids.shape != (m, TOP_K):
             raise ValueError(f"bad routing shape {tuple(topk_ids.shape)} for M={m}")
         if x.dtype != torch.float16 or topk_weights.dtype != torch.float32:
             raise ValueError("x must be fp16 and topk_weights fp32")
         s = m * TOP_K
-        launches = self._launches(topk_ids)
+        launches, iq_plan = self._route_plan(topk_ids)
         if self.stats is not None:
             self.stats.count(topk_ids)
         y13, inter, y2, out = self.y13[:s], self.inter[:s], self.y2[:s], self.out[:m]
@@ -873,9 +931,12 @@ class NativeV41Moe:
                 x, e.q13, e.s13, e.g1, perm, gids, goff, TOP_K, y13, False, m,
                 self.split13, 1, int(e.order),
             )
-        g = y13[:, :TP_INTER].float().clamp(max=SWIGLU_LIMIT)
-        u = y13[:, TP_INTER:].float().clamp(-SWIGLU_LIMIT, SWIGLU_LIMIT)
-        inter[:, :TP_INTER].copy_(torch.nn.functional.silu(g) * u)
+        if self._swiglu_kernel is not None:
+            self._swiglu_kernel(y13, inter)
+        else:
+            g = y13[:, :TP_INTER].float().clamp(max=SWIGLU_LIMIT)
+            u = y13[:, TP_INTER:].float().clamp(-SWIGLU_LIMIT, SWIGLU_LIMIT)
+            inter[:, :TP_INTER].copy_(torch.nn.functional.silu(g) * u)
         for e, perm, gids, goff in launches:
             torch.ops._C.skinny_moe_qpn_sm70(
                 inter, e.q2, e.s2, e.g2, perm, gids, goff, TOP_K, y2, True, m,
@@ -885,6 +946,14 @@ class NativeV41Moe:
             # Both partials are additive: the native one is this rank's K
             # slice of every native route on all rows, the IQ one the full-K
             # result of every WARM route on this rank's rows.
+            if self._iq_tail is not None:
+                # Plan 06: the plan kernel wrote the IQ slots; one launch sums
+                # the native rows (a WARM route's weight is 0.0) and adds the
+                # IQ partial into the layer's buffer.
+                assert iq_plan is not None
+                part = self._iq_partial(x, iq_plan.view(m, TOP_K), topk_weights)
+                self._iq_tail(y2, topk_weights.contiguous(), iq_plan, part, out)
+                return out
             iq_ids, w_native = self._iq_routes(topk_ids, topk_weights)
             _mtp_weighted_reduce(y2, w_native.contiguous(), out)
             return out + self._iq_partial(x, iq_ids, topk_weights).float()
@@ -985,8 +1054,8 @@ class NativeV41Moe:
                     (s, HIDDEN), dtype=torch.float16, device=dev
                 )
             q, sc, g = names
-            torch.ops._C.skinny_moe_qpn_sm70(
-                xin, getattr(e, q), getattr(e, sc), getattr(e, g), *hot_launch,
+            qrb.prefill_qpn(
+                self.prefill_rb, xin, getattr(e, q), getattr(e, sc), getattr(e, g), *hot_launch,
                 TOP_K, y, slot_major, m, split, 1, int(e.order),
             )
             if cold_launches:
@@ -994,7 +1063,11 @@ class NativeV41Moe:
                 self._run_cold(cold_launches, names, xin, y, slot_major, split, m, batch_experts)
                 if trace is not None:
                     seconds_staged += _mark(dev) - mark
-            if first:
+            if first and self.prefill_swiglu is swig.Swiglu.KERNEL:
+                # D3: one launch, the same FP16 bits as the chain below, and no
+                # FP32 temporaries.
+                swig.swiglu_into(y, inter)
+            elif first:
                 g13 = y[:, :TP_INTER].float().clamp(max=SWIGLU_LIMIT)
                 u13 = y[:, TP_INTER:].float().clamp(-SWIGLU_LIMIT, SWIGLU_LIMIT)
                 inter[:, :TP_INTER].copy_(torch.nn.functional.silu(g13) * u13)
@@ -1039,8 +1112,8 @@ class NativeV41Moe:
                 ready.record(copy)
             compute.wait_event(ready)
             q, sc, g = (buf[n] for n in names)
-            torch.ops._C.skinny_moe_qpn_sm70(
-                xin, q, sc, g, perm, gids, goff, TOP_K, y, slot_major, m, split, 1,
+            qrb.prefill_qpn(
+                self.prefill_rb, xin, q, sc, g, perm, gids, goff, TOP_K, y, slot_major, m, split, 1,
                 int(c.order),
             )
             free[i % 2] = torch.cuda.Event()
@@ -1081,13 +1154,13 @@ def choose_residency(
 
 REQUIRED_KEYS = (
     "nvfp4_8r_packs", "nvfp4_8r_reserve_bytes", tiers.RESIDENCY_KEY, tiers.PREFILL_WARM_KEY,
-    gplan.GROUP_PLAN_KEY,
+    gplan.GROUP_PLAN_KEY, swig.SWIGLU_KEY, swig.PREFILL_SWIGLU_KEY, qrb.PREFILL_RB_KEY,
 )
 # Exactly one: the private tally the planner ranks by, or a fixed tier map.
 TIER_SOURCE_KEYS = ("nvfp4_8r_tally", tiers.TIER_MAP_KEY)
 EXTRA_KEYS = REQUIRED_KEYS + TIER_SOURCE_KEYS
 # Valid only beside EXTRA_KEYS, and only for the residency that needs them.
-CONDITIONAL_KEYS = (tiers.HOST_SHARE_KEY,)
+CONDITIONAL_KEYS = (tiers.HOST_SHARE_KEY, iqt.IQ_TAIL_KEY)
 TALLY_PHASE = "teacher"  # the P16 phase that stands for decode routing
 
 
@@ -1145,7 +1218,16 @@ class NativePackConfig:
     two_tier cannot be constructed. ``tier_source`` says where the tiers come
     from: the tally (planned at load) or a tier map (hot_iq only).
     ``group_plan`` says how decode builds the QPN route plan (plan 03 part B):
-    chain or kernel, no default, whichever the tier source.
+    chain or kernel, no default, whichever the tier source. ``swiglu`` says
+    how decode computes the limited SwiGLU (CAMPAIGN 8.4): chain or kernel,
+    no default, independent of ``group_plan``. ``prefill_swiglu`` makes the
+    same choice for prefill (D3), no default, independent of ``swiglu``.
+    ``prefill_rb`` says which op runs prefill's QPN launches (RB 4 patch):
+    rb2 or rb4, no default, independent of every other key.
+    ``iq_tail`` says how a
+    three-tier layer's decode joins its native and IQ partials (plan 06):
+    torch or fused, no default, an IqTail exactly when the residency has a
+    WARM tier and None for two_tier; fused needs the group-plan kernel.
     """
 
     packs: Path
@@ -1154,10 +1236,18 @@ class NativePackConfig:
     residency: tiers.Residency
     prefill_warm: tiers.PrefillWarm
     group_plan: gplan.GroupPlan
+    swiglu: swig.Swiglu
+    iq_tail: iqt.IqTail | None
+    prefill_swiglu: swig.Swiglu
+    prefill_rb: qrb.PrefillRb
 
     def __post_init__(self) -> None:
         tiers.check_prefill_warm(self.prefill_warm, self.residency)
         gplan.check_group_plan(self.group_plan)
+        swig.check_swiglu(self.swiglu)
+        swig.check_swiglu(self.prefill_swiglu)
+        qrb.check_prefill_rb(self.prefill_rb)
+        iqt.check_iq_tail(self.iq_tail, self.residency, self.group_plan)
         if isinstance(self.tier_source, TierMapSource) and not isinstance(self.residency, tiers.HotIq):
             raise ValueError(
                 f"{tiers.TIER_MAP_KEY} serves {tiers.RESIDENCY_KEY} hot_iq only, got {self.residency!r}"
@@ -1169,6 +1259,12 @@ class NativePackConfig:
         if not isinstance(self.tier_source, TallySource):
             raise ValueError(f"this config takes its tiers from {self.tier_source.path}, not a tally")
         return self.tier_source.path
+
+    def warm_iq_tail(self) -> iqt.IqTail:
+        """The IQ tail of a config with a WARM tier; two_tier has none."""
+        if self.iq_tail is None:
+            raise ValueError(f"{tiers.RESIDENCY_KEY} two_tier has no {iqt.IQ_TAIL_KEY}")
+        return self.iq_tail
 
     def reserve_for(self, layers: range) -> int:
         if layers.start not in self.reserve_by_stage:
@@ -1209,8 +1305,11 @@ class NativePackConfig:
                 raise ValueError(f"no tier map at {path}")
             source = TierMapSource(path, tiers.load_tier_map(path))
         residency = tiers.parse_residency(extra)
+        group_plan = gplan.parse_group_plan(extra)
         return cls(packs, source, reserve, residency,
-                   tiers.parse_prefill_warm(extra, residency), gplan.parse_group_plan(extra))
+                   tiers.parse_prefill_warm(extra, residency), group_plan,
+                   swig.parse_swiglu(extra), iqt.parse_iq_tail(extra, residency, group_plan),
+                   swig.parse_prefill_swiglu(extra), qrb.parse_prefill_rb(extra))
 
     def decode_counts(self) -> np.ndarray:
         with np.load(self.tally, allow_pickle=False) as data:
@@ -1399,17 +1498,23 @@ def build_layer(
     cold_slot = torch.from_numpy(maps.cold).to(device)
     hot_set = NativeExpertSet.from_raw(raw[hot], device)
     if not cold:
-        return NativeV41Moe(hot_set, hot_slot, max_tokens, group_plan=cfg.group_plan)
+        return NativeV41Moe(hot_set, hot_slot, max_tokens, group_plan=cfg.group_plan,
+                            swiglu=cfg.swiglu, prefill_swiglu=cfg.prefill_swiglu,
+                            prefill_rb=cfg.prefill_rb)
     cold_set = NativeExpertSet.from_raw_host(raw[cold], device)
     if iq_source is None:
         return NativeV41Moe(hot_set, hot_slot, max_tokens, cold=cold_set,
-                            cold_slot_of_expert=cold_slot, group_plan=cfg.group_plan)
+                            cold_slot_of_expert=cold_slot, group_plan=cfg.group_plan,
+                            swiglu=cfg.swiglu, prefill_swiglu=cfg.prefill_swiglu,
+                            prefill_rb=cfg.prefill_rb)
     if device not in _IQ_PEER_CARDS:
         raise ValueError(f"L{layer}: attach_iq_peer has not run for {device}")
     bank = IqWarmBank.from_source(iq_source, warm, device)
     handle = None if stage_prefill is None else stage_prefill.layer(layer, bank)
     return NativeV41Moe.three_tier(hot_set, cold_set, bank, tier, max_tokens, handle,
-                                   group_plan=cfg.group_plan)
+                                   group_plan=cfg.group_plan, swiglu=cfg.swiglu, prefill_swiglu=cfg.prefill_swiglu,
+                                   prefill_rb=cfg.prefill_rb,
+                                   iq_tail=cfg.warm_iq_tail())
 
 
 # -- three-tier stage (plan 01): what the loader hands over ------------------

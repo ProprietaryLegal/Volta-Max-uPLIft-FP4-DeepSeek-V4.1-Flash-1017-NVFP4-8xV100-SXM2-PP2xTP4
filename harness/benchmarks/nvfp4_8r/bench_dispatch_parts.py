@@ -52,6 +52,7 @@ import torch
 import triton
 
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as native
 
 from .accept_p2 import time_graph
@@ -144,9 +145,9 @@ def build(packs: Path, dev: torch.device, max_tokens: int):
     hot_set = native.NativeExpertSet.from_raw(torch.from_numpy(raw[hot]), dev)
     objs = []
     for mode in (gplan.GroupPlan.CHAIN, gplan.GroupPlan.KERNEL):
-        objs.append(native.NativeV41Moe(full_set, ident, max_tokens, group_plan=mode))
+        objs.append(native.NativeV41Moe(full_set, ident, max_tokens, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=native.qrb.PrefillRb.RB2))
         objs.append(native.NativeV41Moe(hot_set, hs, max_tokens, cold=cold_set,
-                                        cold_slot_of_expert=cs, group_plan=mode))
+                                        cold_slot_of_expert=cs, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=native.qrb.PrefillRb.RB2))
     full, moe, full_k, moe_k = objs
     return full, moe, full_k, moe_k, hot, cold
 

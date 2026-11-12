@@ -3,6 +3,74 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-12: two prompt slots by default, fast prompt reading and four kernels
+
+MEASURED on the eight cards on 2026-11-11 and 2026-11-12, each under a rule fixed before its data, public prompts
+only. **The Hugging Face package as uploaded on 2026-11-11 held the build of the first release**, which does not boot
+on this engine. Its small-file update of 2026-11-12 adds one profile template and one tier map per option, no
+weights ([package history](https://huggingface.co/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-hot_iq-8xV100-SXM2-PP2xTP4/commits/main)). Details:
+[docs/measurements.md](docs/measurements.md#prompt-slots-fast-prompt-reading-and-four-kernels-2026-11-12).
+
+- **Two prompt slots are the published default (windows 15 and 18).** Window 15, aggregate tok/s, run 2: one slot 118.7. Two requests
+  together on two slots 160.1 (1.35x one stream). Three together on three slots 194.0 (1.63x). Four together on four
+  slots 198.3 (1.67x). Same token ids as each prompt alone on every boot, memory PASS on every boot, no out-of-memory
+  line. Price: 6,215, 5,949, 5,663 and 5,376 of 15,360 experts at NVFP4 for one to four slots, and a predicted
+  general-text share at NVFP4 of about 78.2 to 78.3 % for two slots (80.3 % measured on R1's one slot). Quality not
+  established. One- and three-slot templates ship as options. The four-slot profile was measured here, before
+  the prompt-reading kernels, and is not shipped. Window 18 measured the installed build (the switches of window
+  16 and the kernels of window 17 included) at 175 W and 1,522 MHz: one slot 118.9, two together on two slots 159.0 (1.34x),
+  three together on three slots 192.3 (1.62x), token-exact and memory PASS on every slot boot.
+- **Speed bench on the final build (window 18).** Two-slot default, one request at a time: short sets 123.2
+  tok/s general and 97.3 legal-style, code 150 to 180 tok/s and legal 86 to 106 from 1K to
+  256K prompts, first token 108.4 s after 256K. The previous public bench, the kernel build of 2026-11-11 (one
+  slot, native reading): 101.1 and 81.1 tok/s, first token 207.9 s after 256K, build against build. Memory: the
+  cards of stage 1 reached 32,000 MiB on the bench boot, 2 MiB over the build's 31,998 MiB line, with no
+  out-of-memory line in 169 requests. Tables in the README.
+- **Fast prompt reading is the default (window 13b).** Compressed experts are read from their IQ2-class records on
+  the card during prompt reading. Nine long chats read with no fault, every final answer ended normally, first read
+  86 to 119 s near 200K tokens (native reading of the first release: 155 to 165 s, another day and build). No
+  verdict (native arm not run), memory check failed by 64 MiB on stage 1. Quality not established: it changes the
+  output from the first token, and every closeness figure was measured with native reading. Option `native-slots1`
+  keeps native reading.
+- **Fused IQ tail (patch G1, windows 14 and 14c)** and **SwiGLU kernel (window 12).** One Triton launch each. Token
+  for token the same output. NO MEASURABLE CHANGE by the first-run rule in all three windows, about 1.3 ms less per
+  decode round each on second runs.
+- **Two request-path switches from Volta sPLIt, on by default (window 16).** `VLLM_V41_SYSTEM_IN_PLACE=1`: on the
+  messages endpoint (Anthropic Messages API format), a system message sent in the middle of a chat now stays
+  where it was sent. Before, it was joined into the system block at the front of the prompt, which changed the start of the
+  prompt, so the server could not reuse the prompt it had kept and read the whole chat again (30,752 of 30,779
+  tokens reused and 0.45 s, against none and 14.84 s). Unset or `0` gives the old behaviour.
+  `VLLM_V41_TOPK_SEG=1024`: segment width of the decode top-k kernel, allowed 1024, 2048, 4096 and 8192, unset
+  means 8192, the old width. The width does not change which tokens are chosen. The launcher exports both. With
+  both unset the engine gives the same tokens as the build before this change. Token-exact off and on, decode
+  speed no measurable change. Not measured in that run: two requests together with the switches on.
+- **HOT-path decode kernel: closed, not done.** The earlier 1.45 ms per round was an upper bound on headroom, not
+  a prediction. On one card the candidate launch variants predicted 0.000 ms per round by a rule fixed before the
+  data, and the remaining cast fold 0.066 ms, below what an eight-card run can resolve.
+- **Prompt reading: two new kernels (window 17), both bit-equal to the path they replace.**
+  - One-launch SwiGLU. The gate and up halves of each expert's first matrix product are now combined in one GPU
+    launch instead of a chain of separate element-wise steps, with the same rounding.
+  - RB 4 expert kernel. The expert matrix kernel used in prompt reading now handles 32 token rows for each block
+    of weights it loads, instead of 16. Each weight block read from memory serves twice as many tokens. The order
+    of every sum is unchanged, so the output bits are the same.
+- **Two new profile keys, both required, with no default.** A profile without them is refused at boot.
+  - `nvfp4_8r_prefill_swiglu`: `chain` (the old path) or `kernel` (the one-launch SwiGLU).
+  - `nvfp4_8r_prefill_rb`: `rb2` (the old kernel, 16 rows) or `rb4` (32 rows).
+  - The default profile now uses `kernel` and `rb4`. The old path stays available as `chain` and `rb2`.
+- Measured on eight cards with a 215,847-token prompt: second reads 4.43 s faster, about 5 % of a 94 s read. Token
+  output identical to the old path in every comparison.
+- **Engine:** new files `nvfp4_8r_swiglu.py`, `nvfp4_8r_iq_tail.py`, `nvfp4_8r_warm_prefill.py`,
+  `nvfp4_8r_tally_mix.py` and `nvfp4_8r_qpn_rb.py`. Profile keys `nvfp4_8r_swiglu` (`chain` or `kernel`) and, with a compressed tier,
+  `nvfp4_8r_iq_tail` (`torch` or `fused`) are now required. `run_serve.sh` accepts one to four slots and sets the
+  load-time allocator setting itself. `serve_hot_iq.sh` takes `NVFP4_OPTION` (`slots1` to `slots3`, `native-slots1`)
+  in place of `NVFP4_GROUP_PLAN` (checked on the CPU with a stand-in for `run_serve.sh`, seven cases). The two request-path
+  switches of window 16 come with the Volta sPLIt engine's production patches 0058 and 0059, and `run_serve.sh`
+  exports both. The RB 4 library's source and build script: `engine/kernels/prefill-rb4/` (the compiled
+  library is not in this repository).
+- **Published with it:** the window-15 and window-18 rules as public copies, their request scripts, the
+  window-15 verdict, the long-chat test, the
+  concurrency chart and its generator, and the new kernel tests and benches.
+
 ## 2026-11-11: a faster route-plan kernel and a larger NVFP4 tier map (repository only)
 
 Both MEASURED on the eight cards on 2026-11-11 at 1,475 MHz. **The Hugging Face package is unchanged** (stage-1

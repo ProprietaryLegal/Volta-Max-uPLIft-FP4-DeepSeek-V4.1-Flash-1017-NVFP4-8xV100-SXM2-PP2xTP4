@@ -46,7 +46,17 @@ export VLLM_V41_ATTN_CHAIN=1 VLLM_V41_COUPLED_DRAFTS=1 VLLM_V41_COUPLED_DRAFT_TE
   VLLM_V41_PREFILL_IQ_GRID=160 VLLM_V41_PREFILL_IQ_TILES=4,4,4,4,4,4 VLLM_V41_PREFILL_SCRATCH_REUSE=1 \
   VLLM_V41_PREFILL_SKIP_ROWS=3072 VLLM_V41_PREFILL_WOA_BATCHED=1 VLLM_V41_ROUTE_FAST=1 VLLM_V41_ROUTE_WARPS=4 \
   VLLM_V41_SESSION_PREFIX=1 VLLM_V41_SUM2_PUSH_ANY=1
+# Two request-path switches taken over from the Volta sPLIt build, accepted in window 16 (docs/measurements.md).  # switch_exports
+export VLLM_V41_SYSTEM_IN_PLACE=1  # switch_exports
+export VLLM_V41_TOPK_SEG=1024  # switch_exports
 if [ "$V41PKG_PP" = 1 ] || [ "${V41_PP2_ASYNC:-0}" = 1 ]; then export VLLM_V41_ASYNC=1; else unset VLLM_V41_ASYNC; fi
+# Model load keeps torch's default block reuse. Left to itself the worker loads under max_split_size_mb:20
+# (gpu_worker.py load_model). Under that scope a freed block of 20 MiB or more is never given to a smaller
+# request, so the record build's freed transients pile up as cache until the card is full (stage 1: 0.04 GiB
+# free with the scope, 7.7 to 7.9 GiB without). On a full card torch's scoped release frees a cached split piece
+# by a pointer inside its segment: "CUDA error: invalid argument" in torch.empty. An eight-card boot died at load with
+# that error. The next booted READY with this line. Evidence: a one-card check (docs/measurements.md).
+export VLLM_WEIGHT_LOAD_MAX_SPLIT_SCOPE=0
 # Prompt slots (P11; production's "a" modes with the caller sending one request at a time):
 # NVFP4_SLOTS=2|3 gives every slot its own kept prompt, so chats that take turns keep theirs. Values are
 # production's slot policy (BURST 2). Never VLLM_V41_MULTI_ROWS (the batched mode that lost).
@@ -59,9 +69,9 @@ unset VLLM_V41_MULTI_ROWS VLLM_V41_MULTI_SEQ VLLM_V41_MULTI_SEQ_SINGLE_PREFILL_B
   VLLM_V41_MULTI_SEQ_PREFILL_BURST VLLM_V41_MULTI_SEQ_PREFILL_CHUNK
 case "$SLOTS" in
   1) ;;
-  2|3) export VLLM_V41_MULTI_SEQ=1 VLLM_V41_MULTI_SEQ_SINGLE_PREFILL_BUDGET=1 VLLM_V41_MULTI_SEQ_DECODE_TURNS=16 \
+  2|3|4) export VLLM_V41_MULTI_SEQ=1 VLLM_V41_MULTI_SEQ_SINGLE_PREFILL_BUDGET=1 VLLM_V41_MULTI_SEQ_DECODE_TURNS=16 \
          VLLM_V41_MULTI_SEQ_PREFILL_BURST=2 VLLM_V41_MULTI_SEQ_PREFILL_CHUNK=0 ;;
-  *) echo "run_serve: NVFP4_SLOTS must be 1, 2 or 3" >&2; exit 1 ;;
+  *) echo "run_serve: NVFP4_SLOTS must be 1, 2, 3 or 4" >&2; exit 1 ;;
 esac
 setsid "$PY" -m vllm.entrypoints.openai.api_server --config "$RUN/${PROFILE:-$V41PKG_DEFAULT_PROFILE}" > "$RUN/state/$name.log" 2>&1 &
 echo $! > "$RUN/state/$name.pid"; echo "serve pid/pgid $(cat "$RUN/state/$name.pid"), log $RUN/state/$name.log"

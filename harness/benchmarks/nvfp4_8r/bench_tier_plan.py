@@ -25,6 +25,7 @@ import torch
 import triton
 
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as nat
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_tiers as tiers
 
@@ -39,7 +40,8 @@ def three_tier(tier: np.ndarray, mode, dev):
     n_hot = int((tier == HOT).sum())
     return nat.NativeV41Moe.three_tier(
         placeholder_set(n_hot, dev), placeholder_set(nat.NUM_EXPERTS - n_hot, dev),
-        placeholder_iq(int((tier == WARM).sum()), dev), tier, MAX_TOKENS, None, group_plan=mode)
+        placeholder_iq(int((tier == WARM).sum()), dev), tier, MAX_TOKENS, None, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2,
+        iq_tail=nat.iqt.IqTail.TORCH)
 
 
 def main() -> int:

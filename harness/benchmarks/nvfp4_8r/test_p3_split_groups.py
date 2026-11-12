@@ -17,6 +17,7 @@ import numpy as np
 import torch
 
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as nat
 from vllm.model_executor.layers.fused_moe.experts.skinny_sm70_moe import (
     QpnFragmentOrder,
@@ -66,7 +67,7 @@ def main() -> int:
         hot_slot, cold_slot = nat.split_maps(hot, cold, dev)
         moe = nat.NativeV41Moe(placeholder_set(len(hot)), hot_slot, 16,
                                cold=placeholder_set(len(cold)), cold_slot_of_expert=cold_slot,
-                               group_plan=gplan.GroupPlan.CHAIN)
+                               group_plan=gplan.GroupPlan.CHAIN, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2)
         for m in range(1, 17):
             for mode in ("random", "all_hot", "all_cold", "one_cold"):
                 pool = {"random": list(range(384)), "all_hot": hot,

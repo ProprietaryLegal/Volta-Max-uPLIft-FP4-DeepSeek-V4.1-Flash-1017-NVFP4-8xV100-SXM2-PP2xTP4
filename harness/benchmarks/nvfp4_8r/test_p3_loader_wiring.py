@@ -36,8 +36,11 @@ GOOD = {
     "nvfp4_8r_residency": "two_tier",
     "nvfp4_8r_prefill_warm": "native_staged",
     "nvfp4_8r_group_plan": "chain",
+    "nvfp4_8r_swiglu": "chain", "nvfp4_8r_prefill_swiglu": "chain", "nvfp4_8r_prefill_rb": "rb2",
 }
 SHARE = "nvfp4_8r_host_route_share"
+# The three-tier decode tail (plan 06): required with a WARM tier, refused with two_tier.
+TAIL = "nvfp4_8r_iq_tail"
 
 
 def loader(extra: dict) -> GGUFModelLoader:
@@ -72,7 +75,8 @@ def main() -> int:
     if as_text is None or as_text.reserve_by_stage != GOOD["nvfp4_8r_reserve_bytes"]:
         fails.append("string stage keys not parsed to ints")
     for drop in ("nvfp4_8r_tally", "nvfp4_8r_reserve_bytes", "nvfp4_8r_residency",
-                 "nvfp4_8r_prefill_warm", "nvfp4_8r_group_plan"):
+                 "nvfp4_8r_prefill_warm", "nvfp4_8r_group_plan", "nvfp4_8r_swiglu",
+                 "nvfp4_8r_prefill_swiglu", "nvfp4_8r_prefill_rb"):
         if not refused({k: v for k, v in GOOD.items() if k != drop}):
             fails.append(f"packs without {drop} admitted")
     for bad in (0, -1, "6G", 1.5, 6 * 1024**3, {}, {0: 0}, {0: -5}, {"a": 1}, {0: "6G"}, {-1: 5}):
@@ -88,25 +92,42 @@ def main() -> int:
     if cfg is not None and cfg.residency != tiers.TwoTier():
         fails.append(f"two_tier parsed to {cfg.residency!r}")
     for extra, want in (
-        ({"nvfp4_8r_residency": "hot_iq"}, tiers.HotIq()),
-        ({"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.0}, tiers.HotIqHost(0.0)),
-        ({"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.02}, tiers.HotIqHost(0.02)),
+        ({"nvfp4_8r_residency": "hot_iq", TAIL: "torch"}, tiers.HotIq()),
+        ({"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.0, TAIL: "torch"}, tiers.HotIqHost(0.0)),
+        ({"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.02, TAIL: "torch"}, tiers.HotIqHost(0.02)),
     ):
         got = loader({**GOOD, **extra}).nvfp4_8r
         if got is None or got.residency != want or type(got.residency) is not type(want):
             fails.append(f"{extra} parsed to {got and got.residency!r}, want {want!r}")
     for extra in (
-        {"nvfp4_8r_residency": "hot_iq_host"},  # no share
-        {"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.06},
-        {"nvfp4_8r_residency": "hot_iq_host", SHARE: -0.01},
-        {"nvfp4_8r_residency": "hot_iq_host", SHARE: "0.0"},
+        {"nvfp4_8r_residency": "hot_iq_host", TAIL: "torch"},  # no share
+        {"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.06, TAIL: "torch"},
+        {"nvfp4_8r_residency": "hot_iq_host", SHARE: -0.01, TAIL: "torch"},
+        {"nvfp4_8r_residency": "hot_iq_host", SHARE: "0.0", TAIL: "torch"},
         {"nvfp4_8r_residency": "two_tier", SHARE: 0.0},
-        {"nvfp4_8r_residency": "hot_iq", SHARE: 0.0},
+        {"nvfp4_8r_residency": "hot_iq", SHARE: 0.0, TAIL: "torch"},
+        # the tail key (plan 06 section 5 part A): no default, no stray key, fused only on the plan kernel
+        {"nvfp4_8r_residency": "hot_iq"},
+        {"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.0},
+        {"nvfp4_8r_residency": "two_tier", TAIL: "torch"},
+        {"nvfp4_8r_residency": "hot_iq", TAIL: "kernel"},
+        {"nvfp4_8r_residency": "hot_iq", TAIL: "fused"},  # GOOD's group plan is chain
         {"nvfp4_8r_residency": "three_tier"},
         {"nvfp4_8r_residency": None},
     ):
         if not refused({**GOOD, **extra}):
             fails.append(f"{extra} admitted")
+    # Expected values are the key's own table (plan 06 section 5 part A): the tail's name, None for two_tier.
+    for extra, want in (
+        ({"nvfp4_8r_residency": "hot_iq", TAIL: "torch"}, "torch"),
+        ({"nvfp4_8r_residency": "hot_iq", TAIL: "fused", "nvfp4_8r_group_plan": "kernel"}, "fused"),
+        ({"nvfp4_8r_residency": "hot_iq_host", SHARE: 0.0, TAIL: "fused", "nvfp4_8r_group_plan": "kernel"}, "fused"),
+        ({}, None),
+    ):
+        got = loader({**GOOD, **extra}).nvfp4_8r
+        have = got.iq_tail if got is not None else "no config"
+        if (have.value if want is not None and hasattr(have, "value") else have) != want:
+            fails.append(f"{extra} gave tail {have!r}, want {want!r}")
     if not refused({SHARE: 0.0}):
         fails.append("host route share admitted without the packs keys")
     # Routed-expert filter on a real map shape (names as the V4.1 adapter maps).

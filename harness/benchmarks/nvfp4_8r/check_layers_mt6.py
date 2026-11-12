@@ -20,6 +20,7 @@ import numpy as np
 import torch
 
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as nat
 
 from .test_group_plan import graph_out
@@ -54,10 +55,10 @@ def main() -> int:
             objs = {}
             for mode in (gplan.GroupPlan.CHAIN, gplan.GroupPlan.KERNEL):
                 if kind == "resident":
-                    objs[mode] = nat.NativeV41Moe(full_set, ident, MAX_TOKENS, group_plan=mode)
+                    objs[mode] = nat.NativeV41Moe(full_set, ident, MAX_TOKENS, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2)
                 else:
                     objs[mode] = nat.NativeV41Moe(hot_set, hs, MAX_TOKENS, cold=cold_set,
-                                                  cold_slot_of_expert=cs, group_plan=mode)
+                                                  cold_slot_of_expert=cs, group_plan=mode, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=nat.qrb.PrefillRb.RB2)
             checks = []
             for s in (0, 1):
                 for m in range(1, MAX_TOKENS + 1):

@@ -55,6 +55,7 @@ def main() -> int:
             return 3
         return 0
     from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+    from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
     from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as native
     from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_tiers as tiers
     from vllm.model_executor.layers.quantization import gguf_v41_moe as iq_op
@@ -83,7 +84,8 @@ def main() -> int:
         sources = {LAYER: native.IqLayerSource(*shards)}
         cfg = native.NativePackConfig(a.packs, Path("/nonexistent/tally-stays-local"),
                                       {0: 1}, tiers.HotIqHost(0.0),
-                                      tiers.PrefillWarm.NATIVE_STAGED, gplan.GroupPlan.CHAIN)
+                                      tiers.PrefillWarm.NATIVE_STAGED, gplan.GroupPlan.CHAIN, swig.Swiglu.CHAIN,
+                                      native.iqt.IqTail.TORCH, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=native.qrb.PrefillRb.RB2)
         # build_stage takes the TP group; native_staged uses its cpu_group only.
         tp_group = SimpleNamespace(cpu_group=group)
 

@@ -24,6 +24,7 @@ import numpy as np
 import torch
 
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as native
 
 REF_D_US = {
@@ -148,7 +149,7 @@ def run_layer(packs: Path, refs_path: Path, dev: torch.device) -> dict[str, obje
         del raw
         moe = native.NativeV41Moe(
             experts, torch.arange(384, dtype=torch.int32, device=dev), max_tokens=16,
-            group_plan=gplan.GroupPlan.CHAIN,
+            group_plan=gplan.GroupPlan.CHAIN, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=native.qrb.PrefillRb.RB2,
         )
         load_s = time.monotonic() - t0
         worst = {}

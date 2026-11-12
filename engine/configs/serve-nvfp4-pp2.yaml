@@ -62,6 +62,17 @@ model-loader-extra-config:
   # QPN route plan of a decode call (plan 03 part B). chain: the tensor-op chain (every build before
   # part B). kernel: one Triton launch per call that writes the same int32 plan bit for bit.
   nvfp4_8r_group_plan: chain
+  # Decode SwiGLU (CAMPAIGN 8.4). chain: the torch-op chain (every build before 8.4). kernel: one Triton
+  # launch per layer that writes the same FP16 output bit for bit.
+  nvfp4_8r_swiglu: chain
+  # Prefill SwiGLU (D3; required, no default, independent of nvfp4_8r_swiglu). chain: the torch ops
+  # every build before D3 ran in forward_prefill. kernel: the one-launch Triton SwiGLU decode uses,
+  # the same FP16 bits, without the chain's FP32 temporaries.
+  nvfp4_8r_prefill_swiglu: chain
+  # Prefill QPN launches (RB 4 patch; required, no default, independent of the key above). rb2: the
+  # installed op every build before the patch ran in forward_prefill (RB 2). rb4: the RB 4 library
+  # beside the native module, four 8-row blocks per weight load, the same FP16 bits.
+  nvfp4_8r_prefill_rb: rb2
 speculative-config:
   method: dspark
   model: $LANE/models/dspark-v41

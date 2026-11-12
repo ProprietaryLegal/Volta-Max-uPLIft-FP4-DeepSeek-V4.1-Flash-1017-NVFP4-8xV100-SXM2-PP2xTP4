@@ -30,6 +30,7 @@ import numpy as np
 import torch
 
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_group_plan as gplan
+from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_swiglu as swig
 from vllm.model_executor.layers.fused_moe.experts import nvfp4_8r_native as native
 
 from . import cpu_moe
@@ -88,11 +89,11 @@ def main() -> int:
     raw = native.read_rank_experts(a.packs, LAYER, RANK)
     full = native.NativeV41Moe(native.NativeExpertSet.from_raw(torch.from_numpy(raw), dev),
                                torch.arange(384, dtype=torch.int32, device=dev), 16,
-                               group_plan=gplan.GroupPlan.CHAIN)
+                               group_plan=gplan.GroupPlan.CHAIN, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=native.qrb.PrefillRb.RB2)
     hs, cs = native.split_maps(hot, cold, dev)
     cold_set = native.NativeExpertSet.from_raw_host(torch.from_numpy(raw[cold]), dev)
     moe = native.NativeV41Moe(native.NativeExpertSet.from_raw(torch.from_numpy(raw[hot]), dev),
-                              hs, 16, cold=cold_set, cold_slot_of_expert=cs, group_plan=gplan.GroupPlan.CHAIN)
+                              hs, 16, cold=cold_set, cold_slot_of_expert=cs, group_plan=gplan.GroupPlan.CHAIN, swiglu=swig.Swiglu.CHAIN, prefill_swiglu=swig.Swiglu.CHAIN, prefill_rb=native.qrb.PrefillRb.RB2)
     res: dict = {"gate": gate, "layer": LAYER, "rank": RANK, "graph_us": {}, "copy_us": {},
                  "cpu": {}, "roundtrip_us": {}}
     x6 = torch.from_numpy(refs["x_m6_s0"]).to(dev)

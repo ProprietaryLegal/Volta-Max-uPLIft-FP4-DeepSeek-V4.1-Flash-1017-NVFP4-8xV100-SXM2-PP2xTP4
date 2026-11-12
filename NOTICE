@@ -8,6 +8,10 @@ Third-party material in this tree:
   of our earlier build, Volta sPLIt, which is 1Cat-vLLM (#1277) with its patch series. Their context lines are that
   project's code. The new files under engine/src/ call 1Cat-vLLM's sm70_skinny QPN MoE backend (#742), whose kernels
   come from dnv2003/v100-skinny (MIT); no v100-skinny source is copied here.
+- engine/kernels/prefill-rb4/qpn_rb4_append.cu is our launcher. Its build script appends it to that backend's
+  skinny_moe_qpn_sm70.cu (1Cat-vLLM and vLLM contributors, Apache-2.0, with kernels from dnv2003/v100-skinny under
+  the MIT notice in LICENSES/MIT-v100-skinny.txt), which is not copied here. The library built from them is not
+  distributed.
 - The measurement scripts call the harness scripts published with Volta sPLIt (Apache-2.0).
 
 No model weights, packs, wheels, compiled libraries, routing tallies or prompt corpora are distributed here. DeepSeek

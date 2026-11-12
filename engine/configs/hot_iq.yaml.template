@@ -1,7 +1,7 @@
-# hot_iq serving profile of this package (PP2 x TP4 on 8x V100-SXM2-32GB).
-# Replace ${PKG} with the absolute path of the downloaded package, then start the server with the
-# launcher of the GitHub repository (it sets the engine environment). Every value except the paths,
-# the port and the tier map key is the profile the published measurements were taken with.
+# hot_iq serving profile of this package, option slots2: 2 prompt slot(s), fast prompt reading (compressed experts read from their IQ records).
+# PP2 x TP4 on 8x V100-SXM2-32GB. Replace ${PKG} with the absolute path of the downloaded package, or
+# let serve_hot_iq.sh of the GitHub repository do it. Every value except the paths, the port and the
+# tier map key is the profile of the eight-card boot whose tiers the tier map reproduces.
 model: ${PKG}/gguf/DeepSeek-V4.1-Flash-1017-GSQ-RCO-IQ2_XXS-00001-of-00004.gguf
 hf-config-path: ${PKG}/base
 tokenizer: ${PKG}/base
@@ -15,7 +15,7 @@ load-format: gguf
 tensor-parallel-size: 4
 pipeline-parallel-size: 2
 max-model-len: 524288
-max-num-seqs: 1
+max-num-seqs: 2
 max-num-batched-tokens: 8192
 kv-cache-memory-bytes: 268435456
 gpu-memory-utilization: 0.96
@@ -36,11 +36,15 @@ default-chat-template-kwargs: '{"thinking": true}'
 model-loader-extra-config:
   engram_path: ${PKG}/engram/DeepSeek-V4.1-Flash-Engram-IQ4_NL.gguf
   nvfp4_8r_packs: ${PKG}/experts-mxfp4
-  nvfp4_8r_tier_map: ${PKG}/tier_map.json
-  nvfp4_8r_reserve_bytes: {'0': 4831838208, '20': 7516192768}
+  nvfp4_8r_tier_map: ${PKG}/tier_maps/slots2.json
+  nvfp4_8r_reserve_bytes: {'0': 4643356672, '20': 7517241344}
   nvfp4_8r_residency: hot_iq
-  nvfp4_8r_prefill_warm: native_staged
+  nvfp4_8r_prefill_warm: iq
   nvfp4_8r_group_plan: kernel
+  nvfp4_8r_swiglu: kernel
+  nvfp4_8r_prefill_swiglu: kernel
+  nvfp4_8r_prefill_rb: rb4
+  nvfp4_8r_iq_tail: fused
 speculative-config:
   method: dspark
   model: ${PKG}/dspark

@@ -1,7 +1,7 @@
 {
  "name": "Volta Max uPLIft FP4",
  "repository": "https://github.com/ProprietaryLegal/Volta-Max-uPLIft-FP4-DeepSeek-V4.1-Flash-1017-NVFP4-8xV100-SXM2-PP2xTP4",
- "assembled": "2026-11-11",
+ "assembled": "2026-11-10",
  "with_wip": false,
  "with_research": false,
  "assembler": "assemble.py (explicit manifest; scrub rules; generated engine patches checked by re-applying)",
@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "658e3ccd8f5b6d54868aa729c4de5765d2636bca2d3e6e8363bd1994a3223a40",
-   "transform": "hand-written for publication; 3 wip block(s) removed",
-   "sha256": "2b3dba9b89bce6e244d2483580b05d4b064d434c9e7e069e4be77af6bf431932",
-   "bytes": 91275
+   "source_sha256": "1b9b7705a008abb2e97b446b9afa7b85de35f95c1fcdb5568b08d7818ac55e8e",
+   "transform": "hand-written for publication",
+   "sha256": "1b9b7705a008abb2e97b446b9afa7b85de35f95c1fcdb5568b08d7818ac55e8e",
+   "bytes": 124015
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "261982089dd3441acb7188a1652f1fc78355ae439b8a7e444bd940ffec8ae1af",
-   "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "b97ee0761dad201ccb350b6f7157c2a3e7c3ba73f28e459c6cd96ee28876c1f7",
-   "bytes": 22108
+   "source_sha256": "619287d38a113f338ecf55c1021f94b858fdf4252a527bffa67902b0d03090b7",
+   "transform": "hand-written for publication",
+   "sha256": "619287d38a113f338ecf55c1021f94b858fdf4252a527bffa67902b0d03090b7",
+   "bytes": 28789
   },
   {
    "path": "CREDITS.md",
@@ -44,10 +44,10 @@
    "path": "NOTICE",
    "kind": "authored",
    "source": "$LANE/publish/authored/NOTICE",
-   "source_sha256": "8157703f60d248447fc7892cd43f51b2871ec8542d427e68847e5def0995a5a9",
+   "source_sha256": "e2c6a30219fa7d16113f897ece4ceb241f81b594bb31a771a48a0675be3f6697",
    "transform": "hand-written for publication",
-   "sha256": "26ad00d4bfa79cb52c2b24dfe8490cbc86d73bd324f5859acc09f9cfc20153d7",
-   "bytes": 1089
+   "sha256": "e2c6a30219fa7d16113f897ece4ceb241f81b594bb31a771a48a0675be3f6697",
+   "bytes": 1441
   },
   {
    "path": "SECURITY.md",
@@ -62,7 +62,7 @@
    "path": "CONTRIBUTING.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CONTRIBUTING.md",
-   "source_sha256": "38a3581cfb70d88cba9920c4c6882bdefa17e5be80c40860e72c640e60a52862",
+   "source_sha256": "2f1cc207fd785229dfff691f124c649f97aa7cd7d58157812b3cd4f3decade3c",
    "transform": "hand-written for publication",
    "sha256": "2f1cc207fd785229dfff691f124c649f97aa7cd7d58157812b3cd4f3decade3c",
    "bytes": 2105
@@ -107,17 +107,17 @@
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "8bd8894845aedac453777fe5634a881179d5a27d609fdcee351d54e87c6d3b06",
+   "source_sha256": "cdaa2323d4793ee9a662435c7edef520bc7bf4a437133ddbb0efdad4081ed0cd",
    "transform": "hand-written for publication",
-   "sha256": "8bd8894845aedac453777fe5634a881179d5a27d609fdcee351d54e87c6d3b06",
-   "bytes": 91139
+   "sha256": "cdaa2323d4793ee9a662435c7edef520bc7bf4a437133ddbb0efdad4081ed0cd",
+   "bytes": 130351
   },
   {
    "path": "docs/history.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/history.md",
-   "source_sha256": "e1216353640a9b1480671e5f5459e5523b9b451627e37d90c4475612b53aeec6",
-   "transform": "hand-written for publication; 2 wip block(s) removed",
+   "source_sha256": "61b094ab4534afc3fde5b7f2b48a0c815eba9b01bd3f739347db9a528d486e85",
+   "transform": "hand-written for publication",
    "sha256": "61b094ab4534afc3fde5b7f2b48a0c815eba9b01bd3f739347db9a528d486e85",
    "bytes": 32563
   },
@@ -125,17 +125,17 @@
    "path": "engine/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/README.md",
-   "source_sha256": "caeaa33536c9b8a1b78a69f314d27d468e3195663d6a71604e4f3de53e74474c",
-   "transform": "hand-written for publication; 1 wip block(s) removed",
-   "sha256": "e050adc731f49851a68a19dfb23f488f08c9a8c08316e89c0f59790c998e2dc0",
-   "bytes": 8506
+   "source_sha256": "5cb6e932e8cb366d280a2c2aff8050ad335a6fd89fe7b97e81d14c7f84af0933",
+   "transform": "hand-written for publication",
+   "sha256": "5cb6e932e8cb366d280a2c2aff8050ad335a6fd89fe7b97e81d14c7f84af0933",
+   "bytes": 13245
   },
   {
    "path": "harness/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/harness/README.md",
-   "source_sha256": "78df1a1bbfa7c947464b9ae819555e2f08495e617bf7d720cdb00df441705dff",
-   "transform": "hand-written for publication; 1 wip block(s) removed",
+   "source_sha256": "fa8f5a0283def0f5c82ae603c4847103dacb6f535c6b1cb6e3e875e156e2ade6",
+   "transform": "hand-written for publication",
    "sha256": "fa8f5a0283def0f5c82ae603c4847103dacb6f535c6b1cb6e3e875e156e2ade6",
    "bytes": 4608
   },
@@ -143,10 +143,10 @@
    "path": "engine/configs/serve_hot_iq.sh",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/configs/serve_hot_iq.sh",
-   "source_sha256": "77c2aacde02b8730d2f9589b10e265579e3afffefb4c4a5e9cef6fcd6b053640",
+   "source_sha256": "697f21d58335a43149c4992f9f49c683c6d27aaf041f1fda3a3891135fddfc26",
    "transform": "hand-written for publication",
-   "sha256": "77c2aacde02b8730d2f9589b10e265579e3afffefb4c4a5e9cef6fcd6b053640",
-   "bytes": 3240
+   "sha256": "697f21d58335a43149c4992f9f49c683c6d27aaf041f1fda3a3891135fddfc26",
+   "bytes": 3884
   },
   {
    "path": "docs/acceptance/WINDOW11-accept-rule.md",
@@ -165,6 +165,132 @@
    "transform": "hand-written for publication",
    "sha256": "de1dad57ef9c82ca94c828ae694f40666076abcd0b6ee98772c77c075c30553a",
    "bytes": 3836
+  },
+  {
+   "path": "docs/acceptance/WINDOW15-accept-rule.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/acceptance/WINDOW15-accept-rule.md",
+   "source_sha256": "4edf8406f65ac747d4189a197a404f0a6fc96e7b79112fe7299414bf8855f131",
+   "transform": "hand-written for publication",
+   "sha256": "4edf8406f65ac747d4189a197a404f0a6fc96e7b79112fe7299414bf8855f131",
+   "bytes": 7319
+  },
+  {
+   "path": "engine/configs/hot_iq.yaml.template",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/configs/hot_iq.yaml.template",
+   "source_sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "transform": "hand-written for publication",
+   "sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "bytes": 2377
+  },
+  {
+   "path": "engine/configs/hot_iq-slots1.yaml.template",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/configs/hot_iq-slots1.yaml.template",
+   "source_sha256": "6b5f54fd4619648bb8577fa537f63f8ba475991ffa83889e5fa2fc88ab5e8408",
+   "transform": "hand-written for publication",
+   "sha256": "6b5f54fd4619648bb8577fa537f63f8ba475991ffa83889e5fa2fc88ab5e8408",
+   "bytes": 2377
+  },
+  {
+   "path": "engine/configs/hot_iq-slots2.yaml.template",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/configs/hot_iq-slots2.yaml.template",
+   "source_sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "transform": "hand-written for publication",
+   "sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "bytes": 2377
+  },
+  {
+   "path": "engine/configs/hot_iq-slots3.yaml.template",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/configs/hot_iq-slots3.yaml.template",
+   "source_sha256": "4e871e226dd731fb70349b9e5531964c4533743b75525c7540c887bcc9bb2e06",
+   "transform": "hand-written for publication",
+   "sha256": "4e871e226dd731fb70349b9e5531964c4533743b75525c7540c887bcc9bb2e06",
+   "bytes": 2377
+  },
+  {
+   "path": "engine/configs/hot_iq-native-slots1.yaml.template",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/configs/hot_iq-native-slots1.yaml.template",
+   "source_sha256": "6fe75a36c4896222f03d57f6d4c89f52c6018e3da306ab496bab7ff18312bd03",
+   "transform": "hand-written for publication",
+   "sha256": "6fe75a36c4896222f03d57f6d4c89f52c6018e3da306ab496bab7ff18312bd03",
+   "bytes": 2397
+  },
+  {
+   "path": "docs/charts/concurrency-light.svg",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/charts/concurrency-light.svg",
+   "source_sha256": "a6fbbce34a132d0f04e50aa9472be1e51d0fa5a5a429984ca1f0b6167b4d68fa",
+   "transform": "hand-written for publication",
+   "sha256": "a6fbbce34a132d0f04e50aa9472be1e51d0fa5a5a429984ca1f0b6167b4d68fa",
+   "bytes": 7750
+  },
+  {
+   "path": "docs/charts/concurrency-dark.svg",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/charts/concurrency-dark.svg",
+   "source_sha256": "65ce6d52a3e872f2c74dfafff7bbd8b2f3b9bc0ae5cd4848b20201b9bcfd7a07",
+   "transform": "hand-written for publication",
+   "sha256": "65ce6d52a3e872f2c74dfafff7bbd8b2f3b9bc0ae5cd4848b20201b9bcfd7a07",
+   "bytes": 7750
+  },
+  {
+   "path": "tools/chart_concurrency.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/tools/chart_concurrency.py",
+   "source_sha256": "ebcb60d98a001ae53a4a56ea2129bb6ada5e8d908f765b0d93cf7683405d04b2",
+   "transform": "hand-written for publication",
+   "sha256": "ebcb60d98a001ae53a4a56ea2129bb6ada5e8d908f765b0d93cf7683405d04b2",
+   "bytes": 7811
+  },
+  {
+   "path": "docs/acceptance/WINDOW18-accept-rule.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/acceptance/WINDOW18-accept-rule.md",
+   "source_sha256": "c37609adcccd124e930baf423695b7a684d04f6e3e4aa4f89f397b270318fa78",
+   "transform": "hand-written for publication",
+   "sha256": "c37609adcccd124e930baf423695b7a684d04f6e3e4aa4f89f397b270318fa78",
+   "bytes": 10162
+  },
+  {
+   "path": "engine/kernels/prefill-rb4/README.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/kernels/prefill-rb4/README.md",
+   "source_sha256": "dcb93780c44d07949e1fce5f1e47bcc21aa59821509cda899e2e1ccd7d2a8af2",
+   "transform": "hand-written for publication",
+   "sha256": "dcb93780c44d07949e1fce5f1e47bcc21aa59821509cda899e2e1ccd7d2a8af2",
+   "bytes": 2271
+  },
+  {
+   "path": "engine/kernels/prefill-rb4/qpn_rb4_append.cu",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/kernels/prefill-rb4/qpn_rb4_append.cu",
+   "source_sha256": "04fb36498235e1c60f9e4326acac1a77adb263a09491886e2998c61f8212baa9",
+   "transform": "hand-written for publication",
+   "sha256": "04fb36498235e1c60f9e4326acac1a77adb263a09491886e2998c61f8212baa9",
+   "bytes": 5298
+  },
+  {
+   "path": "engine/kernels/prefill-rb4/build_qpn_rb4.py",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/engine/kernels/prefill-rb4/build_qpn_rb4.py",
+   "source_sha256": "18ecde3622713dc609097c9a5156881d386e1ed8fb64493a565ee2315786466a",
+   "transform": "hand-written for publication",
+   "sha256": "18ecde3622713dc609097c9a5156881d386e1ed8fb64493a565ee2315786466a",
+   "bytes": 2784
+  },
+  {
+   "path": "LICENSES/MIT-v100-skinny.txt",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/LICENSES/MIT-v100-skinny.txt",
+   "source_sha256": "d83507dc68f1bfa4b0ce4df4f0a82dca45e3e7df884b022519fb9d74cc769bf2",
+   "transform": "hand-written for publication",
+   "sha256": "d83507dc68f1bfa4b0ce4df4f0a82dca45e3e7df884b022519fb9d74cc769bf2",
+   "bytes": 1081
   },
   {
    "path": "quality/closeness-test/DECISIONS.md",
@@ -350,11 +476,10 @@
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
    "kind": "code",
    "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_native.py",
-   "source_sha256": "21eb5137af26dace283c1fe972252ed22bda961d3557a10ec9936bed0f93c329",
+   "source_sha256": "cdb31c1f53fed871fba39ed60c866f947b614318e16062b407cb63f87568cf3a",
    "transform": "scrubbed (2 replacements; 1 per-file redaction rules)",
-   "sha256": "0a1c7388f4194d48eb8b988f97510fb3d0c7cbc4e7e817df01e28369e3656e95",
-   "bytes": 70576,
-   "note": "the engine file of the hot_iq measurements of 2026-11-10 with the tier-map change of the hot_iq release and the group-plan kernel of 2026-11-11 (plan 03 part B, key nvfp4_8r_group_plan) applied. With nvfp4_8r_group_plan: chain it computes what the file of candidate11 to candidate20 computed. The measurements dated 2026-11-09 and the earlier ones of 2026-11-10 ran on the file of the first public commit"
+   "sha256": "e8b3e5d8b6993d40145373bb55a0c4d003801b20d42eb52d67b92de6e6d5e7c2",
+   "bytes": 76530
   },
   {
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tiers.py",
@@ -378,10 +503,55 @@
    "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_group_plan.py",
    "kind": "code",
    "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_group_plan.py",
-   "source_sha256": "6fb51b36a8c3f9f1d068c330f6a2be00084951877da123a13a19c3b4a09ebcf0",
+   "source_sha256": "b8f1b2d4787d04bee2f6cb0604221ea07e2a47999192c8d821700e08a6ffe31a",
    "transform": "scrubbed (1 replacements)",
-   "sha256": "dd6523061078f61446005cff1ab5718ec1ce8ac94549914ff1e513afffdbee00",
-   "bytes": 12828
+   "sha256": "08ed06636488439466fae6d4903c72c82f903d14f8b8df0b04d71a3cd2e36f4d",
+   "bytes": 14781
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_swiglu.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_swiglu.py",
+   "source_sha256": "31680368df50c343620142c0035e1c30a097cdeebd03e1ccf7615e4ccf6c2424",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "31680368df50c343620142c0035e1c30a097cdeebd03e1ccf7615e4ccf6c2424",
+   "bytes": 6547
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_iq_tail.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_iq_tail.py",
+   "source_sha256": "20a7833b36866e4f719edfec3c3c2278501ed3ddbc0762e4f378ecd9ee3001e9",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "20a7833b36866e4f719edfec3c3c2278501ed3ddbc0762e4f378ecd9ee3001e9",
+   "bytes": 8358
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_warm_prefill.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_warm_prefill.py",
+   "source_sha256": "8107d1300b9a7fb923bd961d5219fb33235024e0320c329585dcdb383b86fdc7",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "8107d1300b9a7fb923bd961d5219fb33235024e0320c329585dcdb383b86fdc7",
+   "bytes": 9226
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tally_mix.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_tally_mix.py",
+   "source_sha256": "454fa66040888553651eb0ac6b107dccec110df6fa91e85867d826c888520b35",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "454fa66040888553651eb0ac6b107dccec110df6fa91e85867d826c888520b35",
+   "bytes": 5176
+  },
+  {
+   "path": "engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_qpn_rb.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/vllm/model_executor/layers/fused_moe/experts/nvfp4_8r_qpn_rb.py",
+   "source_sha256": "b73932236443bcd78bdc82f5aa7578f7ed04bf6ba3c5a1da56d1317f5d744a43",
+   "transform": "scrubbed (3 replacements; 3 per-file redaction rules)",
+   "sha256": "547ddd2b0ae026fdb58f6874196db840e9425628b4391325b1b96033e1faf0ce",
+   "bytes": 4173
   },
   {
    "path": "engine/patches/gguf_loader.patch",
@@ -423,15 +593,6 @@
    "bytes": 6730
   },
   {
-   "path": "engine/configs/hot_iq.yaml.template",
-   "kind": "code",
-   "source": "$LANE/stage/hf-pack/r1k/hot_iq.yaml.template",
-   "source_sha256": "96ec52988d36de321e222ffea53806bb52626af6b193619b316e4d974c9f767e",
-   "transform": "scrubbed (0 replacements)",
-   "sha256": "96ec52988d36de321e222ffea53806bb52626af6b193619b316e4d974c9f767e",
-   "bytes": 2194
-  },
-  {
    "path": "engine/configs/env.sh",
    "kind": "code",
    "source": "$LANE/run/env.sh",
@@ -444,65 +605,64 @@
    "path": "engine/configs/run_serve.sh",
    "kind": "code",
    "source": "$LANE/run/run_serve.sh",
-   "source_sha256": "eb0881103d596a3308dff6ec4b262f7d681e5f10b6d898abcfe0ce5fa49988ef",
-   "transform": "scrubbed (11 replacements; 3 per-file redaction rules)",
-   "sha256": "371141d124957d0792595af6e1d8a155689db49b0d589f522cd518db07d3429a",
-   "bytes": 4600,
-   "note": "the launcher the measurements ran with, byte-equal to the first public commit. The source has since gained the load-time allocator setting named in docs/measurements.md, and one per-file rule leaves it out"
+   "source_sha256": "642c98481c20f2f41bb39d11be5d8d3c54af9380db8b1bd291a9a8f4c015b168",
+   "transform": "scrubbed (12 replacements; 4 per-file redaction rules)",
+   "sha256": "28e82805d26a2e26336b06cf21305c26e48a2cee427a67d09e1e7998172b8e3f",
+   "bytes": 5536
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2.yaml",
-   "source_sha256": "1dc792698469f6eced7f24d30cf813530c0e2c9f8165963001c9b4c4d3ccd706",
+   "source_sha256": "09b652000480c3edc90bb2db644318a8cd904c9d6e38765930a10fb5d13a63f0",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "99164c18545f6b1669ee4ef44252afe8521e44d6b5bdcac24ff50c9bc76556c5",
-   "bytes": 4018
+   "sha256": "dcde5466ce3159e88ed144668360b5f8f542f1887acbf9b979491b2912f2a346",
+   "bytes": 4821
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3.yaml",
-   "source_sha256": "ed637d0dead465896c8ed857f832dc4018849a427f35d417e454b5fbfe7eff00",
+   "source_sha256": "f07a4b3f5d730313ed67e9fa36593f0818d922bdc07d8e33bc78db2559989a54",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "a2f533fa7b8a3cc35832a9968fee65d658a61198128a49906681c8eb69f2fa4f",
-   "bytes": 4213
+   "sha256": "f0667ce411261df023a672acdccc5bb6c6e4ead3966d8351f065ccb340376619",
+   "bytes": 5401
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3n.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3n.yaml",
-   "source_sha256": "3e3bbc246cc8cc711d44f1f7c914e8b6da36c886e057ddb2808d55ca18a3b299",
+   "source_sha256": "eabafc8198ef0314e105a1aaaec28a7f43f95d21c6e92f923e1009fed6024f9c",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "fc676e9c773071cb6a51cf41438030b9d1431643ba9a5094b97633c728e1e408",
-   "bytes": 4102
+   "sha256": "345b9518f73bd0eeb041e5e008f8ea206047ba8388f2ecbdcf7f551fc87d5273",
+   "bytes": 5290
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3-a3.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3-a3.yaml",
-   "source_sha256": "cfa2e85246ca7fb9f04682f1b21e09d3a098ec960827684acd9ddab8fe66bf82",
+   "source_sha256": "0b5d6b58c1992e4c3765114966f8de11e6e4ad20e61c87709382466c0789bb82",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "64693aca32ff1f4a9ae40f40a73901fd6c7735b57130e86bea8c772b0fbf7a65",
-   "bytes": 4245
+   "sha256": "c47eb9427c9a31836bb9504703b448d46fbf523bd2fa1b50336e5ba4d6181140",
+   "bytes": 5433
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3-a1r.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3-a1r.yaml",
-   "source_sha256": "a869f1358b7292a48f645a18afa8de0633ccfe7afd3a9e89be160c3476795b90",
+   "source_sha256": "32a596ef9d298b409b37734d4e1e10f6c772d93649eec23f690fadb06f6711e5",
    "transform": "scrubbed (10 replacements; 2 per-file redaction rules)",
-   "sha256": "02f29c1458a98f8aa3be4a1b50bb7faf8e4e9a2e3ed47838c6ffa401c1634b9d",
-   "bytes": 4301
+   "sha256": "4323ee405c84df99e1809a350a9f0def4900e5036dd52059558cfdef726b366b",
+   "bytes": 5489
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2-t3n-a3.yaml",
    "kind": "code",
    "source": "$LANE/run/serve-nvfp4-pp2-t3n-a3.yaml",
-   "source_sha256": "0b950f8e1f1eaca8d39ddc63b168dce9421d17b81d97aaba6ace64043868f53d",
+   "source_sha256": "b05444e53997be9a613bdf35f50396ada77674e2ad66d0e1e1a0f2f6ea3aea35",
    "transform": "scrubbed (11 replacements; 3 per-file redaction rules)",
-   "sha256": "a24c044b41769d6a9a89c7bbe65e78e3522fbbf2b014e4b3f4ee8c5fc3a73b30",
-   "bytes": 4134
+   "sha256": "2243d1bcdf17fd7ec201e3ea47a58e5021c6e71cd3ea8e7336e03e9c5d9e36b2",
+   "bytes": 5322
   },
   {
    "path": "harness/run/arm_measure.sh",
@@ -544,19 +704,19 @@
    "path": "harness/run/memwatch.sh",
    "kind": "code",
    "source": "$LANE/run/memwatch.sh",
-   "source_sha256": "3aad6428c8730161279c11e13e7cce42edf2cf539c6ef27004bbfa0ae5d22592",
+   "source_sha256": "a642798c9ab4dc9a261a5e804f75b2b0af580f4d3576a27b556e84c2cb7616bd",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "3aad6428c8730161279c11e13e7cce42edf2cf539c6ef27004bbfa0ae5d22592",
-   "bytes": 467
+   "sha256": "a642798c9ab4dc9a261a5e804f75b2b0af580f4d3576a27b556e84c2cb7616bd",
+   "bytes": 736
   },
   {
    "path": "harness/run/swap_arm.sh",
    "kind": "code",
    "source": "$LANE/run/swap_arm.sh",
-   "source_sha256": "cff2f3432e17a879e85a61bc61e10ab5e1675d8ff9608e8aa3730c2fd64e2897",
-   "transform": "scrubbed (2 replacements)",
-   "sha256": "c5f7b23fbe55f172495f78c614819e5a1a46fb9be6bfd25716eae2f3dbe05020",
-   "bytes": 2312
+   "source_sha256": "d65fcd7217e37b7dd273c28b8ca223b73026db6af3d4a1412e55045b9c7643c9",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "360c6298a8ac1752835be901423e19221b09ad6d920b60d7c4362173489bdac2",
+   "bytes": 4122
   },
   {
    "path": "harness/run/tput_prompts.py",
@@ -632,6 +792,42 @@
    "bytes": 7071
   },
   {
+   "path": "harness/run/termination_test.py",
+   "kind": "code",
+   "source": "$LANE/run/termination_test.py",
+   "source_sha256": "31c4a19f987ef89973a40af3fe83db72d719ea03c0489014b83dcb95c267e4f5",
+   "transform": "scrubbed (3 replacements)",
+   "sha256": "28d0f0de9d5dd98f67d2a689f817af215fd30ecc8a346b53663a8ec640876d51",
+   "bytes": 33005
+  },
+  {
+   "path": "harness/run/w15_tput.py",
+   "kind": "code",
+   "source": "$LANE/run/w15_tput.py",
+   "source_sha256": "77662b9c3e7ec5b0bfefc19eb283f02fc2bb849973a9855a5e16c07cdd136cd1",
+   "transform": "scrubbed (5 replacements; 2 per-file redaction rules)",
+   "sha256": "a674efc1c54d01bac789871ae2b6dc8ea78e5c137e1172aaf3b7f374fe6b5452",
+   "bytes": 23442
+  },
+  {
+   "path": "harness/run/w15_verdict.py",
+   "kind": "code",
+   "source": "$LANE/run/w15_verdict.py",
+   "source_sha256": "ab764d0d5fe02ca36856c5d32155a9af69bb00101e1c0c64149b689a3fccb887",
+   "transform": "scrubbed (15 replacements; 9 per-file redaction rules)",
+   "sha256": "fb0806706cd9820905d94ac970ca41b30660729d8b91dff9987754e798d43bc4",
+   "bytes": 22067
+  },
+  {
+   "path": "harness/run/w18_tput.py",
+   "kind": "code",
+   "source": "$LANE/run/w18_tput.py",
+   "source_sha256": "29a9b307538d59f7e853874fc2b148f3e2ef579e3375c74823142768731882c4",
+   "transform": "scrubbed (5 replacements; 2 per-file redaction rules)",
+   "sha256": "028453aec76eb20c7de3f83120f94a3f9f433b6da31778254341bf04eac80f0f",
+   "bytes": 23695
+  },
+  {
    "path": "docs/charts/decode-by-length-light.png",
    "kind": "binary",
    "source": "$LANE/stage/hf-pack/promo/out/decode-by-length-light.png",
@@ -648,6 +844,24 @@
    "transform": "copied byte for byte (image)",
    "sha256": "360d18dcfbcd4e683407cf9373ca44ec76f789e4b9803b9fc4eac4066931e88a",
    "bytes": 260076
+  },
+  {
+   "path": "docs/charts/decode-by-length-final-light.png",
+   "kind": "binary",
+   "source": "$LANE/stage/hf-pack/promo/out-w18/decode-by-length-light.png",
+   "source_sha256": "961aa988e09c06adada4b58f1c6156f6eed86411b3666c4e585219b4c6f44e3a",
+   "transform": "copied byte for byte (image)",
+   "sha256": "961aa988e09c06adada4b58f1c6156f6eed86411b3666c4e585219b4c6f44e3a",
+   "bytes": 265508
+  },
+  {
+   "path": "docs/charts/decode-by-length-final-dark.png",
+   "kind": "binary",
+   "source": "$LANE/stage/hf-pack/promo/out-w18/decode-by-length-dark.png",
+   "source_sha256": "209a5b5ece9b095fd2c742d79a434ab11019f970a0e8e849492c6308586c8202",
+   "transform": "copied byte for byte (image)",
+   "sha256": "209a5b5ece9b095fd2c742d79a434ab11019f970a0e8e849492c6308586c8202",
+   "bytes": 262505
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/__init__.py",
@@ -671,19 +885,19 @@
    "path": "harness/benchmarks/nvfp4_8r/accept_p2.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p2.py",
-   "source_sha256": "483c1f763022d2518cad29e342ff90f37019b0c82df011129f3c4d6932d73b86",
+   "source_sha256": "eba11106c877c5f46413d482ecc38127f8979e63b5d7daca8aa88e9ba4b4947d",
    "transform": "scrubbed (7 replacements)",
-   "sha256": "8894a0ce7bdbab5d225637fee62506421ed0ddd36e1e8a288fb414a1ca9d9d5b",
-   "bytes": 8168
+   "sha256": "312a88c487682f075f20925dd49ac5f3d32fb4f9969b5cc3d52854568702dd96",
+   "bytes": 8346
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/accept_p3_layer.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_p3_layer.py",
-   "source_sha256": "90817b223e5eb41a055ec062e16c47e5b5f72300183c5af995e31042e40ad7bd",
+   "source_sha256": "7d1f0f0cd8ca8cd35f7d0e406cf319520c9047e020bc0c0c8f401ae4ab54fd0a",
    "transform": "scrubbed (1 replacements)",
-   "sha256": "eac5cdf283b48ea0fef8d4586cbe9eee338664807db7e3ed36be2edeeb4e779c",
-   "bytes": 10308
+   "sha256": "dfd88ad14ff6b951b53acb1fbe9e36e2c8e58f4045dd92600be2dbd1187e0752",
+   "bytes": 10583
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/accept_p4.py",
@@ -698,28 +912,28 @@
    "path": "harness/benchmarks/nvfp4_8r/accept_t3_layer.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_t3_layer.py",
-   "source_sha256": "0b90043af57495ef7faf5c842828bfa2912f2962feb71730b67887975a7520fc",
+   "source_sha256": "9ca9c28f975a390cb1b08d5624750d24c7590862170bbf736a4b3d620e8c3168",
    "transform": "scrubbed (3 replacements)",
-   "sha256": "d000143b4e859613428f3b890e9ced71ce57772e0dc227d5667d68f945e9e006",
-   "bytes": 12873
+   "sha256": "79c2cc0658b8fae704f9acf8713c80a06e60758a9b0e8933889c108c0e9bf5aa",
+   "bytes": 13204
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/accept_t3_stage.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_t3_stage.py",
-   "source_sha256": "93ebe578b5149cc57eec5a1853fe8faeb6d71ec3c75aac08337a9fe4428af4cc",
+   "source_sha256": "7bbf94cad771656056be7a17f4b101b004d214304401094f8cf5ded0e8f9785b",
    "transform": "scrubbed (3 replacements)",
-   "sha256": "fe7f473d0b9edafe5aad328743041eda4134977aadcb41d0b040f9791594558e",
-   "bytes": 7387
+   "sha256": "dbc2ade115c9208691cd4cac54bcd3d147857b33aca5e24d94b9e5f3cf011b5f",
+   "bytes": 7625
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/bench_p3_miss_paths.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_p3_miss_paths.py",
-   "source_sha256": "c005d55c72c24149ff2b6c6e7159d805f04a2c80e0cf3ecd1f8de653c9f92607",
+   "source_sha256": "cf8e0e8ea0b7dbc91743bafad7c957915c004dd63cc63b28c1270579f3a5c9ce",
    "transform": "scrubbed (2 replacements; 1 per-file redaction rules)",
-   "sha256": "85debbdc315b470fb8248b91fb50b23c29513b9e693f2f61350c45446f93cb99",
-   "bytes": 8448
+   "sha256": "9a154e397f8b27bf01938b6a3fa066fe641467d403c8382d201c973a4b9a8d77",
+   "bytes": 8723
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/build_packs.py",
@@ -1022,19 +1236,19 @@
    "path": "harness/benchmarks/nvfp4_8r/test_p3_loader_wiring.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_p3_loader_wiring.py",
-   "source_sha256": "98598dbeff94ec5222ec8fce1319b16071e316bd7fb045b0b1d2d7718a8be298",
+   "source_sha256": "26f88ea236f4b7b2defc79e0f454cc4e0a94bfef7a45c44f29752cd398a0b68e",
    "transform": "scrubbed (4 replacements; 1 per-file redaction rules)",
-   "sha256": "2c88854f91b43d874962b61c98abe2dd0c4afddf579572973bf52d40b4cff007",
-   "bytes": 6181
+   "sha256": "f62a0018879871fd41062b2a92fa1170a3ea3de86bc92f33b5bd03977b23b42a",
+   "bytes": 7735
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_p3_split_groups.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_p3_split_groups.py",
-   "source_sha256": "b0e4a7c710627c35f2473bfefcc82c3d3e672a23f95a2f92273e473c202cd219",
+   "source_sha256": "0f07a03092c47ca7a33e80c31b151156d5ba00aa171b716c2fb00622e4bf41cb",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "b0e4a7c710627c35f2473bfefcc82c3d3e672a23f95a2f92273e473c202cd219",
-   "bytes": 3568
+   "sha256": "0f07a03092c47ca7a33e80c31b151156d5ba00aa171b716c2fb00622e4bf41cb",
+   "bytes": 3743
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_residency.py",
@@ -1049,10 +1263,10 @@
    "path": "harness/benchmarks/nvfp4_8r/test_t3_dispatch.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_dispatch.py",
-   "source_sha256": "94a5303653d5dbd8ee1f688f57757bcf5a246fdeda76d479968f2c85485b085f",
+   "source_sha256": "a8c79af05745693d7b82a5e7053a0311eb97efd7d7b7c55dd96e58b7b3e491b8",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "94a5303653d5dbd8ee1f688f57757bcf5a246fdeda76d479968f2c85485b085f",
-   "bytes": 8430
+   "sha256": "a8c79af05745693d7b82a5e7053a0311eb97efd7d7b7c55dd96e58b7b3e491b8",
+   "bytes": 8651
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_t3_iq_bank.py",
@@ -1076,10 +1290,10 @@
    "path": "harness/benchmarks/nvfp4_8r/test_t3_stage_plan.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_t3_stage_plan.py",
-   "source_sha256": "23d2e36e630a05ab2cbb4bf6fa6c0f2e421282ea5367d68a27ef6390c0b61c96",
+   "source_sha256": "84ea9b710e08d43497eb52382eb8c9c1d7091b78728e0a83c1a9796599cc113d",
    "transform": "scrubbed (3 replacements)",
-   "sha256": "9d40ef339006f18d9e0e152815675188eb6f39352b27433859c8f7d706a88f73",
-   "bytes": 8980
+   "sha256": "2ec11e0c20c5f0602453097c1f930b2181375142ce7ad56e569323c71f9b9249",
+   "bytes": 9112
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/test_t3_tiers.py",
@@ -1094,37 +1308,253 @@
    "path": "harness/benchmarks/nvfp4_8r/test_group_plan.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_group_plan.py",
-   "source_sha256": "09921585e1933f641ed47a0cb3f7579df9100d8b24000169bb455e19427b521b",
+   "source_sha256": "5dd8993de8cc9bb0cfef1f2a57b344afe3cd3e2c0d770c29dc5739425542b83e",
    "transform": "scrubbed (2 replacements)",
-   "sha256": "4a399c35832fcef40e14c5aca93bc376501fdff14e8a5cfb2454aacdfb04501b",
-   "bytes": 19770
+   "sha256": "9594fa20c3048e01c499b7f0cac0f4ff0105b94a49237eb0ca20f790352aa729",
+   "bytes": 20390
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/check_layers_mt6.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/check_layers_mt6.py",
-   "source_sha256": "da87d04dce0dd34b8bff800e88f713be6ed96d7e090fd6397f6492814f5974d8",
+   "source_sha256": "1bbc6c606d51bdaaa2383d8079af051ecfd172792c451b15df5ef08eb6082f06",
    "transform": "scrubbed (0 replacements)",
-   "sha256": "da87d04dce0dd34b8bff800e88f713be6ed96d7e090fd6397f6492814f5974d8",
-   "bytes": 4508
+   "sha256": "1bbc6c606d51bdaaa2383d8079af051ecfd172792c451b15df5ef08eb6082f06",
+   "bytes": 4777
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/bench_dispatch_parts.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_dispatch_parts.py",
-   "source_sha256": "bd313a8e9778a89a16217654f48da891c94e3feea8d9175fb24f527da435def1",
+   "source_sha256": "9a92b683e32a174009da69e16909923b172c423f073d768567e7e7965ed1a55d",
    "transform": "scrubbed (2 replacements)",
-   "sha256": "a523a2018bd60a0e656b5f7ecf3db30a02e8983a5a6aac3a00196807a0f48dac",
-   "bytes": 10512
+   "sha256": "d4bbc60fdceba502e377001c6faf1ccd8b8ba8945055a919d5ecec05835c7c81",
+   "bytes": 10787
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/bench_tier_plan.py",
    "kind": "code",
    "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_tier_plan.py",
-   "source_sha256": "a57d0933ef56ab3ad2cab094a71cecd8e04aff91a3c9fb45fa7742f5282032c7",
+   "source_sha256": "a65cb35d14de983880476147e982a29c80b47729396cf2d783261e946805ccf0",
    "transform": "scrubbed (1 replacements; 1 per-file redaction rules)",
-   "sha256": "92dcd2b19209cbfe01749dd1278ac7f65842b9b5632e1c2437c96b04c99be9de",
-   "bytes": 4608
+   "sha256": "114855d022efd6c17d851af3b1ee3d3fb1234ac9441b5e676ac8664962ac040e",
+   "bytes": 4821
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/accept_host_routes.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/accept_host_routes.py",
+   "source_sha256": "4c7f0aecf8cf8f4cc6133c47ef7e2003f24d699d060d46aac2e600d94fe44f4e",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "4c7f0aecf8cf8f4cc6133c47ef7e2003f24d699d060d46aac2e600d94fe44f4e",
+   "bytes": 7718
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/bench_iq_live_routes.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_iq_live_routes.py",
+   "source_sha256": "0648f29f205391d5d6806e4f05e2c7139eaa6d6c2598deda09d94000a7e8ebce",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "0648f29f205391d5d6806e4f05e2c7139eaa6d6c2598deda09d94000a7e8ebce",
+   "bytes": 16423
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/bench_iq_tail.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_iq_tail.py",
+   "source_sha256": "df8430743c6870a4c8b22fb3133a600e825ab5da1170fb4aa52251c62a387062",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "df8430743c6870a4c8b22fb3133a600e825ab5da1170fb4aa52251c62a387062",
+   "bytes": 9512
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/bench_swiglu.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/bench_swiglu.py",
+   "source_sha256": "fe9aea02f253a39f1a8c737802db96787f6fb7e93bfd5f194292507c6c439020",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "4906ad3e0be4c6e80ed94a2db41ff408888c346a63535179b3f78ba619a2fb2f",
+   "bytes": 7955
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/decide_iq_live_routes.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/decide_iq_live_routes.py",
+   "source_sha256": "e252638d29aea03a3fcf14b3af5fb85b278ed8199895c983857fcf89fd2ee99d",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "e252638d29aea03a3fcf14b3af5fb85b278ed8199895c983857fcf89fd2ee99d",
+   "bytes": 1695
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/decide_iq_tail.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/decide_iq_tail.py",
+   "source_sha256": "63cf97474e4a81be98a54ef48bbe88633153b2bcc12c08b932436387b5e5b20f",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "63cf97474e4a81be98a54ef48bbe88633153b2bcc12c08b932436387b5e5b20f",
+   "bytes": 2118
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/iq_live_core.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/iq_live_core.py",
+   "source_sha256": "b936b7933c589415bbd4bf176bb67093aab075290f07fa789778ab5c57b5ed12",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "b936b7933c589415bbd4bf176bb67093aab075290f07fa789778ab5c57b5ed12",
+   "bytes": 5899
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/iq_tail_core.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/iq_tail_core.py",
+   "source_sha256": "09570d03fddcad9f9e33d2b92cb08083c054cfd4faeb03ab4b55e62200aaf10d",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "09570d03fddcad9f9e33d2b92cb08083c054cfd4faeb03ab4b55e62200aaf10d",
+   "bytes": 4259
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/mix_tally.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/mix_tally.py",
+   "source_sha256": "8611d314cf6648a40fa339a9bd85a04665834e34511b70e37565f6d1e69cd3f5",
+   "transform": "scrubbed (1 replacements)",
+   "sha256": "1556784a466da912fee65c99694bee3a4df1b2e9f8d5646a7c577dfb58e32153",
+   "bytes": 12494
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/run_dispatch_testhost.sh",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/run_dispatch_testhost.sh",
+   "source_sha256": "4a4ff8cb51d4ff26804ecc3031086c6f05bc6b75fc22a6d4852f3b33c7dd0a7a",
+   "transform": "scrubbed (9 replacements; 3 per-file redaction rules)",
+   "sha256": "e441b2e743330f44882c3f58121d8d86e649fbc0dbcc706a8d31dfa5a46a2f78",
+   "bytes": 3379
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_iq_live_core.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_iq_live_core.py",
+   "source_sha256": "a284db82ae7696dd81e36d4c5b8d4dc7c2b6e742a522c48debe7cba4c5fbf4ee",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "a284db82ae7696dd81e36d4c5b8d4dc7c2b6e742a522c48debe7cba4c5fbf4ee",
+   "bytes": 7140
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_iq_live_tiers.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_iq_live_tiers.py",
+   "source_sha256": "7f07a9e3ad01846f3cd42d7cc7df7954b237bf22e97c973a30225cc225cb4d74",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "7f07a9e3ad01846f3cd42d7cc7df7954b237bf22e97c973a30225cc225cb4d74",
+   "bytes": 2250
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_iq_tail.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_iq_tail.py",
+   "source_sha256": "6621d73084d1ca620d4659ce26ba5d62e11691f83e3cc12c77476ab58c7bd9ce",
+   "transform": "scrubbed (2 replacements)",
+   "sha256": "c14724a6d2cf2ff945996068285fc7dac6d7fa8fcb6dca8e17334dfdd952c4a0",
+   "bytes": 18266
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_iq_tail_config.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_iq_tail_config.py",
+   "source_sha256": "64fef145262ae95639750ccd9c8f3eb3fc834cbdecc3950dd9bdf087723c66fc",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "64fef145262ae95639750ccd9c8f3eb3fc834cbdecc3950dd9bdf087723c66fc",
+   "bytes": 17792
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_iq_tail_core.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_iq_tail_core.py",
+   "source_sha256": "f6a00b5edbc95f56aae3fb68a9728cd0b333d2f7a4703a280de48d6cad94adfd",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "f6a00b5edbc95f56aae3fb68a9728cd0b333d2f7a4703a280de48d6cad94adfd",
+   "bytes": 4140
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_route_stats.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_route_stats.py",
+   "source_sha256": "02e4732c58eb10ce05d038d55b93763edda660de03691ae81aa91feb65b81175",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "02e4732c58eb10ce05d038d55b93763edda660de03691ae81aa91feb65b81175",
+   "bytes": 21214
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_swiglu.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_swiglu.py",
+   "source_sha256": "4852776fa6db68cac9ac507184afd695f8b938ae32a712124d4ae99aaa6fa725",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "4852776fa6db68cac9ac507184afd695f8b938ae32a712124d4ae99aaa6fa725",
+   "bytes": 12451
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_swiglu_config.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_swiglu_config.py",
+   "source_sha256": "104c2d85d326736774e2770b544342fa7ab1c389cac582450d7610b103f7c52c",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "104c2d85d326736774e2770b544342fa7ab1c389cac582450d7610b103f7c52c",
+   "bytes": 9239
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_tally_mix.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_tally_mix.py",
+   "source_sha256": "8dc455788e02637e6254ee0f36803e299d373370bf992d12305a6f053fa03a49",
+   "transform": "scrubbed (0 replacements)",
+   "sha256": "8dc455788e02637e6254ee0f36803e299d373370bf992d12305a6f053fa03a49",
+   "bytes": 6402
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/tiny_swiglu.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/tiny_swiglu.py",
+   "source_sha256": "61dd9250f963aa000fd71ee2607d54ad38e77a6c89b1d8dce67b0bd1ed07cc89",
+   "transform": "scrubbed (1 replacements; 1 per-file redaction rules)",
+   "sha256": "d8a660bb15110e9ad4680a7fe22180605f70916a9fa190c94bf8bb8e1e5f47e2",
+   "bytes": 3935
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_prefill_swiglu.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_prefill_swiglu.py",
+   "source_sha256": "5906e5034163fcff2a0ac14641042803d8d0d6da05b23869a6e92d4269ba523a",
+   "transform": "scrubbed (1 replacements; 1 per-file redaction rules)",
+   "sha256": "77dd1719a02dfa90a454ac0e1d416d815e4580d5799df73d01fb9820d069c9f1",
+   "bytes": 12163
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_prefill_swiglu_config.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_prefill_swiglu_config.py",
+   "source_sha256": "1e0aa6abd7376b668fab80bd4065ede9e516307086f6d619e982916fee71b333",
+   "transform": "scrubbed (2 replacements; 1 per-file redaction rules)",
+   "sha256": "c2f1b60aa6739c68d552379aae7edbf0ef11d63ac008a3ee344d053e155e4b20",
+   "bytes": 16010
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_prefill_rb.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_prefill_rb.py",
+   "source_sha256": "8a68ba62b36ad0d3c4c706ee9f12bc0c7f6bffdb656db1420318c727c0acb506",
+   "transform": "scrubbed (1 replacements; 1 per-file redaction rules)",
+   "sha256": "76ffed74d62a427c8a1586cb6fe51d6458c7b7372f5d7b4e499721829b70c43c",
+   "bytes": 13378
+  },
+  {
+   "path": "harness/benchmarks/nvfp4_8r/test_prefill_rb_config.py",
+   "kind": "code",
+   "source": "$LANE/engine/src/benchmarks/nvfp4_8r/test_prefill_rb_config.py",
+   "source_sha256": "172e267d525337993f39dd0f406781d84afd2a9c920af9fd69134c836894c872",
+   "transform": "scrubbed (6 replacements; 3 per-file redaction rules)",
+   "sha256": "2fb73de9b1849aee643ca40f3977917e6cf1fd9a325d122b91f9e1f128ba2684",
+   "bytes": 17260
   },
   {
    "path": "tools/check_data_boundary.sh",
@@ -1214,6 +1644,10 @@
    "why": "never distributed; download from the upstream links in README.md"
   },
   {
+   "what": "the RB 4 prompt-reading library v41qpnrb4.so (the engine key nvfp4_8r_prefill_rb: rb4 loads it)",
+   "why": "a compiled library holds the build machine's paths; engine/kernels/prefill-rb4/ has its source and build script"
+  },
+  {
    "what": "engine/private/ (the decode routing tally) and anything derived per expert from it (route id lists, references, hot lists)",
    "why": "derived from private use; only aggregate tier counts and route shares are published"
   },
@@ -1259,9 +1693,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 126,
-  "upstream_engine_files": 31,
-  "this_build_work_in_progress": 95,
+  "count": 179,
+  "upstream_engine_files": 32,
+  "this_build_work_in_progress": 147,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }
