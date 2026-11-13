@@ -1,0 +1,1042 @@
+NVFP4-8R change: the snapshot hit, a follow-up whose previous reply came back changed resumes at the end of the previous prompt (VLLM_V41_SNAPSHOT_HIT, window rh).
+Base: kv_cache_manager.py and v41_multi_seq.py as v41_prefix_log.patch leaves them, slots.py and model_states/deepseek_v41.py as the Volta sPLIt engine deployed them on 2026-11-09. Per file, base and result sha256:
+  vllm/v1/core/kv_cache_manager.py ad5e08f62ebc06a6e1ba438716a940d33b7978ff2cbb9b92c71c6612605b6c8f -> 3ad886b4829c74baadc3bdbbc0d7e293fcfed0ffc89d9d4b4cf44d1e47408252
+  vllm/v1/core/sched/v41_multi_seq.py 5dff599726dac0c0ec333e86cd47d174af267a40c10cc811d800c35d84d4f1e1 -> 7e336cf5a454710547f1ef69de21e13da3c9a848dc3b65b4900000459c4f55c2
+  vllm/models/deepseek_v41/slots.py 0a8f188fe96b6ca1c7891c14e31543fba3184f30a014a5825510eb89aba8ba1e -> 805c5dfc205c75a7e9f3588ce21dd59fc6e5ec485da723d5de51fb9f59da26a3
+  vllm/v1/worker/gpu/model_states/deepseek_v41.py 3ea7f4bf38f1aecf689acfdc5da3c3709c0601f8d4ef269e0da8da693a28f2e7 -> 9c886a6d2fdf06a97f8bb7be84b40b46d37b94792101cbb1652c5d6798f94cd8
+Apply in the engine source root after v41_prefix_log.patch with: patch -p1 < this-file
+
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -248,6 +248,39 @@
+             return False
+         return list(request.all_token_ids)[:hit] == tokens[:hit]
+ 
++    def _v41_grain(self) -> int:
++        """Hit granularity: the lcm of the KV cache groups' block sizes."""
++        return math.lcm(
++            *(group.kv_cache_spec.block_size for group in self.kv_cache_config.kv_cache_groups)
++        )
++
++    def _v41_snapshot_hit(
++        self, request: Request, pool_hit: int
++    ) -> tuple[tuple[list[KVCacheBlock], ...] | None, int, int]:
++        """VLLM_V41_SNAPSHOT_HIT, after the session guard refused the pool hit:
++        (blocks, hit, slot) of the hit at the end of a free slot's snapshot
++        prompt (V41SlotTable.snapshot_hit). No hit: blocks None and hit 0,
++        with slot -1 (no snapshot gives one; always so with the switch off)
++        or the slot whose snapshot hit the pool did not serve."""
++        slots = self.v41_multi_seq_slots
++        if slots is None or not slots.snapshot_hits:
++            return None, 0, -1
++        grain = self._v41_grain()
++        hit = slots.snapshot_hit(request, pool_hit, grain)
++        if not hit:
++            return None, 0, -1
++        # The blocks of the pool hit are not the blocks of a shorter hit (a
++        # sliding-window group returns only the blocks of its last window), so
++        # look the shorter hit up. One more grain, because an EAGLE group
++        # matches one block past the hit and drops it.
++        blocks, served = self.coordinator.find_longest_cache_hit(
++            request.block_hashes, hit + grain
++        )
++        if served != hit:
++            return None, 0, slots.snapshot_unserved(request)
++        request.shared_prefix_boundary = self.coordinator.shared_prefix_boundary
++        return blocks, hit, slots.matched[request.request_id]
++
+     def _init_partial_prefix_cache(self, hash_block_size: int) -> None:
+         managers = self.coordinator.single_type_managers
+         supported = any(isinstance(m, MambaManager) for m in managers) and all(
+@@ -522,15 +555,23 @@
+         # Keep the existing two-value lookup API used by 1Cat connectors. The
+         # synchronous coordinator exposes the junction from this lookup only.
+         request.shared_prefix_boundary = self.coordinator.shared_prefix_boundary
++        pool_hit = num_new_computed_tokens
++        snapshot_slot = -1
+         if (
+             _V41_SESSION_PREFIX
+             and num_new_computed_tokens
+             and not self._v41_session_hit(request, num_new_computed_tokens)
+         ):
+-            request.shared_prefix_boundary = 0
+-            self._v41_note_prefix(request, num_new_computed_tokens, 0)
+-            return self.empty_kv_cache_blocks, 0
+-        pool_hit = num_new_computed_tokens
++            blocks, num_new_computed_tokens, snapshot_slot = self._v41_snapshot_hit(
++                request, pool_hit
++            )
++            if blocks is None:
++                request.shared_prefix_boundary = 0
++                self._v41_note_prefix(
++                    request, pool_hit, 0, snapshot_slot, unserved=snapshot_slot >= 0
++                )
++                return self.empty_kv_cache_blocks, 0
++            computed_blocks = blocks
+ 
+         partial = self._partial_prefix_hit(
+             request, num_new_computed_tokens, max_cache_hit_length
+@@ -546,18 +587,31 @@
+                 preempted=request.num_preemptions > 0,
+             )
+ 
+-        self._v41_note_prefix(request, pool_hit, num_new_computed_tokens)
++        self._v41_note_prefix(request, pool_hit, num_new_computed_tokens, snapshot_slot)
+         return self.create_kv_cache_blocks(computed_blocks), num_new_computed_tokens
+ 
+-    def _v41_note_prefix(self, request: Request, pool_hit: int | None, hit: int) -> None:
+-        """VLLM_V41_PREFIX_LOG: hand the lookup to the slot table (no effect on it)."""
++    def _v41_note_prefix(
++        self,
++        request: Request,
++        pool_hit: int | None,
++        hit: int,
++        snapshot_slot: int = -1,
++        unserved: bool = False,
++    ) -> None:
++        """VLLM_V41_PREFIX_LOG: hand the lookup to the slot table (no effect on it).
++        snapshot_slot: the slot whose snapshot the lookup took (-1: none);
++        unserved: the pool did not serve that hit."""
+         slots = self.v41_multi_seq_slots
+         if slots is None or not slots.log_prefix:
+             return
+-        grain = math.lcm(
+-            *(group.kv_cache_spec.block_size for group in self.kv_cache_config.kv_cache_groups)
++        slots.note(
++            request,
++            pool_hit,
++            hit,
++            self._v41_grain(),
++            snapshot_slot,
++            unserved,
+         )
+-        slots.note(request, pool_hit, hit, grain)
+ 
+     def allocate_slots(
+         self,
+--- a/vllm/v1/core/sched/v41_multi_seq.py
++++ b/vllm/v1/core/sched/v41_multi_seq.py
+@@ -54,6 +54,19 @@
+ with every slot's processed length and the length of its record that matches
+ the prompt (numbers only: no token ids, no text, no hashes). It reads the
+ decision; it changes none (prefix-log package, DESIGN.md).
++
++``VLLM_V41_SNAPSHOT_HIT=1`` (unset or 0: off, today's decisions exactly) adds
++one hit. Today a hit must lie within ``VLLM_V41_RING_REACH`` rows of the
++slot's last processed position, because the 256-row window rings hold only
++the newest rows; a conversation whose last reply does not come back token for
++token is read again from position 0. With the switch on every rank copies its
++slot's rings to host memory right after the forward that ends a request's
++prompt, and a later request that contains that whole prompt may start at the
++prompt's end: the rings are copied back first. ``RingTrack`` holds, per slot,
++the positions whose ring rows are exact (live rings and snapshot); the
++scheduler decides every admission from it and each worker runs the same
++arithmetic on the forwards it executes and raises if the two ever disagree
++(replay-hit package, DESIGN.md).
+ """
+ 
+ from __future__ import annotations
+@@ -99,6 +112,12 @@
+             f"{PREFIX_LOG_KNOB}=1 needs {KNOB}=1 (it reports the per-slot "
+             f"session records); unset it or turn {KNOB} on"
+         )
++    snapshot = snapshot_hit_requested()  # a value other than 0 or 1 raises here
++    if value == "0" and snapshot:
++        raise ValueError(
++            f"{SNAPSHOT_HIT_KNOB}=1 needs {KNOB}=1 (the snapshot belongs to a "
++            f"slot); unset it or turn {KNOB} on"
++        )
+     return value == "1"
+ 
+ 
+@@ -119,6 +138,171 @@
+     return True
+ 
+ 
++# --- VLLM_V41_SNAPSHOT_HIT: a hit at the end of a conversation's last prompt --
++SNAPSHOT_HIT_KNOB = "VLLM_V41_SNAPSHOT_HIT"
++# attention_ops.WINDOW_RING: each ring layer keeps the row of position q in
++# ring row q % 256, so a forward that ends at e leaves the rows of [e - 256, e).
++RING_ROWS = 256
++# attention_ops._attention_addresses: the row at position q attends q - 127 .. q.
++# A forward that starts at s takes the rows of [s - 127, s) from the ring.
++RING_WINDOW = 127
++# prefill_skip.py (the cone): a prefill forward that ends at least
++# VLLM_V41_PREFILL_SKIP_ROWS rows before the prompt's end may skip layers 21-39
++# and zero their rings; the ring of layer L then holds exact rows again from
++# 127 * (L - 21) rows after the skipped forward's end: 2286 for layer 39.
++SKIP_CONE = RING_WINDOW * 18
++
++
++def snapshot_hit_requested() -> bool:
++    """Unset or 0: off; 1: on; anything else is an error."""
++    value = os.environ.get(SNAPSHOT_HIT_KNOB, "").strip()
++    if value in ("", "0"):
++        return False
++    if value != "1":
++        raise ValueError(f"{SNAPSHOT_HIT_KNOB} must be 0 (off) or 1, got {value!r}")
++    return True
++
++
++class RingPath(enum.Enum):
++    """How a request that starts at a position finds its window rows."""
++
++    FRESH = "fresh"  # position 0: no row before it
++    LIVE = "live"  # the slot's rings still hold the 127 rows before it
++    RESTORE = "restore"  # the slot's host snapshot holds them: copy it back
++    STALE = "stale"  # neither does: the request may not start there
++
++
++class RingTrack:
++    """One slot's window rings as positions: which rows are exact.
++
++    ``[lo, end)``: the positions whose rows the live rings hold, written at
++    that position by the slot's current sequence (rows at or past a request's
++    accepted length are rejected drafts; the token comparison of the session
++    record excludes them). ``[snap_lo, snap_end)``: the same for the host
++    snapshot, taken right after the forward that ended at ``snap_end``, a
++    request's prompt length; ``snap_end`` -1: none.
++
++    The scheduler keeps one per slot and feeds it every admission and every
++    scheduled forward; each worker keeps its own and feeds it the forwards it
++    executes. Pure integers: no tokens, no tensors.
++
++    ``skip_rows``: VLLM_V41_PREFILL_SKIP_ROWS. A forward that the skip rule
++    may skip (it ends ``skip_rows`` or more before the prompt's end) leaves no
++    exact row before ``its end + SKIP_CONE``, whether or not a worker skipped.
++    """
++
++    __slots__ = ("skip_rows", "lo", "end", "snap_lo", "snap_end")
++
++    def __init__(self, skip_rows: int = 0) -> None:
++        if skip_rows < 0 or 0 < skip_rows < SKIP_CONE + RING_ROWS:
++            # the rows at a prompt's end must be exact again
++            raise ValueError(
++                f"{SNAPSHOT_HIT_KNOB}: skip rows {skip_rows} (0 or at least "
++                f"{SKIP_CONE + RING_ROWS})"
++            )
++        self.skip_rows = skip_rows
++        self.lo = 0
++        self.end = 0
++        self.snap_lo = 0
++        self.snap_end = -1
++
++    @staticmethod
++    def _holds(lo: int, end: int, at: int) -> bool:
++        # the rows of [at - 127, at) (from 0) are all in [lo, end)
++        return 0 < at <= end and lo <= max(0, at - RING_WINDOW)
++
++    def live_clean(self, at: int) -> bool:
++        return self._holds(self.lo, self.end, at)
++
++    def snap_clean(self, at: int) -> bool:
++        return self.snap_end >= 0 and self._holds(self.snap_lo, self.snap_end, at)
++
++    def path(self, at: int) -> RingPath:
++        """The live rings first, then the snapshot: the same order everywhere."""
++        if at == 0:
++            return RingPath.FRESH
++        if self.live_clean(at):
++            return RingPath.LIVE
++        if self.snap_clean(at):
++            return RingPath.RESTORE
++        return RingPath.STALE
++
++    def start(self, at: int) -> RingPath:
++        """A request starts in the slot at ``at`` (0: a new sequence)."""
++        path = self.path(at)
++        if path is RingPath.STALE:
++            raise RuntimeError(
++                f"{SNAPSHOT_HIT_KNOB}: a request starts at {at}, but the slot's "
++                f"rings hold [{self.lo}, {self.end}) and its snapshot "
++                f"[{self.snap_lo}, {self.snap_end})"
++            )
++        if path is RingPath.FRESH:
++            self.lo = 0
++            self.snap_end = -1
++        elif path is RingPath.LIVE:
++            # The request may leave the snapshot's prompt from ``at`` on, and
++            # would then rewrite packed rows the snapshot's prompt owns.
++            if at < self.snap_end:
++                self.snap_end = -1
++        else:
++            self.lo = self.snap_lo
++        self.end = at
++        return path
++
++    def forward(self, start: int, rows: int, prompt_len: int) -> bool:
++        """A forward of ``rows`` rows from ``start``; True: it ended the
++        request's prompt, and the rings as they now stand are the snapshot."""
++        if rows <= 0 or not 0 <= start <= self.end:
++            raise RuntimeError(
++                f"{SNAPSHOT_HIT_KNOB}: a forward of {rows} rows from {start}, but "
++                f"the slot's rings end at {self.end}"
++            )
++        self.end = start + rows
++        self.lo = max(self.lo, self.end - RING_ROWS)
++        if self.skip_rows > 0 and self.end <= prompt_len - self.skip_rows:
++            self.lo = max(self.lo, self.end + SKIP_CONE)
++        if self.end != prompt_len:
++            return False
++        self.snap_lo, self.snap_end = self.lo, self.end
++        return True
++
++
++class SnapshotVerdict(enum.Enum):
++    """What one free slot's snapshot gives a request (snapshot_verdict)."""
++
++    HIT = "hit"
++    NONE = "none"  # no snapshot, or the pool hit leaves this conversation first
++    PARTIAL_PROMPT = "partial_prompt"  # the request does not contain the snapshot's whole prompt
++    POOL_SHORT = "pool_short"  # the pool's hit ends more than ring_reach before the prompt's end
++    RING_STALE = "ring_stale"  # the snapshot does not hold the 127 rows before the hit
++
++
++def snapshot_verdict(
++    common: int,
++    pool_hit: int,
++    grain: int,
++    ring_reach: int,
++    snap_lo: int,
++    snap_end: int,
++) -> tuple[SnapshotVerdict, int]:
++    """The snapshot hit of one slot (pure). ``common``: how many of the
++    request's first tokens equal the snapshot's prompt; ``snap_end``: that
++    prompt's length (-1: no snapshot). The hit is the pool hit cut to the
++    prompt's end and floored to the grain; 0 unless the verdict is HIT."""
++    if snap_end < 0:
++        return SnapshotVerdict.NONE, 0
++    if common < snap_end:
++        if common >= max(pool_hit, grain):
++            return SnapshotVerdict.PARTIAL_PROMPT, 0
++        return SnapshotVerdict.NONE, 0
++    hit = min(pool_hit, snap_end) // grain * grain
++    if hit <= 0 or hit < snap_end - ring_reach:
++        return SnapshotVerdict.POOL_SHORT, 0
++    if not RingTrack._holds(snap_lo, snap_end, hit):
++        return SnapshotVerdict.RING_STALE, 0
++    return SnapshotVerdict.HIT, hit
++
++
+ class PrefixReason(enum.Enum):
+     """Why an admitted request starts where it does. Each value names the
+     predicate of KVCacheManager.get_computed_blocks or V41SlotTable.session_hit
+@@ -137,6 +321,11 @@
+     RECORD_DROPPED = "record_dropped"  # the continuing record was dropped on release (session_record_ok)
+     NO_RECORD = "no_record"  # no slot holds a record and none was overwritten or dropped
+     NO_SESSION = "no_session"  # no record, current or recent, continues this prompt
++    # VLLM_V41_SNAPSHOT_HIT=1 only (never produced with the switch off):
++    SNAPSHOT = "snapshot"  # a hit was taken at the end of a free slot's snapshot prompt (snapshot_verdict HIT)
++    PARTIAL_PROMPT = "partial_prompt"  # a free slot holds this conversation's last prompt, the request only a leading part of it
++    RING_STALE = "ring_stale"  # the record or snapshot continues the prompt, its rings no longer hold the rows before the hit
++    SNAPSHOT_POOL_SHORT = "snapshot_pool_short"  # the request contains a free slot's snapshot prompt, the pool cannot serve the hit at its end
+ 
+ 
+ class PrefixNote(NamedTuple):
+@@ -148,6 +337,29 @@
+     grain: int  # hit granularity (lcm of the KV cache groups' block sizes)
+     slots: tuple[tuple[bool, tuple[list[int], int] | None], ...]
+     history: tuple[tuple[str, tuple[list[int], int]], ...]
++    # VLLM_V41_SNAPSHOT_HIT=1 only: every slot's ring state, the slot whose
++    # snapshot the lookup took (-1: none) and whether the pool then served it.
++    rings: tuple[RingNote, ...] = ()
++    snapshot_slot: int = -1
++    unserved: bool = False
++
++
++class RingNote(NamedTuple):
++    """One slot's RingTrack and prompts as the session guard saw them."""
++
++    live_lo: int
++    live_end: int
++    snap_lo: int
++    snap_end: int
++    snap_tokens: list[int] | None  # the snapshot's prompt
++    record_prompt: int | None  # prompt length of the slot's record
++
++
++class SnapView(NamedTuple):
++    ring_lo: int  # the live rings hold rows from here
++    snap_prompt: int | None  # the snapshot's prompt length
++    snap_lo: int | None  # the snapshot holds rows from here
++    snap_matched: int | None  # tokens of the snapshot's prompt equal to the request's first tokens
+ 
+ 
+ class SlotView(NamedTuple):
+@@ -168,6 +380,7 @@
+     matched: int | None
+     rewind: int | None  # processed - hit (taken) or processed - pool hit (cold)
+     slots: tuple[SlotView, ...]
++    snaps: tuple[SnapView, ...] = ()  # VLLM_V41_SNAPSHOT_HIT=1 only
+ 
+ 
+ def common_prefix(a: Sequence[int], b: Sequence[int]) -> int:
+@@ -210,19 +423,35 @@
+         views.append(SlotView(free, record[1], c))
+         matched.append(c)
+     views_t = tuple(views)
++    # VLLM_V41_SNAPSHOT_HIT=1: each slot's snapshot against this prompt.
++    rings = note.rings
++    snap_common: list[int | None] = [
++        None if ring.snap_tokens is None else common_prefix(tokens, ring.snap_tokens)
++        for ring in rings
++    ]
++    snaps_t = tuple(
++        SnapView(
++            ring.live_lo,
++            ring.snap_end if ring.snap_end >= 0 else None,
++            ring.snap_lo if ring.snap_end >= 0 else None,
++            snap_common[k],
++        )
++        for k, ring in enumerate(rings)
++    )
+ 
+     def done(reason, ref=None, processed=None, c=None, rewind=None):
+         return PrefixDecision(
+             slot, n, resumed, note.pool_hit, note.hit, reason, ref, processed, c,
+-            rewind, views_t,
++            rewind, views_t, snaps_t,
+         )
+ 
+     raw = note.pool_hit
+     if note.hit > 0:
++        reason = PrefixReason.SNAPSHOT if note.snapshot_slot >= 0 else PrefixReason.HIT
+         record = note.slots[slot][1]
+         if record is None:
+-            return done(PrefixReason.HIT)
+-        return done(PrefixReason.HIT, f"s{slot}", record[1], matched[slot],
++            return done(reason, f"s{slot}" if note.snapshot_slot >= 0 else None)
++        return done(reason, f"s{slot}", record[1], matched[slot],
+                     record[1] - note.hit)
+     if raw is None:
+         return done(PrefixReason.CACHE_READ_OFF)
+@@ -243,11 +472,36 @@
+         for k, (free, record) in enumerate(note.slots)
+         if record is not None
+     ]
++    by_slot = {k: (p, c) for k, _, p, c in found}
++
++    def snap_done(reason, k):
++        p, c = by_slot.get(k, (None, None))
++        return done(reason, f"s{k}", p, c, None if p is None else p - raw)
++
++    if rings and note.unserved:
++        # the lookup took a snapshot hit and the pool then did not serve it
++        return snap_done(PrefixReason.SNAPSHOT_POOL_SHORT, note.snapshot_slot)
++
++    def busy_snapshot(k: int, c: int, p: int) -> bool:
++        # the busy slot's record finished its prompt, the request contains that
++        # prompt and the pool hit reaches its end: a snapshot hit, were it free
++        prompt = rings[k].record_prompt if rings else None
++        return (
++            prompt is not None
++            and p >= prompt
++            and snapshot_verdict(min(c, prompt), raw, grain, ring_reach, 0, prompt)[0]
++            is SnapshotVerdict.HIT
++        )
++
+     for k, free, p, c in found:
+-        if not free and ((raw > 0 and would_hit(c, p)) or reach(c, p)):
++        if not free and (
++            (raw > 0 and would_hit(c, p)) or reach(c, p) or busy_snapshot(k, c, p)
++        ):
+             return done(PrefixReason.SLOT_BUSY, f"s{k}", p, c, p - raw)
+     for k, free, p, c in found:
+         if free and raw > 0 and would_hit(c, p):
++            if rings and not RingTrack._holds(rings[k].live_lo, rings[k].live_end, raw):
++                return done(PrefixReason.RING_STALE, f"s{k}", p, c, p - raw)
+             return done(PrefixReason.UNEXPLAINED, f"s{k}", p, c, p - raw)
+     for k, free, p, c in found:
+         if free and reach(c, p) and raw > p:
+@@ -255,6 +509,32 @@
+     for k, free, p, c in found:
+         if free and reach(c, p) and raw < p - ring_reach:
+             return done(PrefixReason.EVICTED, f"s{k}", p, c, p - raw)
++    if rings:
++        for k, ring in enumerate(rings):
++            if not note.slots[k][0] or snap_common[k] is None:
++                continue
++            verdict, _ = snapshot_verdict(
++                snap_common[k], raw, grain, ring_reach, ring.snap_lo, ring.snap_end
++            )
++            if verdict is SnapshotVerdict.HIT:
++                return snap_done(PrefixReason.UNEXPLAINED, k)
++            if verdict is SnapshotVerdict.PARTIAL_PROMPT:
++                return snap_done(PrefixReason.PARTIAL_PROMPT, k)
++            if verdict is SnapshotVerdict.POOL_SHORT:
++                return snap_done(PrefixReason.SNAPSHOT_POOL_SHORT, k)
++            if verdict is SnapshotVerdict.RING_STALE:
++                return snap_done(PrefixReason.RING_STALE, k)
++        for k, free, p, c in found:
++            # a record that remembers its prompt, without a snapshot
++            prompt = rings[k].record_prompt
++            if (
++                free
++                and prompt is not None
++                and c < prompt
++                and c >= max(raw, grain)
++                and not reach(c, p)
++            ):
++                return done(PrefixReason.PARTIAL_PROMPT, f"s{k}", p, c, p - raw)
+     for k, free, p, c in found:
+         if free and c >= max(raw, grain) and not reach(c, p):
+             return done(PrefixReason.MISMATCH_BEYOND_REWIND, f"s{k}", p, c, p - raw)
+@@ -284,12 +564,18 @@
+         f" slot_{'abcd'[k]}_matched {num(v.matched)}"
+         for k, v in enumerate(d.slots)
+     )
++    # VLLM_V41_SNAPSHOT_HIT=1: four more integers per slot, after every older field
++    snaps = "".join(
++        f" slot_{'abcd'[k]}_ring_lo {v.ring_lo} slot_{'abcd'[k]}_snap_prompt {num(v.snap_prompt)}"
++        f" slot_{'abcd'[k]}_snap_lo {num(v.snap_lo)} slot_{'abcd'[k]}_snap_matched {num(v.snap_matched)}"
++        for k, v in enumerate(d.snaps)
++    )
+     return (
+         f"{PREFIX_LOG_KNOB} request {req_id} slot {d.slot} prompt {d.prompt} "
+         f"resumed {int(d.resumed)} pool_hit {num(d.pool_hit)} hit {d.hit} "
+         f"decision {'hit' if d.hit > 0 else 'cold'} reason {d.reason.value} "
+         f"ref_slot {ref_slot} ref_history {ref_history} processed {num(d.processed)} "
+-        f"matched {num(d.matched)} rewind {num(d.rewind)}{slots}"
++        f"matched {num(d.matched)} rewind {num(d.rewind)}{slots}{snaps}"
+     )
+ 
+ 
+@@ -355,6 +641,38 @@
+     return problems
+ 
+ 
++def _snapshot_unsupported(vllm_config: VllmConfig) -> list[str]:
++    """Every configuration VLLM_V41_SNAPSHOT_HIT=1 does not cover, in words."""
++    from vllm.models.deepseek_v41 import multi_rows
++
++    problems = []
++    if envs.VLLM_V41_SESSION_PREFIX != "1":
++        problems.append("VLLM_V41_SESSION_PREFIX off (no session records)")
++    if envs.VLLM_V41_WINDOW_RING != "1":
++        problems.append("VLLM_V41_WINDOW_RING off (no window rings to copy)")
++    if multi_rows.ENABLED:
++        problems.append("VLLM_V41_MULTI_ROWS (several requests in one forward)")
++    if envs.VLLM_V41_PACKED_KV != "1":
++        problems.append("VLLM_V41_PACKED_KV off (compressed rows outside the slot's store)")
++    model_config = vllm_config.model_config
++    hot = int(envs.VLLM_V41_KV_HOT_POSITIONS)
++    if model_config is not None and hot < model_config.max_model_len:
++        problems.append(
++            f"VLLM_V41_KV_HOT_POSITIONS={hot} below max_model_len="
++            f"{model_config.max_model_len} (the hot ring wraps: rows past a far "
++            "rewind would sit in slots the readers treat as current)"
++        )
++    if vllm_config.cache_config.partial_prefix_cache:
++        problems.append("the partial prefix cache (hits off the block grain)")
++    drafter = getattr(vllm_config, "v41_drafter", None)
++    if drafter is not None and type(drafter).__name__ not in ("NotApplicable", "Local"):
++        problems.append(
++            f"the remote drafter backend {type(drafter).__name__} (it keeps "
++            "256 context rows per slot and no snapshot of them)"
++        )
++    return problems
++
++
+ def multi_seq_decision(vllm_config: VllmConfig) -> tuple[bool, str]:
+     """Return ``(enabled, reason)``; the same answer in every process.
+ 
+@@ -374,6 +692,14 @@
+             + "; ".join(problems)
+             + f". Unset {KNOB} or change the configuration."
+         )
++    if snapshot_hit_requested():
++        problems = _snapshot_unsupported(vllm_config)
++        if problems:
++            raise ValueError(
++                f"{SNAPSHOT_HIT_KNOB}=1 does not support: "
++                + "; ".join(problems)
++                + f". Unset {SNAPSHOT_HIT_KNOB} or change the configuration."
++            )
+     pp_size = vllm_config.parallel_config.pipeline_parallel_size
+     max_num_seqs = vllm_config.scheduler_config.max_num_seqs
+     overlap = (
+@@ -521,9 +847,25 @@
+         ring_reach: int,
+         record_sessions: bool,
+         log_prefix: bool = False,
++        snapshot_hits: bool = False,
++        skip_rows: int = 0,
+     ):
+         if not 1 <= num_slots <= MAX_SLOTS:
+             raise ValueError(f"{KNOB}: {num_slots} slots (supported 1..{MAX_SLOTS})")
++        # VLLM_V41_SNAPSHOT_HIT: off, the table decides and records as before.
++        self.snapshot_hits = snapshot_hits
++        # Per slot: the positions its rings and its snapshot hold.
++        self.rings: list[RingTrack] = [RingTrack(skip_rows) for _ in range(num_slots)]
++        # Per slot: the prompt its snapshot ends (None with rings[k].snap_end -1).
++        self.snap_tokens: list[list[int] | None] = [None] * num_slots
++        # Per slot: the prompt length of records[k] (None with it).
++        self.record_prompt: list[int | None] = [None] * num_slots
++        # Running requests by id (their scheduled forwards move the rings).
++        self.requests: dict[str, Request] = {}
++        # Request id -> the free slot whose snapshot its lookup took.
++        self.snap_matched: dict[str, int] = {}
++        # Requests admitted by a snapshot hit, until released.
++        self.snapshot_admitted: set[str] = set()
+         # VLLM_V41_PREFIX_LOG: the lookup notes and the overwritten/dropped
+         # records behind the log line; read by no decision.
+         self.log_prefix = log_prefix
+@@ -556,6 +898,7 @@
+     def session_hit(self, request: Request, hit: int) -> bool:
+         """KVCacheManager._v41_session_hit, per slot. Remembers the slot."""
+         self.matched.pop(request.request_id, None)
++        self.snap_matched.pop(request.request_id, None)
+         if hit % 2:
+             return False
+         for slot in self.free_slots():
+@@ -565,11 +908,59 @@
+             tokens, processed = record
+             if not processed - self.ring_reach <= hit <= processed:
+                 continue
++            if self.snapshot_hits and not self.rings[slot].live_clean(hit):
++                # A request that ended before the previous one's end left rows
++                # of the previous one in the ring rows before this hit.
++                continue
+             if _session_tokens_match(request, tokens, hit):
+                 self.matched[request.request_id] = slot
+                 return True
+         return False
+ 
++    def snapshot_hit(self, request: Request, pool_hit: int, grain: int) -> int:
++        """VLLM_V41_SNAPSHOT_HIT, after session_hit refused the pool hit: the
++        hit at the end of a free slot's snapshot prompt, or 0. Remembers the slot."""
++        if not self.snapshot_hits:
++            return 0
++        tokens = list(request.all_token_ids)
++        for slot in self.free_slots():
++            prompt = self.snap_tokens[slot]
++            if prompt is None:
++                continue
++            ring = self.rings[slot]
++            verdict, hit = snapshot_verdict(
++                common_prefix(tokens, prompt),
++                pool_hit,
++                grain,
++                self.ring_reach,
++                ring.snap_lo,
++                ring.snap_end,
++            )
++            if verdict is SnapshotVerdict.HIT:
++                self.matched[request.request_id] = slot
++                self.snap_matched[request.request_id] = slot
++                return hit
++        return 0
++
++    def snapshot_unserved(self, request: Request) -> int:
++        """The pool did not serve the snapshot hit: the request reads cold.
++        Returns the slot whose snapshot was taken (for the log)."""
++        self.matched.pop(request.request_id, None)
++        return self.snap_matched.pop(request.request_id)
++
++    def forward(self, req_id: str, rows: int) -> None:
++        """VLLM_V41_SNAPSHOT_HIT: a step of ``rows`` rows was scheduled for a
++        running request, from its computed position (end_step runs before the
++        scheduler advances it)."""
++        request = self.requests[req_id]
++        slot = self.by_req[req_id]
++        if self.rings[slot].forward(
++            request.num_computed_tokens, rows, request.num_prompt_tokens
++        ):
++            self.snap_tokens[slot] = list(
++                request.all_token_ids[: request.num_prompt_tokens]
++            )
++
+     def assign(self, request: Request) -> int:
+         """Give an admitted (new or resumed) request its slot."""
+         req_id = request.request_id
+@@ -607,6 +998,13 @@
+             )
+         self.owner[slot] = req_id
+         self.by_req[req_id] = slot
++        if self.snapshot_hits:
++            self.rings[slot].start(request.num_computed_tokens)
++            if self.rings[slot].snap_end < 0:
++                self.snap_tokens[slot] = None
++            self.requests[req_id] = request
++            if self.snap_matched.pop(req_id, None) is not None:
++                self.snapshot_admitted.add(req_id)
+         return slot
+ 
+     def release(self, request: Request, *, record_session: bool = True) -> None:
+@@ -620,6 +1018,18 @@
+         self.owner[slot] = None
+         self.releases += 1
+         self.freed_at[slot] = self.releases
++        if self.snapshot_hits:
++            self.requests.pop(req_id, None)
++            self.snap_matched.pop(req_id, None)
++            if (
++                req_id in self.snapshot_admitted
++                and request.num_computed_tokens < request.num_prompt_tokens
++            ):
++                # Freed while reading the rows after its snapshot hit: no
++                # ordinary hit may continue it (the snapshot itself stands:
++                # the request wrote nothing before its hit).
++                record_session = False
++            self.snapshot_admitted.discard(req_id)
+         if self.log_prefix:
+             self._note_release(slot, request, record_session)
+         if self.record_sessions and record_session:
+@@ -627,8 +1037,12 @@
+                 list(request.all_token_ids),
+                 request.num_computed_tokens,
+             )
++            if self.snapshot_hits:
++                self.record_prompt[slot] = request.num_prompt_tokens
+         else:
+             self.records[slot] = None
++            if self.snapshot_hits:
++                self.record_prompt[slot] = None
+ 
+     # -- VLLM_V41_PREFIX_LOG (reads the table, changes no decision) ----------
+     def _note_release(self, slot: int, request: Request, record_session: bool) -> None:
+@@ -642,7 +1056,15 @@
+         if self.record_sessions and not record_session:
+             self.history.appendleft(("dropped", (tokens, request.num_computed_tokens)))
+ 
+-    def note(self, request: Request, pool_hit: int | None, hit: int, grain: int) -> None:
++    def note(
++        self,
++        request: Request,
++        pool_hit: int | None,
++        hit: int,
++        grain: int,
++        snapshot_slot: int = -1,
++        unserved: bool = False,
++    ) -> None:
+         """get_computed_blocks' result; the latest one before admission counts."""
+         self.notes[request.request_id] = PrefixNote(
+             pool_hit,
+@@ -653,6 +1075,18 @@
+                 for owner, record in zip(self.owner, self.records)
+             ),
+             tuple(self.history),
++            tuple(
++                RingNote(
++                    ring.lo, ring.end, ring.snap_lo, ring.snap_end, prompt, record_prompt
++                )
++                for ring, prompt, record_prompt in zip(
++                    self.rings, self.snap_tokens, self.record_prompt
++                )
++            )
++            if self.snapshot_hits
++            else (),
++            snapshot_slot,
++            unserved,
+         )
+ 
+     def log_admission(self, request: Request, slot: int) -> None:
+@@ -724,9 +1158,41 @@
+             raise ValueError(f"{KNOB}: group_decode {group_decode} (1..4)")
+         if not 1 <= pipeline_depth <= 4:
+             raise ValueError(f"{KNOB}: pipeline_depth {pipeline_depth} (1..4)")
++        skip_rows = 0
++        if snapshot_hit_requested():
++            # The workers' value (model.py: _v41_skip_rows), from the same
++            # environment. Imported here: the model package is not needed off.
++            from vllm.models.deepseek_v41 import prefill_skip
++
++            skip_rows = prefill_skip.skip_rows()
+         self.slots = V41SlotTable(
+-            num_slots, ring_reach, record_sessions, prefix_log_requested()
++            num_slots,
++            ring_reach,
++            record_sessions,
++            prefix_log_requested(),
++            snapshot_hit_requested(),
++            skip_rows,
+         )
++        if self.slots.snapshot_hits:
++            if not record_sessions or group_decode != 1:
++                raise ValueError(
++                    f"{SNAPSHOT_HIT_KNOB}=1 needs session records and one "
++                    f"request per step (records {record_sessions}, group "
++                    f"{group_decode})"
++                )
++            logger.info(
++                "%s=1 active (scheduler): a request that contains a free slot's "
++                "whole last prompt may start at that prompt's end (the hit is "
++                "the pool hit cut to it, floored to the grain, at most %d rows "
++                "before it); every admission is decided from the slot's ring "
++                "positions (%d ring rows, %d rows read before a forward, "
++                "prefill skip rows %d).",
++                SNAPSHOT_HIT_KNOB,
++                ring_reach,
++                RING_ROWS,
++                RING_WINDOW,
++                skip_rows,
++            )
+         if self.slots.log_prefix:
+             logger.info(
+                 "%s=1 active (scheduler): one line per admitted request with its "
+@@ -979,6 +1445,9 @@
+             slot = self.slots.assign(request)
+             if self.slots.log_prefix:
+                 self.slots.log_admission(request, slot)
++        if self.slots.snapshot_hits:
++            for req_id in scheduled:  # one request (checked above)
++                self.slots.forward(req_id, num_tokens)
+         if self.turn == _WAITING and not scheduled:
+             self.waiting_backoff = True
+         if scheduled:
+--- a/vllm/models/deepseek_v41/slots.py
++++ b/vllm/models/deepseek_v41/slots.py
+@@ -25,6 +25,11 @@
+ runs only when the step's slot differs from the bound one. Eager code then
+ reads the bound slot; CUDA graphs bake pointers, so each slot replays graphs
+ captured while it was bound (the runner keys them by slot).
++
++VLLM_V41_SNAPSHOT_HIT: ``snapshot_rings`` copies one slot's window rings to
++host memory and ``restore_rings`` copies them back into the same tensors (the
++pointers the graphs baked stay valid). The model state decides when
++(vllm/v1/worker/gpu/model_states/deepseek_v41.py).
+ """
+ 
+ from __future__ import annotations
+@@ -47,6 +52,19 @@
+ _PENDING_FIELDS = ("pending_length", "pending_position", "pending_prefill")
+ 
+ 
++def copy_rings_to_host(rings: list[torch.Tensor], host: torch.Tensor) -> None:
++    """Every ring's rows into host[i]; each copy waits for the kernels that
++    wrote the ring."""
++    for i, ring in enumerate(rings):
++        host[i].copy_(ring)
++
++
++def copy_rings_from_host(rings: list[torch.Tensor], host: torch.Tensor) -> None:
++    """host[i] back into every ring, in place."""
++    for i, ring in enumerate(rings):
++        ring.copy_(host[i])
++
++
+ def _fresh(tensor: torch.Tensor) -> torch.Tensor:
+     # Created right after load, before any forward: slot 0 holds the
+     # constructors' initial values, which every new slot starts from.
+@@ -110,6 +128,9 @@
+                 self.device_bytes += state["selected"].numel()
+             self.store_slots = num_slots
+         self.counts = counts
++        # VLLM_V41_SNAPSHOT_HIT: per slot, the host copy of its rings (None
++        # until the slot's first snapshot).
++        self._ring_host: list[torch.Tensor | None] = [None] * num_slots
+         logger.info(
+             "V4.1 slots (VLLM_V41_MULTI_SEQ): %d slots; per slot %d window "
+             "rings, %d C2 states, hash state %s, pending buffers, stage "
+@@ -124,6 +145,41 @@
+             self.host_bytes / 2**20,
+         )
+ 
++    # -- VLLM_V41_SNAPSHOT_HIT -------------------------------------------
++    def rings(self, slot: int) -> list[torch.Tensor]:
++        """The slot's window rings, in module order."""
++        return [
++            values[slot] for _, key, values in self._entries if key == "window_ring"
++        ]
++
++    def ring_host_bytes(self) -> int:
++        """Host memory of the ring snapshots of all slots (0 before the first)."""
++        return sum(
++            host.numel() * host.element_size()
++            for host in self._ring_host
++            if host is not None
++        )
++
++    def has_ring_snapshot(self, slot: int) -> bool:
++        return self._ring_host[slot] is not None
++
++    def snapshot_rings(self, slot: int) -> None:
++        """Copy the slot's rings to host memory (pageable: nothing is pinned
++        or registered with the driver)."""
++        rings = self.rings(slot)
++        host = self._ring_host[slot]
++        if host is None:
++            host = torch.empty((len(rings), *rings[0].shape), dtype=rings[0].dtype)
++            self._ring_host[slot] = host
++        copy_rings_to_host(rings, host)
++
++    def restore_rings(self, slot: int) -> None:
++        """Copy the slot's last snapshot back into its rings."""
++        host = self._ring_host[slot]
++        if host is None:
++            raise RuntimeError(f"V4.1 slots: slot {slot} has no ring snapshot")
++        copy_rings_from_host(self.rings(slot), host)
++
+     def bind(self, slot: int) -> None:
+         if slot == self.current:
+             return
+--- a/vllm/v1/worker/gpu/model_states/deepseek_v41.py
++++ b/vllm/v1/worker/gpu/model_states/deepseek_v41.py
+@@ -22,11 +22,20 @@
+ * The runner calls ``pp_before_forward`` / ``pp_after_forward`` on a first
+   stage that is not the last (``model_runner.py``).
+ 
++With ``VLLM_V41_SNAPSHOT_HIT=1`` it also keeps one ``RingTrack`` per slot
++(vllm/v1/core/sched/v41_multi_seq.py), fed with every request start and every
++executed forward. It copies the slot's window rings to host memory right
++after the forward that ends a request's prompt, and copies them back when a
++request starts where only that snapshot holds the rows before it. A start
++that neither the live rings nor the snapshot covers raises: the scheduler
++ran the same arithmetic and must never have admitted it.
++
+ It also keeps the per-request inputs of V4.1 coupled drafts
+ (``VLLM_V41_COUPLED_DRAFTS``): the stream key on the device and a host copy of
+ the temperature, which the speculator reads without a sync.
+ """
+ 
++import time
+ from collections.abc import Callable, Iterable, Iterator
+ from contextlib import contextmanager
+ from dataclasses import dataclass, field
+@@ -46,6 +55,12 @@
+ from vllm.logger import init_logger
+ from vllm.sampling_params import SamplingType
+ from vllm.v1.core.sched.output import NewRequestData
++from vllm.v1.core.sched.v41_multi_seq import (
++    SNAPSHOT_HIT_KNOB,
++    RingPath,
++    RingTrack,
++    snapshot_hit_requested,
++)
+ from vllm.v1.kv_cache_interface import KVCacheConfig
+ from vllm.v1.worker.gpu.attn_utils import build_attn_metadata
+ from vllm.v1.worker.gpu.buffer_utils import async_copy_to_gpu
+@@ -211,6 +226,19 @@
+             )
+         # None unless this is a first stage that is not the last.
+         self._stage_commit = getattr(inner, "stage_commit", None)
++        # VLLM_V41_SNAPSHOT_HIT: one RingTrack per slot (made at the first
++        # request: the slots are created after this state), else None.
++        self._v41_inner = inner
++        self._snapshot_hit = snapshot_hit_requested()
++        self._ring_tracks: list[RingTrack] | None = None
++        self._ring_copies = [0, 0]  # snapshots, restores
++        if self._snapshot_hit:
++            logger.info(
++                "%s=1 active (worker): ring snapshot after the forward that ends "
++                "a prompt, restore when a request starts at a snapshot; a start "
++                "outside both the live rings and the snapshot raises.",
++                SNAPSHOT_HIT_KNOB,
++            )
+         self._prefill_skip: _PrefillSkip | None = None
+         self._prompt_logprobs = np.zeros(self.max_num_reqs, dtype=np.bool_)
+         rows = int(getattr(inner, "_v41_skip_rows", 0))
+@@ -269,6 +297,8 @@
+         self._prompt_logprobs[req_index] = (
+             params is not None and params.prompt_logprobs is not None
+         )
++        if self._snapshot_hit:
++            self._ring_start(new_req_data.num_computed_tokens)
+         if new_req_data.num_computed_tokens > 0:
+             # A same-session prefix hit (or a resumed request): rewind the
+             # private state to the cached position. prefill_token_ids holds
+@@ -298,11 +328,104 @@
+         greedy = params.sampling_type == SamplingType.GREEDY
+         self.temperature_np[req_index] = 0.0 if greedy else params.temperature
+ 
++    # -- VLLM_V41_SNAPSHOT_HIT ---------------------------------------------
++    def _ring_slots(self) -> Any:
++        slots = getattr(self._v41_inner, "v41_slots", None)
++        if slots is None:
++            raise RuntimeError(
++                f"{SNAPSHOT_HIT_KNOB}=1: the model has no slots (VLLM_V41_MULTI_SEQ)"
++            )
++        if self._ring_tracks is None:
++            # The scheduler's value: both read VLLM_V41_PREFILL_SKIP_ROWS
++            # through prefill_skip.skip_rows() (model.py: _v41_skip_rows).
++            rows = int(getattr(self._v41_inner, "_v41_skip_rows", 0))
++            self._ring_tracks = [RingTrack(rows) for _ in range(slots.num_slots)]
++        return slots
++
++    def _ring_start(self, at: int) -> None:
++        """A request starts at ``at`` in the bound slot (the runner bound the
++        step's slot before add_requests). RingTrack.start raises when neither
++        the live rings nor the snapshot hold the rows before ``at``."""
++        slots = self._ring_slots()
++        assert self._ring_tracks is not None
++        slot = slots.current
++        track = self._ring_tracks[slot]
++        if track.start(at) is not RingPath.RESTORE:
++            return
++        began = time.perf_counter()
++        slots.restore_rings(slot)
++        self._ring_copies[1] += 1
++        if self._ring_copies[1] == 1:
++            logger.info(
++                "%s first restore: slot %d at %d snapshot_end %d copy_ms %.3f",
++                SNAPSHOT_HIT_KNOB,
++                slot,
++                at,
++                track.snap_end,
++                (time.perf_counter() - began) * 1e3,
++            )
++
++    def _ring_forward(self, input_batch: InputBatch, req_states: RequestState) -> None:
++        """After one executed forward: move the bound slot's ring positions,
++        and copy its rings to host memory if the forward ended the prompt."""
++        slots = self._ring_slots()
++        assert self._ring_tracks is not None
++        if input_batch.num_reqs != 1:
++            raise RuntimeError(
++                f"{SNAPSHOT_HIT_KNOB}=1: {input_batch.num_reqs} requests in one forward"
++            )
++        slot = slots.current
++        index = int(input_batch.idx_mapping_np[0])
++        if not self._ring_tracks[slot].forward(
++            int(input_batch.num_computed_tokens_np[0]),
++            int(input_batch.num_scheduled_tokens[0]),
++            int(req_states.prompt_len.np[index]),
++        ):
++            return
++        first = not slots.has_ring_snapshot(slot)
++        if first and self.device.type == "cuda":
++            # Time the copy alone: let the forward's kernels finish first.
++            torch.cuda.synchronize(self.device)
++        began = time.perf_counter()
++        slots.snapshot_rings(slot)
++        self._ring_copies[0] += 1
++        if first:
++            logger.info(
++                "%s first snapshot: slot %d end %d rings %d host_bytes %d copy_ms %.3f",
++                SNAPSHOT_HIT_KNOB,
++                slot,
++                self._ring_tracks[slot].snap_end,
++                len(slots.rings(slot)),
++                slots.ring_host_bytes(),
++                (time.perf_counter() - began) * 1e3,
++            )
++
+     @contextmanager
+     def prefill_skip_context(
+         self,
+         input_batch: InputBatch,
+         req_states: RequestState,
++        cudagraph_mode: CUDAGraphMode,
++        *,
++        for_capture: bool = False,
++    ) -> Iterator[None]:
++        """Around one forward: the prefill-skip binding, then (after a forward
++        that returned) VLLM_V41_SNAPSHOT_HIT's ring positions and snapshot."""
++        with self._prefill_skip_bound(
++            input_batch, req_states, cudagraph_mode, for_capture=for_capture
++        ):
++            yield
++        if not self._snapshot_hit or input_batch.is_dummy_batch or for_capture:
++            return
++        if self.device.type == "cuda" and torch.cuda.is_current_stream_capturing():
++            return
++        self._ring_forward(input_batch, req_states)
++
++    @contextmanager
++    def _prefill_skip_bound(
++        self,
++        input_batch: InputBatch,
++        req_states: RequestState,
+         cudagraph_mode: CUDAGraphMode,
+         *,
+         for_capture: bool = False,

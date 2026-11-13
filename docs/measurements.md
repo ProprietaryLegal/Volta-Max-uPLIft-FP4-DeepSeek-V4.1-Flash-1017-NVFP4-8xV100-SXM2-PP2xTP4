@@ -17,6 +17,10 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 
 | Date | Build or profile | Test | Result | Receipt |
 |---|---|---|---|---|
+| 2026-11-13 | `hot_iq`, close-out build: the speed bench on the two-slot default, then one to three prompt slots (repository only) | window 18 tags b and c, run 2 declared, cards at the default 300 W power limit and 1,530 MHz maximum clock (the power cap was not in force during this bench) | bench, one request at a time: short sets 117.7 general and 94.7 legal-style tok/s, code 143 to 175 tok/s 1K to 256K, stage-1 high mark 31,956 MiB. Slots: one 119.0 tok/s, two together 158.7 (1.33x), three together 176.2 (1.48x). Quality not established ([section](#speed-bench-2026-11-13-close-out)) | `baseline/window18-b.out` |
+| 2026-11-13 | `hot_iq` on the mixed tally, two-slot default: snapshot hit (repository only) | window rh, fourth run, rule amended six times | ACCEPT: first token 0.690 s against 30.987 s at 100,340 tokens, 193 readings, 0 differences against an ordinary hit at the same position, peak 31,954 MiB, admit and release of a 500,000-token prompt 59.43 ms (base 22.72 ms) ([section](#snapshot-hit-window-rh)) | `baseline/rhe-compare.out`, `rhe-memcheck.out`, `rhe-check-cost.out` |
+| 2026-11-12 | `hot_iq`, two-slot default: one log line per request on the cache decision (repository only) | window px, third run | ACCEPT. Off, it costs an attribute test and an early return ([section](#one-log-line-per-request-window-px)) | `baseline/windowpx-c.out` |
+| 2026-11-12 | `hot_iq`, two-slot default, stage-1 reserve +32 MiB (repository and package) | window m32: the code kind of the bench (37 requests) | INSTALL: 5,936 of 15,360 at NVFP4, stage-1 high mark 31,956 MiB, stage 0 31,736 MiB, no out-of-memory line ([section](#stage-1-reserve-32-mib-window-m32)) | `baseline/windowm32-a.out` |
 | 2026-11-12 | `hot_iq`, final build: the speed bench on the two-slot default, then one to three prompt slots (repository only) | window 18, run 2 declared, 175 W and 1,522 MHz | bench, one request at a time: short sets 123.2 general and 97.3 legal-style tok/s, code 150 to 180 tok/s 1K to 256K, memory 2 MiB over the line on stage 1, no out-of-memory line. Slots: one 118.9 tok/s, two together 159.0 (1.34x), three together 192.3 (1.62x). Token-exact, memory PASS on every slot boot. Quality not established | `baseline/window18-a.out` |
 | 2026-11-12 | `hot_iq`, R1 budget, two-slot default, fast reading, fused IQ tail, SwiGLU kernel: the two prompt-reading kernels (`kernel`, `rb4`) against the old path (`chain`, `rb2`) (repository only) | window 17, boots old, new, new, old, a 215,847-token prompt read twice per boot, 175 W | second reads 4.45 and 4.41 s faster (noise 0.50 s), first reads -8.9 and -4.2 s inside a noise floor of 11.6 s: NO MEASURABLE CHANGE by the first-read rule, the second-read gain resolved. Token-exact, peak 31,736 against 31,688 MiB. Installed. Quality not established (fast reading) | `baseline/window17-20261112t2.out` |
 | 2026-11-12 | `hot_iq`, R1 tiers, one slot, fast reading, fused IQ tail, SwiGLU kernel: switches off against on (repository only) | window 16, boots off, on, on, off | token-exact with the switches off and on. A follow-up turn that adds a system message to a 30,779-token chat reused 30,752 of those tokens (99.9 %) and took 0.45 s. With the switch off it reused none and took 14.84 s. Decode speed: no measurable change. Both ACCEPT, installed in the launcher | `baseline/window16-port-20261112c.out` |
@@ -83,6 +87,97 @@ Newest first. A later arm is one more row at the top, with its details in a sect
 | 2026-11-09 | three-tier | context rows, 46 to 257,741 tokens | 60.9 to 75.9 tok/s; read 28.5 s (30,795), 83.1 s (106,531), 194.2 s (257,741) | `baseline/t3-T3a-ctx.jsonl` |
 | 2026-11-09 | three-tier | short sets, two runs | general 50.6 / 51.8 tok/s, legal-style 56.9 / 58.4 tok/s | `baseline/t3-T3a-g1-tput.out`, `-g2-`, `-l1-`, `-l2-` |
 | 2026-11-09 | two-tier, Volta sPLIt | short sets, context rows, long prompts, harness-shaped test | the sections below | private boot receipts of the same day |
+
+## The prompt cache survives a changed reply (2026-11-13)
+
+Three windows on the eight cards, each under a rule fixed before its data, public prompts only, on the two-slot
+default. Results log rows: 2026-11-12 (m32, px) and 2026-11-13 (rh). Rules:
+[m32](acceptance/WINDOWM32-accept-rule.md), [px](acceptance/WINDOWPX-accept-rule.md),
+[rh](acceptance/WINDOWRH-accept-rule.md).
+
+### Stage-1 reserve +32 MiB (window m32)
+
+The window-18 bench boot sampled 32,000 MiB on the stage-1 cards against the build's line of 31,998 MiB. The
+stage-1 reserve went from 7,517,241,344 to 7,550,795,776 bytes (+33,554,432). Nothing else changed.
+
+| | Window 18 | m32 |
+|---|---|---|
+| Experts at NVFP4, both stages | 5,949 of 15,360 | 5,936 of 15,360 |
+| Stage 1: hot / compressed experts, tier digest | 2,258 / 5,422, `f67e73174ded` | 2,245 / 5,435, `5b2a5e7e493d` |
+| Predicted decode route share at NVFP4, stage 1 (in-sample, mixed tally) | 78.0 % | 77.8 % |
+| Predicted decode route share at NVFP4, stage 0 | 87.6 % | 87.6 % |
+| Mean of the two stages | 82.8 % | 82.7 % |
+| Stage-1 memory high mark | 32,000 MiB (169 requests) | 31,956 MiB (37 code requests) |
+| Stage-0 memory high mark | 31,736 MiB (169 requests) | 31,736 MiB (37 code requests) |
+
+Stage 0 is unchanged (3,691 hot, 3,989 compressed, `0b6440ce205f`). No out-of-memory line, no Xid. The whole
+169-request bench ran on this profile in the close-out bench (window 18 tags b and c,
+[below](#speed-bench-2026-11-13-close-out)).
+
+### One log line per request (window px)
+
+`VLLM_V41_PREFIX_LOG=1` makes the scheduler write one line for each request it admits, right after it assigns a
+prompt slot. The line holds field names, integers, two words and the request id. -1 means none. In the form below
+capitals stand for the values:
+
+    VLLM_V41_PREFIX_LOG request ID slot K prompt N resumed 0|1 pool_hit RAW hit TAKEN decision hit|cold
+      reason CODE ref_slot K ref_history I processed P matched C rewind D
+      slot_a_free 0|1 slot_a_processed P slot_a_matched C slot_b_free 0|1 slot_b_processed P slot_b_matched C
+
+(One line in the log. Slots 0 to 3 are named slot_a to slot_d.) `matched` is how many of the referenced record's
+tokens equal the prompt's first tokens, so on a cold read after an edit it is the first mismatch position. `rewind`
+is processed minus the hit taken, or minus the pool hit when the read is cold.
+
+Reason words, checked in this order: `hit`, `no_lookup`, `cache_read_off`, `odd_hit`, `slot_busy`, `unexplained`
+(must never occur), `past_processed`, `evicted`, `mismatch_beyond_rewind`, `displaced`, `record_dropped`,
+`no_record` and `no_session`. The snapshot hit adds `snapshot` (a hit) and three cold reasons: `partial_prompt`,
+`ring_stale` and `snapshot_pool_short`.
+
+With the switch off, the added work is an attribute test and an early return. A CPU check runs the same
+scenarios through the base files and requires identical hits, slots and records. The window's first run was
+rejected on one expectation of its own rule (the processed count may exceed the previous prompt plus output by 1 to
+3). A second run never started, because a request was running. The third run was accepted.
+
+What the line found: follow-ups in real chats with tools were read cold with `mismatch_beyond_rewind`, because the
+previous reply did not come back token for token (section below). That led to the snapshot hit.
+
+### Snapshot hit (window rh)
+
+At the end of each prompt (length N) each worker copies its prompt slot's 256-row sliding-window rows to host
+memory: 81.8 MB for two slots on all eight cards, no card memory. A later request that holds that whole prompt
+resumes at h, the pool hit or N if smaller, rounded down to a multiple of 16, if h is at least N - 124 and the slot
+is free. Only what follows h is read again. Every other request decides as before. The first restore of a boot took
+at most 2.905 ms on any card.
+
+Time to first token in seconds, the fix against a cold read of the same prompt, as the window's comparison printed them:
+
+| Prompt | Read again | Fix | Cold |
+|---|---|---|---|
+| 100,340 | 340 | 0.690 | 30.987 |
+| 40,550 | 550 | 0.706 | 13.430 |
+| 8,118 | 118 | 0.384 | 5.106 |
+| 8,200 | 216 | 0.420 | 5.115 |
+| 8,340 | 340 | 0.454 | 5.418 |
+| 8,400 | 400 | 0.534 | 5.681 |
+| 20,000 | 12,016 | 4.512 | 6.398 |
+| 8,521, whole request | 633 | 1.374 | 6.560 |
+
+Identity: 193 readings, 0 differences against an ordinary hit at the same position in the same boot. Memory: peak
+31,954 MiB on the stage-1 cards over the whole run, under the line of 31,998. Scheduler cost of admitting and
+releasing a 500,000-token prompt, best of five: 59.43 ms with the hit, against 22.72 ms for the cold decision of the
+base files (the switch off: 22.58 ms).
+
+The rule was amended six times. Two runs ended inconclusive. In the first, three of 187 readings differed at
+near-tied tokens, and a diagnosis on the unchanged engine showed the same: the output depends on where a read
+resumes. The reference became an ordinary hit at the same position. In the second, a reference chain hit 16 tokens
+early, because the block pool caches the prompt and the reply less 1 to 6 tokens. A third run stopped in its cost
+check on one wall-clock sample, and the check became the best of five interleaved runs. The fourth run was
+accepted, but its finish check stopped on the engine's own warning line about the new switch. The sixth amendment
+allows exactly that line, and the switch was installed without a new run.
+
+Limits, by reading the code, not measured: a chat with thinking on and no tools sends its new user turn one token
+short of the previous prompt, so its follow-up reads cold (`partial_prompt`). With tools defined the follow-up holds
+the whole previous prompt. One copy per slot. The switch needs one request per step and refuses group decode.
 
 ## Prompt slots, fast prompt reading and four kernels (2026-11-12)
 
@@ -750,6 +845,190 @@ Receipts of the rerun: `benchvolta/W9C-t3n-mix4b-r700-gpk-20261111T122408Z/cells
 `baseline/W9C-t3n-mix4b-r700-gpk-g1-tput.out` and `-l1-tput.out`. Profile
 `serve-nvfp4-pp2-t3n-mix4b-r700-gpk.yaml` (R1 tiers, `nvfp4_8r_group_plan: kernel`), one prompt slot, power caps
 150 W per card.
+
+## Speed bench 2026-11-13 (close-out)
+
+MEASURED 2026-11-13, cards at the default 300 W power limit and 1,530 MHz maximum clock, window 18 tags b and c ([rule](acceptance/WINDOW18-accept-rule.md), with two additions fixed before its data: a boot probe after every boot, and the build's own one- and three-slot profiles): the close-out build, that is window 18's build plus the stage-1 reserve of window m32, the cache log line of window px, the snapshot hit of window rh and the new card order. Four boots: the speed bench on the two-slot default, one request at a time with a fresh cache salt each (tag b), then one, two and three prompt slots by window 15's procedure (tag c). In tag b the one-slot boot died at load: the launcher set the cache log line and the snapshot hit on one slot too, and the engine accepts both only in its multi-slot mode. The launcher now leaves both off on one slot, and the three slot boots ran again as tag c under the same rule, with a note on the rerun fixed before its data. The power cap was not in force during this bench. Window 18 ran at 175 W and 1,522 MHz per card. 169 of 169 bench requests, status DONE, the prompts, method and request order of window 18. Each bench cell below is window 18 / close-out. Not paired: the two runs differ in the four changes above, the stage-1 tier map, the card power limit and the day, so a cell's difference is not one change's alone. Requests that repeat a prompt without a cache salt (the short cells, run 2 of each slot level, the tool loop's later turns) can now resume from the snapshot hit, so their first-token times can be shorter for that reason alone. Fast prompt reading changes the output from the first token: quality not established. The window-18 section below is the previous bench, kept as its record. Boot probe (one fresh read of about 22K tokens of public source, timing only, not a bench cell): first token 8.26 s on the bench boot, 8.28 s on the one-slot boot, 8.33 s on the two-slot boot, 8.34 s on the three-slot boot. The rule judges it on the default's profile only, and it read fast on the bench boot and the two-slot boot.
+
+**Bench boot (tag b): VALID**, 169 of 169 requests, and tag b's own window line reads INCONCLUSIVE only because its slot boots did not run (above). **Slot boots (tag c): VALID.**
+
+**Memory on the bench boot: PASS.** The highest sample on the cards of stage 1 was 31,956 MiB and on stage 0 31,736 MiB, against the 31,998 MiB line this build is held to (the card's 32,510 MiB less 512), in 322 samples over the whole boot, with 0 out-of-memory lines. Window 18's bench boot reached 32,000 MiB on stage 1. Window m32's 32 MiB were meant for this.
+
+Decode, thinking off, one request at a time, 1K to 256K: code 143 to 175 tok/s (window 18 150 to 180), legal 79 to 99 (86 to 106). First token after a 128K prompt 43.8 s (window 18 54.3 s), after 256K 86.7 s (108.4 s).
+
+### Before and after, against window 18
+
+Against the previous public bench, window 18 of 2026-11-12, the same prompts, method and profile shape, at different card limits: window 18 at 175 W and 1,522 MHz, the close-out bench at the default 300 W power limit and 1,530 MHz maximum clock (the power cap was not in force during this bench).
+
+|  | before: window 18, 2026-11-12 | after: close-out, 2026-11-13 |
+|---|---:|---:|
+| card limits | 175 W and 1,522 MHz | the default 300 W power limit and 1,530 MHz maximum clock (the power cap was not in force during this bench) |
+| NVFP4 experts, two-slot default | 5,949 | 5,936 |
+| general short set | 123.2 tok/s (25.10 ms per round) | 117.7 tok/s (26.36 ms) |
+| legal-style short set | 97.3 tok/s (24.92 ms) | 94.7 tok/s (25.98 ms) |
+| first token after 1K / 32K / 128K / 256K | 1.00 / 16.0 / 54.3 / 108.4 s | 0.85 / 13.7 / 43.8 / 86.7 s |
+| prompt reading at 256K | 2,329 to 2,430 tok/s | 2,876 to 3,132 tok/s |
+| decode 1K to 256K, code, thinking off | 150 to 180 tok/s | 143 to 175 tok/s |
+| decode 1K to 256K, legal, thinking off | 86 to 106 tok/s | 79 to 99 tok/s |
+| 216K tool loop, first read | 86.87 s | 67.01 s |
+| 216K tool loop, follow-ups: first token median, decode mean | 3.54 s, 126.8 tok/s | 3.66 s, 109.9 tok/s |
+| bench boot, stage-1 memory high mark | 32,000 MiB (FAIL) | 31,956 MiB (PASS) |
+| one request, one slot (aggregate tok/s, run 2) | 118.9 | 119.0 |
+| two together, two slots | 159.0 (1.34x) | 158.7 (1.33x) |
+| three together, three slots | 192.3 (1.62x) | 176.2 (1.48x) |
+
+The build column: the close-out build: window 18's plus the stage-1 reserve +32 MiB, the cache log line, the snapshot hit and the new card order.
+
+The two benches ran at different power limits: window 18 of 2026-11-12 at 175 W and 1,522 MHz per card, the close-out bench at the default 300 W power limit and 1,530 MHz maximum clock (the power cap was not in force during this bench). With that difference, one request at a time, writing speed is unchanged within run-to-run spread: short sets 117.7 and 94.7 tok/s against 123.2 and 97.3 (26.36 and 25.98 ms per round against 25.10 and 24.92), while run 1 and run 2 of one request alone on the same slot profile differed by up to 9.7 % in time per round on 2026-11-12 and up to 7.7 % on 2026-11-13. Prompt reading measured faster: 2,876 to 3,132 tok/s at 256K against 2,329 to 2,430, and the first token after 256K came at 86.7 s against 108.4 s, but part of that is the power limit. On the close-out build with the 175 W cap back on, measured after the bench, the tool loop's first read of 216,255 tokens took 70.6 s, against 67.0 s in this bench at 300 W and 86.9 s in window 18 at 175 W. Decode on the close-out build at 175 W was not re-measured on the bench's sets.
+
+![Decode speed by prompt length on the close-out build, one request at a time on the two-slot default, against Volta sPLIt's published bench](charts/decode-by-length-closeout-light.png#gh-light-mode-only)
+![Decode speed by prompt length on the close-out build, one request at a time on the two-slot default, against Volta sPLIt's published bench](charts/decode-by-length-closeout-dark.png#gh-dark-mode-only)
+
+### Long prompts: 1K to 256K, thinking off
+
+| prompt | first token | prompt reading | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1K | 1.00 s / 0.85 s | 987-1,174 / 949-1,416 tok/s | 150.1 / 172.0 | 169.2 / 171.5 | 105.5 / 98.8 | 81.2 / 83.2 | 88.2 / 83.8 |
+| 2K | 1.67 s / 1.41 s | 1,180-1,294 / 1,402-1,514 tok/s | 167.1 / 168.5 | 188.4 / 189.3 | 97.2 / 95.1 | 82.9 / 81.9 | 82.6 / 76.6 |
+| 4K | 2.97 s / 2.64 s | 1,305-1,425 / 1,502-1,658 tok/s | 180.3 / 174.6 | 162.3 / 161.0 | 85.9 / 90.9 | 80.4 / 80.8 | 81.0 / 85.8 |
+| 8K | 6.23 s / 5.96 s | 1,076-1,341 / 1,341-1,413 tok/s | 177.0 / 169.5 | 166.0 / 167.3 | 87.3 / 89.4 | 85.5 / 81.6 | 78.4 / 79.2 |
+| 16K | 9.51 s / 8.72 s | 1,678-1,788 / 1,851-1,994 tok/s | 155.0 / 159.5 | 170.7 / 166.1 | 93.8 / 84.8 | 85.1 / 80.6 | 89.4 / 87.3 |
+| 32K | 16.0 s / 13.7 s | 1,896-2,149 / 2,347-2,565 tok/s | 165.1 / 162.6 | 164.5 / 157.5 | 93.4 / 89.0 | 78.2 / 82.3 | 81.0 / 82.3 |
+| 64K | 28.4 s / 23.2 s | 2,196-2,355 / 2,753-3,012 tok/s | 170.3 / 164.3 | 162.8 / 157.0 | 86.9 / 90.0 | 84.4 / 79.4 | 84.7 / 74.8 |
+| 128K | 54.3 s / 43.8 s | 2,295-2,448 / 2,727-3,145 tok/s | 151.4 / 147.9 | 153.3 / 145.5 | 87.3 / 79.1 | 78.4 / 76.9 | 75.5 / 76.8 |
+| 256K | 108.4 s / 86.7 s | 2,329-2,430 / 2,876-3,132 tok/s | 154.6 / 142.7 | 150.0 / 140.2 | 93.5 / 83.5 | 80.8 / 74.4 | 71.2 / 69.0 |
+
+Thinking off, each cell the mean of 2 runs. Window 18: 90 requests, largest difference between the two runs of a cell 54.6 tok/s, greedy output byte-identical in 45 of 45 cells. Close-out: 90 requests, largest difference 18.5 tok/s, greedy output byte-identical in 45 of 45 cells.
+
+### Long prompts, thinking on
+
+Each cell is window 18 / close-out.
+
+| prompt | first token | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|---:|
+| 1K | 0.96 s / 0.91 s | 125.2 / 122.9 | 158.9 / 152.0 | 105.5 / 106.3 | 94.7 / 90.0 | 89.2 / 78.8 |
+| 2K | 1.62 s / 1.51 s | 180.2 / 168.2 | 143.8 / 146.3 | 107.5 / 97.2 | 85.3 / 84.6 | 83.9 / 80.3 |
+| 4K | 2.91 s / 2.76 s | 176.2 / 164.5 | 161.0 / 147.6 | 102.6 / 93.5 | 86.9 / 79.8 | 91.7 / 76.2 |
+| 8K | 5.97 s / 6.08 s | 192.6 / 165.9 | 148.3 / 140.4 | 102.8 / 104.6 | 90.8 / 85.3 | 87.3 / 83.2 |
+| 16K | 9.29 s / 8.54 s | 168.3 / 177.1 | 155.1 / 137.9 | 104.4 / 97.2 | 88.6 / 83.4 | 91.6 / 80.4 |
+| 32K | 15.5 s / 12.9 s | 122.1 / 124.7 | 165.2 / 138.9 | 96.4 / 97.7 | 90.3 / 85.6 | 88.7 / 83.4 |
+| 64K | 28.1 s / 22.0 s | 174.8 / 166.1 | 155.5 / 149.3 | 93.8 / 96.3 | 87.4 / 78.4 | 78.6 / 80.3 |
+| 128K | 53.9 s / 42.2 s | 118.7 / 108.2 | 140.6 / 147.7 | 92.2 / 92.5 | 87.5 / 79.3 | 76.8 / 76.3 |
+| 256K | 108.8 s / 87.1 s | 115.8 / 95.2 | 140.4 / 108.5 | 95.8 / 83.7 | 83.0 / 76.0 | 78.2 / 66.4 |
+
+### Prompt reading by text type
+
+Each cell is window 18 / close-out.
+
+| prompt | code | structured | legal | prose | chat |
+|---|---:|---:|---:|---:|---:|
+| 1K | 1,035 / 1,254 | 987 / 1,211 | 988 / 1,213 | 1,174 / 1,416 | 1,032 / 949 |
+| 2K | 1,216 / 1,481 | 1,229 / 1,434 | 1,180 / 1,402 | 1,294 / 1,514 | 1,259 / 1,450 |
+| 4K | 1,425 / 1,658 | 1,421 / 1,591 | 1,305 / 1,502 | 1,342 / 1,549 | 1,382 / 1,536 |
+| 8K | 1,201 / 1,413 | 1,325 / 1,358 | 1,076 / 1,341 | 1,341 / 1,390 | 1,318 / 1,373 |
+| 16K | 1,788 / 1,994 | 1,736 / 1,851 | 1,678 / 1,881 | 1,724 / 1,875 | 1,711 / 1,931 |
+| 32K | 2,125 / 2,565 | 2,149 / 2,482 | 2,031 / 2,347 | 1,896 / 2,402 | 2,051 / 2,378 |
+| 64K | 2,355 / 3,012 | 2,307 / 2,867 | 2,196 / 2,753 | 2,288 / 2,829 | 2,317 / 2,817 |
+| 128K | 2,448 / 3,145 | 2,416 / 3,082 | 2,308 / 2,727 | 2,295 / 2,927 | 2,419 / 2,996 |
+| 256K | 2,430 / 3,105 | 2,406 / 3,132 | 2,329 / 2,876 | 2,423 / 3,023 | 2,418 / 2,998 |
+
+### Beside Volta sPLIt
+
+Each cell is close-out (at the default 300 W power limit and 1,530 MHz) / Volta sPLIt's published bench of 2026-11-05 at a 1,522 MHz ceiling, thinking off, mean of 2 runs.
+
+| prompt | first token | prompt reading | code | legal |
+|---|---:|---:|---:|---:|
+| 1K | 0.85 s / 1.22 s | 949-1,416 / 820-948 | 172.0 / 215.0 | 98.8 / 117.6 |
+| 2K | 1.41 s / 1.95 s | 1,402-1,514 / 1,024-1,082 | 168.5 / 203.6 | 95.1 / 114.8 |
+| 4K | 2.64 s / 3.26 s | 1,502-1,658 / 1,245-1,264 | 174.6 / 194.9 | 90.9 / 111.6 |
+| 8K | 5.96 s / 6.94 s | 1,341-1,413 / 1,178-1,188 | 169.5 / 207.9 | 89.4 / 109.1 |
+| 16K | 8.72 s / 10.4 s | 1,851-1,994 / 1,574-1,583 | 159.5 / 201.8 | 84.8 / 105.6 |
+| 32K | 13.7 s / 17.2 s | 2,347-2,565 / 1,894-1,913 | 162.6 / 200.5 | 89.0 / 116.5 |
+| 64K | 23.2 s / 30.9 s | 2,753-3,012 / 2,111-2,132 | 164.3 / 194.1 | 90.0 / 108.3 |
+| 128K | 43.8 s / 59.2 s | 2,727-3,145 / 2,198-2,220 | 147.9 / 182.8 | 79.1 / 110.9 |
+| 256K | 86.7 s / 118.7 s | 2,876-3,132 / 2,197-2,222 | 142.7 / 160.0 | 83.5 / 103.1 |
+
+### Short prompts, by text type
+
+| kind of output | greedy (T=0) | sampled (T=1) | tokens per round, T=0 | Volta sPLIt greedy | Volta sPLIt sampled |
+|---|---:|---:|---:|---:|---:|
+| code | 172.9 (170.4-173.2) / 165.2 (162.6-171.7) | 173.8 (162.1-178.4) / 161.2 (158.6-167.9) | 4.35 / 4.39 | 213.1 | 196.8 |
+| structured (JSON) | 191.9 (187.5-192.4) / 180.9 (175.4-180.9) | 183.7 (179.1-187.9) / 169.1 (165.3-171.8) | 4.75 / 4.74 | 209.4 | 205.4 |
+| legal | 103.2 (103.2-103.2) / 97.9 (97.1-99.4) | 95.6 (90.3-102.1) / 87.3 (85.0-93.8) | 2.59 / 2.58 | 115.7 | 108.4 |
+| prose | 85.9 (85.7-86.1) / 78.4 (78.4-81.7) | 82.6 (80.3-83.5) / 78.6 (78.0-81.3) | 2.16 / 2.07 | 98.0 | 87.2 |
+| chat | 81.5 (81.3-81.6) / 77.7 (76.4-81.5) | 80.1 (79.1-82.6) / 75.0 (72.0-77.6) | 2.03 / 2.05 | 96.2 | 93.8 |
+| thinking on, 4 prompts, token-weighted | - | 116.1 (99.9-173.8 per prompt) / 107.7 (94.5-158.8 per prompt) | - | - | 132.3 |
+
+Each cell is window 18 / close-out. Up to 1,024 tokens with a natural stop, thinking off, median of 3 runs with range. A repeated identical prompt now resumes from the cache. In 5 of 5 kinds the second and third greedy answers were byte-identical to each other and differed from the first, cold answer (window 18: all three byte-identical in 5 of 5 kinds). The resumed request recomputes the end of the prompt on the decode path, so its greedy answer is repeatable from the second request on and can differ from the cold one. The figures are the medians of the three runs, the same method as window 18. Volta sPLIt's columns are its published bench of 2026-11-05.
+
+### Short sets on the bench boot
+
+General 117.7 tok/s (26.36 ms per round) and legal-style 94.7 (25.98 ms) on the close-out bench boot (one request at a time on the two-slot default), against 123.2 (25.10 ms) and 97.3 (24.92 ms) in window 18. Three prompts each, output tokens over the whole request time.
+
+### The 216K tool loop on the close-out boot
+
+One request at a time on the two-slot default. First read 67.01 s for 216,255 tokens (window 18 86.87 s). Follow-ups that kept the previous prompt: 7 of 7, first token median 3.66 s (3.54 s), decode mean 109.9 tok/s over the 7 (126.8). On the close-out boot the tool loop's final request ran to the 32,000-token limit (stop reason `max_tokens`) and gave no final answer. Counting it, that request has run to the limit in 3 of 4 runs with the group-plan kernel and 5 of 8 on every build of this repository so far.
+
+### Requests at once on the close-out build
+
+One, two and three prompt slots, each on a fresh boot, by window 15's procedure: each level runs the three public short prompts, thinking off, temperature 0, 1,024 tokens out per request, started together, twice. Run 2 of each level is the reading, declared before the data. Aggregate tok/s = all tokens over the time from the first start to the last end. Ratio = against one slot, one stream, run 2 (119.0 tok/s). NVFP4 experts on the three boots: 6,203, 5,936 and 5,650 for one, two and three slots. The two-slot boot's tier map is the published default's (window m32). The one- and three-slot boots used window 18's profiles with window m32's 32 MiB on stage 1 as well, and since 2026-11-13 they are the package's one- and three-slot options too.
+
+![Aggregate and per-request decode tok/s by prompt slots and requests running together, close-out build](charts/concurrency-closeout-light.svg#gh-light-mode-only)
+![Aggregate and per-request decode tok/s by prompt slots and requests running together, close-out build](charts/concurrency-closeout-dark.svg#gh-dark-mode-only)
+
+Run 2 (the reading): aggregate tok/s (ratio), mean decode tok/s of each request, ms per decode round:
+
+| Slots | 1 request | 2 together | 3 together |
+|---|---|---|---|
+| 1 | 119.0 (1.00x), 136.0, 24.87 |  |  |
+| 2 | 124.7 (1.05x), 141.9, 24.69 | 158.7 (1.33x), 102.6, 28.55 |  |
+| 3 | 123.1 (1.03x), 138.8, 24.63 | 156.4 (1.31x), 102.9, 28.66 | 176.2 (1.48x), 78.8, 42.73 |
+
+Three-slot profile, run 2: two requests add 27.1 % to one, a third adds 12.7 % to two.
+
+Aggregate tok/s, run 2, window 18 against the close-out:
+
+| Slots | Requests together | Window 18 | Close-out |
+|---|---|---|---|
+| 1 | 1 | 118.9 (1.00x) | 119.0 (1.00x) |
+| 2 | 1 | 124.2 (1.04x) | 124.7 (1.05x) |
+| 2 | 2 | 159.0 (1.34x) | 158.7 (1.33x) |
+| 3 | 1 | 123.5 (1.04x) | 123.1 (1.03x) |
+| 3 | 2 | 164.8 (1.39x) | 156.4 (1.31x) |
+| 3 | 3 | 192.3 (1.62x) | 176.2 (1.48x) |
+
+Run 1 against run 2, aggregate tok/s (run 1 is the noise view, not the reading):
+
+| Slots | Requests together | Run 1 | Run 2 |
+|---|---|---|---|
+| 1 | 1 | 115.4 | 119.0 |
+| 2 | 1 | 114.2 | 124.7 |
+| 2 | 2 | 162.4 | 158.7 |
+| 3 | 1 | 120.8 | 123.1 |
+| 3 | 2 | 158.7 | 156.4 |
+| 3 | 3 | 180.0 | 176.2 |
+
+- **Same output.** Every request with others running gave the same token ids as the same prompt alone on the same boot: 4 of 4, 8 of 8 and 14 of 14.
+- **One long read and one short request.** A 209,175-token prompt, then a short request 10 s later. With one slot the short request waits 56.82 s for the read, then decodes at 85.1 tok/s. With two or three slots it starts in 4.11 to 4.32 s but decodes at 15.3 tok/s while the read goes on, and the read takes 11.2 s longer. Both end later than with one slot, so slots do not help a short request during a long read.
+
+Memory, highest sample on any card of the stage over the whole boot, against the 31,998 MiB line:
+
+| Boot | Stage 0 | Stage 1 | Samples | Out-of-memory lines | Verdict |
+|---|---|---|---|---|---|
+| bench (two slots) | 31,736 MiB (262 to the line) | 31,956 MiB (42) | 322 | 0 | PASS |
+| 1 slot | 31,754 MiB (244 to the line) | 30,778 MiB (1,220) | 10 | 0 | PASS |
+| 2 slots | 31,702 MiB (296 to the line) | 30,776 MiB (1,222) | 12 | 0 | PASS |
+| 3 slots | 31,096 MiB (902 to the line) | 30,798 MiB (1,200) | 14 | 0 | PASS |
+
+One long read and one short request (209,175-token prompt of Python standard-library source, a short request 10 s later):
+
+| Slots | Long prompt: first token | Short request: first token | Short request: decode | Short finished before the long prompt's first token |
+|---|---|---|---|---|
+| 1 | 65.8 s | 56.82 s | 85.1 tok/s, 25.05 ms per round | no |
+| 2 | 77.0 s | 4.11 s | 15.3 tok/s, 148.46 ms per round | no |
+| 3 | 77.0 s | 4.32 s | 15.3 tok/s, 146.89 ms per round | no |
+
+Receipts: `baseline/window18-b.out` for the bench, last line WINDOW W18 INCONCLUSIVE, reasons: S1 not run, S2 not run, S3 not run. `baseline/window18-c.out` for the slot boots, last line WINDOW W18 VALID.
 
 ## Speed bench 2026-11-12 (final build)
 

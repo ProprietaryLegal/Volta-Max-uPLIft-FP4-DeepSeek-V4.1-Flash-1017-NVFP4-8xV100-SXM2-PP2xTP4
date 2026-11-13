@@ -44,7 +44,13 @@ have=$(for d in /sys/bus/pci/devices/*; do
          case "$(cat "$d/class")" in 0x0302* | 0x0300*) echo "$(basename "$d"):$(cat "$d/device")" ;; esac
        done | sort | tr '\n' ' ' | sed 's/ $//')
 [ "$have" = "$want" ] || { echo "swap_arm: REFUSED, the NVIDIA cards on the PCI bus are not the nine-card layout of 2026-11-11 (have: $have); the card index list is wrong for any other layout" >&2; exit 1; }
-CUDA_VISIBLE_DEVICES=0,4,1,5,7,2,3,8 PROFILE=$profile NVFP4_SLOTS=$slots bash run/run_serve.sh "$next"
+# 2026-11-12 (after the RAM upgrade to 1 TB the host reports two NUMA nodes): the stage-1 order is 2,7,3,8, not
+# 7,2,3,8. The PP hand-off pairs are (rank i, rank i+4). With 7,2,3,8 the pair (index 4, index 2) joined the two
+# cards behind one PCIe host bridge, and since the upgrade a direct peer-to-peer transfer between two cards behind
+# one host bridge hangs on this host (a pair-by-pair probe: the pairs behind one bridge hung, the pairs across two
+# bridges passed). With 2,7,3,8 the pairs are (0,2) (4,7) (1,3) (5,8): each crosses two different host bridges.
+# Stage 0 is still Board B and stage 1 still Board C.
+CUDA_VISIBLE_DEVICES=0,4,1,5,2,7,3,8 PROFILE=$profile NVFP4_SLOTS=$slots bash run/run_serve.sh "$next"
 pid=$(cat "run/state/$next.pid")
 echo "LAUNCHED $next profile $profile slots $slots pgid $pid $(date -u +%H:%M:%SZ)"
 until [ "$(curl -s -o /dev/null -w '%{http_code}' "$url/health")" = 200 ]; do

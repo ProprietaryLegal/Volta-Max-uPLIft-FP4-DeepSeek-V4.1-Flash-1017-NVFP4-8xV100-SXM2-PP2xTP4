@@ -37,7 +37,7 @@ model-loader-extra-config:
   engram_path: ${PKG}/engram/DeepSeek-V4.1-Flash-Engram-IQ4_NL.gguf
   nvfp4_8r_packs: ${PKG}/experts-mxfp4
   nvfp4_8r_tier_map: ${PKG}/tier_maps/slots2.json
-  nvfp4_8r_reserve_bytes: {'0': 4643356672, '20': 7517241344}
+  nvfp4_8r_reserve_bytes: {'0': 4643356672, '20': 7550795776}
   nvfp4_8r_residency: hot_iq
   nvfp4_8r_prefill_warm: iq
   nvfp4_8r_group_plan: kernel

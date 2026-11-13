@@ -3,6 +3,29 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-13: the prompt cache survives a changed reply, +32 MiB on stage 1, card order, a cache log line
+
+MEASURED on the eight cards on 2026-11-12 and 2026-11-13, each under a rule fixed before its data, public prompts
+only. Details: [docs/measurements.md](docs/measurements.md#the-prompt-cache-survives-a-changed-reply-2026-11-13).
+
+- **Snapshot hit (window rh), on by default.** A follow-up whose previous reply came back changed resumes at the end
+  of the previous prompt instead of reading it all again. First token 0.690 s against 30.987 s at 100,340 tokens,
+  0.706 against 13.430 s at 40,550, 0.384 to 0.534 s against 5.106 to 5.681 s near 8K. Same output as an ordinary
+  hit at the same position (193 readings, 0 differences). 81.8 MB of host memory, no card memory. New engine patch
+  `engine/patches/v41_snapshot_hit.patch`.
+- **Stage-1 reserve +32 MiB (window m32).** 5,936 of 15,360 experts at NVFP4 in the two-slot default (was 5,949).
+  Predicted decode route share at NVFP4, in-sample: 82.7 % (was 82.8 %). Stage-1 high mark 31,956 MiB. The package's
+  two-slot template and tier map carry it since 2026-11-13 (small files, no weights). The one- and three-slot options carry the same 32 MiB on stage 1 since 2026-11-13, as the close-out bench booted them: 6,203 and 5,650 of 15,360 experts at NVFP4 (were 6,215 and 5,663).
+- **Card order `0,4,1,5,2,7,3,8`.** The host now reports two NUMA nodes, and peer transfers behind one host bridge
+  hang. No speed claim.
+- **`VLLM_V41_PREFIX_LOG=1` (window px), on by default.** One numbers-only line per admitted request on the cache
+  decision and its reason. New engine patch `engine/patches/v41_prefix_log.patch`. The launcher leaves this switch
+  and the snapshot hit off on the one-slot option, because the engine accepts both only in its multi-slot mode.
+- **Speed bench, close-out build (window 18 tags b and c).** 117.7 tok/s general and 94.7
+  legal-style, one request at a time on the two-slot default. 176.2 tok/s with three requests together on
+  the three-slot option (1.48x).
+- **Rejected:** prompt-reading chunk size by prompt length (same output on 25 of 31 cases, +522 MiB on stage 1).
+
 ## 2026-11-12: two prompt slots by default, fast prompt reading and four kernels
 
 MEASURED on the eight cards on 2026-11-11 and 2026-11-12, each under a rule fixed before its data, public prompts

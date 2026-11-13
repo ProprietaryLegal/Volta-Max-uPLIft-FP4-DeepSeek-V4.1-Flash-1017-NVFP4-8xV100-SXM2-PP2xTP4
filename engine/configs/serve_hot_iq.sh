@@ -15,6 +15,9 @@
 # before 2026-11-12 lack nvfp4_8r_prefill_swiglu and nvfp4_8r_prefill_rb. Download the package's serve/ and
 # tier_maps/ folders again (small files, README.md, Reproduce).
 : "${LANE:?set LANE to the root directory of this build}"
+# CUDA_VISIBLE_DEVICES: the first board's four indices, then the second board's. Pair each card with the one
+# four places later across two PCIe host bridges if your host has more than one NUMA node (our list is
+# 0,4,1,5,2,7,3,8).
 : "${CUDA_VISIBLE_DEVICES:?set CUDA_VISIBLE_DEVICES to the first board's four indices, then the second board's}"
 set -euo pipefail
 die() { echo "serve_hot_iq: $*" >&2; exit 1; }

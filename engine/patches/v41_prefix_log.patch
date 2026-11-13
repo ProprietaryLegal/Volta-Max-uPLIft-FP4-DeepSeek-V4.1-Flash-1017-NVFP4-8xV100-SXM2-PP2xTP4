@@ -1,0 +1,381 @@
+NVFP4-8R change: one log line per admitted request on the prompt-cache decision (VLLM_V41_PREFIX_LOG, window px).
+Base: the Volta sPLIt engine files as deployed 2026-11-09. Per file, base and result sha256:
+  vllm/v1/core/kv_cache_manager.py d71136188e5554b069ebfad23f24e7b42ffeb4bc8914868e5e70e03c236c77e9 -> ad5e08f62ebc06a6e1ba438716a940d33b7978ff2cbb9b92c71c6612605b6c8f
+  vllm/v1/core/sched/v41_multi_seq.py 5b410108379cb5cb147056dae4584d348750a5cbb151b2e790100b0fb91e4657 -> 5dff599726dac0c0ec333e86cd47d174af267a40c10cc811d800c35d84d4f1e1
+Apply in the engine source root with: patch -p1 < this-file
+
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
+ import itertools
++import math
+ from collections.abc import Sequence
+ from dataclasses import dataclass
+ from typing import TYPE_CHECKING, Literal, overload
+@@ -502,6 +503,7 @@
+         request.shared_prefix_boundary = 0
+         request.partial_prefix_entry = None
+         if not self.enable_caching or request.skip_reading_prefix_cache:
++            self._v41_note_prefix(request, None, 0)
+             return self.empty_kv_cache_blocks, 0
+ 
+         # NOTE: When all tokens hit the cache, we must recompute the last token
+@@ -526,7 +528,9 @@
+             and not self._v41_session_hit(request, num_new_computed_tokens)
+         ):
+             request.shared_prefix_boundary = 0
++            self._v41_note_prefix(request, num_new_computed_tokens, 0)
+             return self.empty_kv_cache_blocks, 0
++        pool_hit = num_new_computed_tokens
+ 
+         partial = self._partial_prefix_hit(
+             request, num_new_computed_tokens, max_cache_hit_length
+@@ -542,8 +546,19 @@
+                 preempted=request.num_preemptions > 0,
+             )
+ 
++        self._v41_note_prefix(request, pool_hit, num_new_computed_tokens)
+         return self.create_kv_cache_blocks(computed_blocks), num_new_computed_tokens
+ 
++    def _v41_note_prefix(self, request: Request, pool_hit: int | None, hit: int) -> None:
++        """VLLM_V41_PREFIX_LOG: hand the lookup to the slot table (no effect on it)."""
++        slots = self.v41_multi_seq_slots
++        if slots is None or not slots.log_prefix:
++            return
++        grain = math.lcm(
++            *(group.kv_cache_spec.block_size for group in self.kv_cache_config.kv_cache_groups)
++        )
++        slots.note(request, pool_hit, hit, grain)
++
+     def allocate_slots(
+         self,
+         request: Request,
+--- a/vllm/v1/core/sched/v41_multi_seq.py
++++ b/vllm/v1/core/sched/v41_multi_seq.py
+@@ -48,4 +48,11 @@
+ 
+ With the knob off, nothing here runs and the one-request path is unchanged.
++
++``VLLM_V41_PREFIX_LOG=1`` (unset or 0: off) logs, from the scheduler process,
++one INFO line per admitted request: its slot, prompt length, the block pool's
++prefix hit, the hit taken, hit or cold and a reason from ``PrefixReason``,
++with every slot's processed length and the length of its record that matches
++the prompt (numbers only: no token ids, no text, no hashes). It reads the
++decision; it changes none (prefix-log package, DESIGN.md).
+ """
+ 
+@@ -53,4 +60,6 @@
+ 
+ import enum
++import os
++from collections import deque
+ from copy import copy
+ from collections.abc import Iterable, Sequence
+@@ -86,7 +95,203 @@
+     if value not in ("0", "1"):
+         raise ValueError(f"{KNOB} must be 0 or 1, got {value!r}")
++    if value == "0" and prefix_log_requested():
++        raise ValueError(
++            f"{PREFIX_LOG_KNOB}=1 needs {KNOB}=1 (it reports the per-slot "
++            f"session records); unset it or turn {KNOB} on"
++        )
+     return value == "1"
+ 
+ 
++# --- VLLM_V41_PREFIX_LOG: the cached-prefix decision of every admission ------
++PREFIX_LOG_KNOB = "VLLM_V41_PREFIX_LOG"
++# Session records overwritten by another sequence, or dropped on release, kept
++# only to name the reason of a later cold read. Never read by a decision.
++PREFIX_LOG_HISTORY = 4
++
++
++def prefix_log_requested() -> bool:
++    """Unset or 0: off; 1: on; anything else is an error."""
++    value = os.environ.get(PREFIX_LOG_KNOB, "").strip()
++    if value in ("", "0"):
++        return False
++    if value != "1":
++        raise ValueError(f"{PREFIX_LOG_KNOB} must be 0 (off) or 1, got {value!r}")
++    return True
++
++
++class PrefixReason(enum.Enum):
++    """Why an admitted request starts where it does. Each value names the
++    predicate of KVCacheManager.get_computed_blocks or V41SlotTable.session_hit
++    that decided it; checked in this order (classify_prefix)."""
++
++    HIT = "hit"  # a hit was taken (session_hit accepted a free slot's record)
++    NO_LOOKUP = "no_lookup"  # admitted with computed tokens, no local lookup
++    CACHE_READ_OFF = "cache_read_off"  # caching off or skip_reading_prefix_cache
++    ODD_HIT = "odd_hit"  # session_hit: hit % 2
++    SLOT_BUSY = "slot_busy"  # the record that continues the prompt is in a slot that is not free
++    UNEXPLAINED = "unexplained"  # a free slot passes both predicates, yet no hit: must not occur
++    PAST_PROCESSED = "past_processed"  # pool hit > the record's processed length
++    EVICTED = "evicted"  # the record reaches processed - ring_reach, the pool hit does not
++    MISMATCH_BEYOND_REWIND = "mismatch_beyond_rewind"  # prompt leaves the record (after a block or more) too early: the hit in reach of the rings would pass processed - ring_reach
++    DISPLACED = "displaced"  # the continuing record was overwritten by another sequence's release
++    RECORD_DROPPED = "record_dropped"  # the continuing record was dropped on release (session_record_ok)
++    NO_RECORD = "no_record"  # no slot holds a record and none was overwritten or dropped
++    NO_SESSION = "no_session"  # no record, current or recent, continues this prompt
++
++
++class PrefixNote(NamedTuple):
++    """get_computed_blocks' result for one lookup, with the slot table as the
++    session guard saw it (free flag and record of every slot, recent history)."""
++
++    pool_hit: int | None  # None: the lookup was skipped (CACHE_READ_OFF)
++    hit: int
++    grain: int  # hit granularity (lcm of the KV cache groups' block sizes)
++    slots: tuple[tuple[bool, tuple[list[int], int] | None], ...]
++    history: tuple[tuple[str, tuple[list[int], int]], ...]
++
++
++class SlotView(NamedTuple):
++    free: bool
++    processed: int | None
++    matched: int | None  # tokens of the record equal to the prompt's first tokens
++
++
++class PrefixDecision(NamedTuple):
++    slot: int
++    prompt: int
++    resumed: bool
++    pool_hit: int | None
++    hit: int
++    reason: PrefixReason
++    ref: str | None  # "s<k>" (slot) or "h<i>" (history) the reason refers to
++    processed: int | None
++    matched: int | None
++    rewind: int | None  # processed - hit (taken) or processed - pool hit (cold)
++    slots: tuple[SlotView, ...]
++
++
++def common_prefix(a: Sequence[int], b: Sequence[int]) -> int:
++    """Length of the longest common prefix (list compares, then a bisection
++    that compares each element at most a few times)."""
++    n = min(len(a), len(b))
++    if a[:n] == b[:n]:
++        return n
++    lo, hi = 0, n  # a[:lo] == b[:lo]; a[:hi] != b[:hi]
++    while hi - lo > 1:
++        mid = (lo + hi) // 2
++        if a[lo:mid] == b[lo:mid]:
++            lo = mid
++        else:
++            hi = mid
++    return lo
++
++
++def classify_prefix(
++    tokens: Sequence[int],
++    slot: int,
++    resumed: bool,
++    note: PrefixNote | None,
++    ring_reach: int,
++) -> PrefixDecision:
++    """The reason of one admission from its lookup note (pure: data in, data out)."""
++    n = len(tokens)
++    if note is None:
++        return PrefixDecision(
++            slot, n, resumed, None, 0, PrefixReason.NO_LOOKUP, None, None, None, None, ()
++        )
++    views = []
++    matched: list[int | None] = []
++    for free, record in note.slots:
++        if record is None:
++            views.append(SlotView(free, None, None))
++            matched.append(None)
++            continue
++        c = common_prefix(tokens, record[0])
++        views.append(SlotView(free, record[1], c))
++        matched.append(c)
++    views_t = tuple(views)
++
++    def done(reason, ref=None, processed=None, c=None, rewind=None):
++        return PrefixDecision(
++            slot, n, resumed, note.pool_hit, note.hit, reason, ref, processed, c,
++            rewind, views_t,
++        )
++
++    raw = note.pool_hit
++    if note.hit > 0:
++        record = note.slots[slot][1]
++        if record is None:
++            return done(PrefixReason.HIT)
++        return done(PrefixReason.HIT, f"s{slot}", record[1], matched[slot],
++                    record[1] - note.hit)
++    if raw is None:
++        return done(PrefixReason.CACHE_READ_OFF)
++    if raw % 2:
++        return done(PrefixReason.ODD_HIT)
++    grain = note.grain
++
++    def reach(c: int, processed: int) -> bool:
++        # the record continues the prompt far enough for some hit in reach
++        return (min(c, n - 1, processed) // grain * grain) >= processed - ring_reach
++
++    def would_hit(c: int, processed: int) -> bool:
++        # session_hit's predicates at the pool hit
++        return processed - ring_reach <= raw <= processed and c >= raw
++
++    found = [
++        (k, free, record[1], matched[k])
++        for k, (free, record) in enumerate(note.slots)
++        if record is not None
++    ]
++    for k, free, p, c in found:
++        if not free and ((raw > 0 and would_hit(c, p)) or reach(c, p)):
++            return done(PrefixReason.SLOT_BUSY, f"s{k}", p, c, p - raw)
++    for k, free, p, c in found:
++        if free and raw > 0 and would_hit(c, p):
++            return done(PrefixReason.UNEXPLAINED, f"s{k}", p, c, p - raw)
++    for k, free, p, c in found:
++        if free and reach(c, p) and raw > p:
++            return done(PrefixReason.PAST_PROCESSED, f"s{k}", p, c, p - raw)
++    for k, free, p, c in found:
++        if free and reach(c, p) and raw < p - ring_reach:
++            return done(PrefixReason.EVICTED, f"s{k}", p, c, p - raw)
++    for k, free, p, c in found:
++        if free and c >= max(raw, grain) and not reach(c, p):
++            return done(PrefixReason.MISMATCH_BEYOND_REWIND, f"s{k}", p, c, p - raw)
++    for i, (kind, (h_tokens, p)) in enumerate(note.history):
++        c = common_prefix(tokens, h_tokens)
++        if reach(c, p) or (raw > 0 and c >= raw):
++            reason = (
++                PrefixReason.RECORD_DROPPED if kind == "dropped" else PrefixReason.DISPLACED
++            )
++            return done(reason, f"h{i}", p, c, p - raw)
++    if not found:
++        return done(PrefixReason.NO_RECORD)
++    return done(PrefixReason.NO_SESSION)
++
++
++def format_prefix(req_id: str, d: PrefixDecision) -> str:
++    """The log line: lower-case field names, integers (-1: none), the decision and reason words, the request id."""
++
++    def num(x):
++        return -1 if x is None else x
++
++    ref_slot = int(d.ref[1:]) if d.ref and d.ref[0] == "s" else -1
++    ref_history = int(d.ref[1:]) if d.ref and d.ref[0] == "h" else -1
++    # slot 0, 1, 2, 3 -> slot_a, slot_b, slot_c, slot_d: field names stay lower-case letters and underscores
++    slots = "".join(
++        f" slot_{'abcd'[k]}_free {int(v.free)} slot_{'abcd'[k]}_processed {num(v.processed)}"
++        f" slot_{'abcd'[k]}_matched {num(v.matched)}"
++        for k, v in enumerate(d.slots)
++    )
++    return (
++        f"{PREFIX_LOG_KNOB} request {req_id} slot {d.slot} prompt {d.prompt} "
++        f"resumed {int(d.resumed)} pool_hit {num(d.pool_hit)} hit {d.hit} "
++        f"decision {'hit' if d.hit > 0 else 'cold'} reason {d.reason.value} "
++        f"ref_slot {ref_slot} ref_history {ref_history} processed {num(d.processed)} "
++        f"matched {num(d.matched)} rewind {num(d.rewind)}{slots}"
++    )
++
++
+ def is_v41_model(vllm_config: VllmConfig) -> bool:
+     model_config = vllm_config.model_config
+@@ -311,7 +516,20 @@
+     """
+ 
+-    def __init__(self, num_slots: int, ring_reach: int, record_sessions: bool):
++    def __init__(
++        self,
++        num_slots: int,
++        ring_reach: int,
++        record_sessions: bool,
++        log_prefix: bool = False,
++    ):
+         if not 1 <= num_slots <= MAX_SLOTS:
+             raise ValueError(f"{KNOB}: {num_slots} slots (supported 1..{MAX_SLOTS})")
++        # VLLM_V41_PREFIX_LOG: the lookup notes and the overwritten/dropped
++        # records behind the log line; read by no decision.
++        self.log_prefix = log_prefix
++        self.notes: dict[str, PrefixNote] = {}
++        self.history: deque[tuple[str, tuple[list[int], int]]] = deque(
++            maxlen=PREFIX_LOG_HISTORY
++        )
+         self.num_slots = num_slots
+         self.ring_reach = ring_reach
+@@ -396,4 +614,5 @@
+         req_id = request.request_id
+         self.matched.pop(req_id, None)
++        self.notes.pop(req_id, None)  # VLLM_V41_PREFIX_LOG (empty when off)
+         slot = self.by_req.pop(req_id, None)
+         if slot is None:
+@@ -402,4 +621,6 @@
+         self.releases += 1
+         self.freed_at[slot] = self.releases
++        if self.log_prefix:
++            self._note_release(slot, request, record_session)
+         if self.record_sessions and record_session:
+             self.records[slot] = (
+@@ -410,4 +631,39 @@
+             self.records[slot] = None
+ 
++    # -- VLLM_V41_PREFIX_LOG (reads the table, changes no decision) ----------
++    def _note_release(self, slot: int, request: Request, record_session: bool) -> None:
++        old = self.records[slot]
++        tokens = list(request.all_token_ids)
++        if old is not None and (
++            not (self.record_sessions and record_session)
++            or common_prefix(tokens, old[0]) < old[1] - self.ring_reach
++        ):
++            self.history.appendleft(("overwritten", old))
++        if self.record_sessions and not record_session:
++            self.history.appendleft(("dropped", (tokens, request.num_computed_tokens)))
++
++    def note(self, request: Request, pool_hit: int | None, hit: int, grain: int) -> None:
++        """get_computed_blocks' result; the latest one before admission counts."""
++        self.notes[request.request_id] = PrefixNote(
++            pool_hit,
++            hit,
++            grain,
++            tuple(
++                (owner is None, record)
++                for owner, record in zip(self.owner, self.records)
++            ),
++            tuple(self.history),
++        )
++
++    def log_admission(self, request: Request, slot: int) -> None:
++        decision = classify_prefix(
++            list(request.all_token_ids),
++            slot,
++            request.num_preemptions > 0,
++            self.notes.pop(request.request_id, None),
++            self.ring_reach,
++        )
++        logger.info("%s", format_prefix(request.request_id, decision))
++
+ 
+ _WAITING = "waiting"
+@@ -469,5 +725,16 @@
+         if not 1 <= pipeline_depth <= 4:
+             raise ValueError(f"{KNOB}: pipeline_depth {pipeline_depth} (1..4)")
+-        self.slots = V41SlotTable(num_slots, ring_reach, record_sessions)
++        self.slots = V41SlotTable(
++            num_slots, ring_reach, record_sessions, prefix_log_requested()
++        )
++        if self.slots.log_prefix:
++            logger.info(
++                "%s=1 active (scheduler): one line per admitted request with its "
++                "slot, the pool hit, the hit taken and the reason (numbers only); "
++                "ring reach %d, session records %s.",
++                PREFIX_LOG_KNOB,
++                ring_reach,
++                "on" if record_sessions else "off",
++            )
+         self.policy = policy
+         self.token_budget = token_budget
+@@ -710,5 +977,7 @@
+             )
+         for request in new_or_resumed:
+-            self.slots.assign(request)
++            slot = self.slots.assign(request)
++            if self.slots.log_prefix:
++                self.slots.log_admission(request, slot)
+         if self.turn == _WAITING and not scheduled:
+             self.waiting_backoff = True

@@ -49,6 +49,8 @@ export VLLM_V41_ATTN_CHAIN=1 VLLM_V41_COUPLED_DRAFTS=1 VLLM_V41_COUPLED_DRAFT_TE
 # Two request-path switches taken over from the Volta sPLIt build, accepted in window 16 (docs/measurements.md).  # switch_exports
 export VLLM_V41_SYSTEM_IN_PLACE=1  # switch_exports
 export VLLM_V41_TOPK_SEG=1024  # switch_exports
+export VLLM_V41_PREFIX_LOG=1  # switch_exports (numbers-only prefix-decision line, installed 2026-11-12, window px, docs/measurements.md)
+export VLLM_V41_SNAPSHOT_HIT=1  # switch_exports (snapshot hit: a request that holds a free slot's whole prompt resumes there, installed 2026-11-13, window rh, docs/measurements.md)
 if [ "$V41PKG_PP" = 1 ] || [ "${V41_PP2_ASYNC:-0}" = 1 ]; then export VLLM_V41_ASYNC=1; else unset VLLM_V41_ASYNC; fi
 # Model load keeps torch's default block reuse. Left to itself the worker loads under max_split_size_mb:20
 # (gpu_worker.py load_model). Under that scope a freed block of 20 MiB or more is never given to a smaller
@@ -68,7 +70,10 @@ seqs=$(awk '$1 == "max-num-seqs:" {print $2}' "$PROFILE_PATH")
 unset VLLM_V41_MULTI_ROWS VLLM_V41_MULTI_SEQ VLLM_V41_MULTI_SEQ_SINGLE_PREFILL_BUDGET VLLM_V41_MULTI_SEQ_DECODE_TURNS \
   VLLM_V41_MULTI_SEQ_PREFILL_BURST VLLM_V41_MULTI_SEQ_PREFILL_CHUNK
 case "$SLOTS" in
-  1) ;;
+  # One slot runs without VLLM_V41_MULTI_SEQ, and the engine refuses the two per-slot switches without it
+  # (v41_multi_seq.py multi_seq_requested). The close-out bench's first one-slot arm died at load on that refusal,
+  # 2026-11-13.
+  1) unset VLLM_V41_PREFIX_LOG VLLM_V41_SNAPSHOT_HIT ;;
   2|3|4) export VLLM_V41_MULTI_SEQ=1 VLLM_V41_MULTI_SEQ_SINGLE_PREFILL_BUDGET=1 VLLM_V41_MULTI_SEQ_DECODE_TURNS=16 \
          VLLM_V41_MULTI_SEQ_PREFILL_BURST=2 VLLM_V41_MULTI_SEQ_PREFILL_CHUNK=0 ;;
   *) echo "run_serve: NVFP4_SLOTS must be 1, 2, 3 or 4" >&2; exit 1 ;;

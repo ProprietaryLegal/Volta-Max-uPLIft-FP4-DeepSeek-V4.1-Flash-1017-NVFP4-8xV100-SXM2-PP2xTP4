@@ -17,19 +17,19 @@
    "path": "README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/README.md",
-   "source_sha256": "1b9b7705a008abb2e97b446b9afa7b85de35f95c1fcdb5568b08d7818ac55e8e",
+   "source_sha256": "9c7bd6644bc9c7dedb8781832cb17cb3f843501087a201521abc5a58bca05a3d",
    "transform": "hand-written for publication",
-   "sha256": "1b9b7705a008abb2e97b446b9afa7b85de35f95c1fcdb5568b08d7818ac55e8e",
-   "bytes": 124015
+   "sha256": "9c7bd6644bc9c7dedb8781832cb17cb3f843501087a201521abc5a58bca05a3d",
+   "bytes": 150565
   },
   {
    "path": "CHANGELOG.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/CHANGELOG.md",
-   "source_sha256": "619287d38a113f338ecf55c1021f94b858fdf4252a527bffa67902b0d03090b7",
+   "source_sha256": "5c5471a9d3fa97ddf2926fdf0a256961d7552601aca07f2bfd8dccb897ccadb3",
    "transform": "hand-written for publication",
-   "sha256": "619287d38a113f338ecf55c1021f94b858fdf4252a527bffa67902b0d03090b7",
-   "bytes": 28789
+   "sha256": "5c5471a9d3fa97ddf2926fdf0a256961d7552601aca07f2bfd8dccb897ccadb3",
+   "bytes": 30955
   },
   {
    "path": "CREDITS.md",
@@ -107,10 +107,10 @@
    "path": "docs/measurements.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/docs/measurements.md",
-   "source_sha256": "cdaa2323d4793ee9a662435c7edef520bc7bf4a437133ddbb0efdad4081ed0cd",
+   "source_sha256": "818958ff5e97914e1489b92c7f774518d2e27decd7e7bb7f73c08f36941f2a5c",
    "transform": "hand-written for publication",
-   "sha256": "cdaa2323d4793ee9a662435c7edef520bc7bf4a437133ddbb0efdad4081ed0cd",
-   "bytes": 130351
+   "sha256": "818958ff5e97914e1489b92c7f774518d2e27decd7e7bb7f73c08f36941f2a5c",
+   "bytes": 155163
   },
   {
    "path": "docs/history.md",
@@ -125,10 +125,10 @@
    "path": "engine/README.md",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/README.md",
-   "source_sha256": "5cb6e932e8cb366d280a2c2aff8050ad335a6fd89fe7b97e81d14c7f84af0933",
+   "source_sha256": "55fbce4d8ef0eda1ae238f0dc8c1e560c22e21f3c0d3850aa2b585cbad25f1c9",
    "transform": "hand-written for publication",
-   "sha256": "5cb6e932e8cb366d280a2c2aff8050ad335a6fd89fe7b97e81d14c7f84af0933",
-   "bytes": 13245
+   "sha256": "55fbce4d8ef0eda1ae238f0dc8c1e560c22e21f3c0d3850aa2b585cbad25f1c9",
+   "bytes": 14556
   },
   {
    "path": "harness/README.md",
@@ -143,10 +143,10 @@
    "path": "engine/configs/serve_hot_iq.sh",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/configs/serve_hot_iq.sh",
-   "source_sha256": "697f21d58335a43149c4992f9f49c683c6d27aaf041f1fda3a3891135fddfc26",
+   "source_sha256": "1de4447dc194b1123abc35f5b1f97c19b00449d6026f67a119a310b2068eae09",
    "transform": "hand-written for publication",
-   "sha256": "697f21d58335a43149c4992f9f49c683c6d27aaf041f1fda3a3891135fddfc26",
-   "bytes": 3884
+   "sha256": "1de4447dc194b1123abc35f5b1f97c19b00449d6026f67a119a310b2068eae09",
+   "bytes": 4116
   },
   {
    "path": "docs/acceptance/WINDOW11-accept-rule.md",
@@ -179,36 +179,36 @@
    "path": "engine/configs/hot_iq.yaml.template",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/configs/hot_iq.yaml.template",
-   "source_sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "source_sha256": "78e5fde7dc0eb85baa92ae8080969843ecde40614c5bf9299562b632c8035abb",
    "transform": "hand-written for publication",
-   "sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "sha256": "78e5fde7dc0eb85baa92ae8080969843ecde40614c5bf9299562b632c8035abb",
    "bytes": 2377
   },
   {
    "path": "engine/configs/hot_iq-slots1.yaml.template",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/configs/hot_iq-slots1.yaml.template",
-   "source_sha256": "6b5f54fd4619648bb8577fa537f63f8ba475991ffa83889e5fa2fc88ab5e8408",
+   "source_sha256": "e02a69fd01a518deea805a08aab2e1ff3ab96bbfb2b473dcb06d3d77e6cdfdf7",
    "transform": "hand-written for publication",
-   "sha256": "6b5f54fd4619648bb8577fa537f63f8ba475991ffa83889e5fa2fc88ab5e8408",
+   "sha256": "e02a69fd01a518deea805a08aab2e1ff3ab96bbfb2b473dcb06d3d77e6cdfdf7",
    "bytes": 2377
   },
   {
    "path": "engine/configs/hot_iq-slots2.yaml.template",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/configs/hot_iq-slots2.yaml.template",
-   "source_sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "source_sha256": "78e5fde7dc0eb85baa92ae8080969843ecde40614c5bf9299562b632c8035abb",
    "transform": "hand-written for publication",
-   "sha256": "53d6ae235f832643e23f0794180b029765ac92dbdc3a91b2b6dc7f841b6285b5",
+   "sha256": "78e5fde7dc0eb85baa92ae8080969843ecde40614c5bf9299562b632c8035abb",
    "bytes": 2377
   },
   {
    "path": "engine/configs/hot_iq-slots3.yaml.template",
    "kind": "authored",
    "source": "$LANE/publish/authored/engine/configs/hot_iq-slots3.yaml.template",
-   "source_sha256": "4e871e226dd731fb70349b9e5531964c4533743b75525c7540c887bcc9bb2e06",
+   "source_sha256": "4e0229de79711058bb96254f78f1fb5c7f2c48fb18a0d117fb33b47b8b4f0a7d",
    "transform": "hand-written for publication",
-   "sha256": "4e871e226dd731fb70349b9e5531964c4533743b75525c7540c887bcc9bb2e06",
+   "sha256": "4e0229de79711058bb96254f78f1fb5c7f2c48fb18a0d117fb33b47b8b4f0a7d",
    "bytes": 2377
   },
   {
@@ -291,6 +291,51 @@
    "transform": "hand-written for publication",
    "sha256": "d83507dc68f1bfa4b0ce4df4f0a82dca45e3e7df884b022519fb9d74cc769bf2",
    "bytes": 1081
+  },
+  {
+   "path": "docs/acceptance/WINDOWM32-accept-rule.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/acceptance/WINDOWM32-accept-rule.md",
+   "source_sha256": "9e1e9cfd2254f0882261eae6eaedb697fa6afb11f471b8ef373898f5e47106ed",
+   "transform": "hand-written for publication",
+   "sha256": "9e1e9cfd2254f0882261eae6eaedb697fa6afb11f471b8ef373898f5e47106ed",
+   "bytes": 2200
+  },
+  {
+   "path": "docs/acceptance/WINDOWPX-accept-rule.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/acceptance/WINDOWPX-accept-rule.md",
+   "source_sha256": "fd17ec1860c62c09e4ce1fa3267ba623f83dee4cf7a53e23217ea8100808ac40",
+   "transform": "hand-written for publication",
+   "sha256": "fd17ec1860c62c09e4ce1fa3267ba623f83dee4cf7a53e23217ea8100808ac40",
+   "bytes": 7750
+  },
+  {
+   "path": "docs/acceptance/WINDOWRH-accept-rule.md",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/acceptance/WINDOWRH-accept-rule.md",
+   "source_sha256": "e12c354c892b48c6be4847323208bedb077cf88af552bd298c73456300186216",
+   "transform": "hand-written for publication",
+   "sha256": "e12c354c892b48c6be4847323208bedb077cf88af552bd298c73456300186216",
+   "bytes": 20455
+  },
+  {
+   "path": "docs/charts/concurrency-closeout-light.svg",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/charts/concurrency-closeout-light.svg",
+   "source_sha256": "d5d85ef282300a6cb5b81deab98c6c44bb988da2ee223e0f47a9d3a70058f27a",
+   "transform": "hand-written for publication",
+   "sha256": "d5d85ef282300a6cb5b81deab98c6c44bb988da2ee223e0f47a9d3a70058f27a",
+   "bytes": 7762
+  },
+  {
+   "path": "docs/charts/concurrency-closeout-dark.svg",
+   "kind": "authored",
+   "source": "$LANE/publish/authored/docs/charts/concurrency-closeout-dark.svg",
+   "source_sha256": "3d6ae38b7f2cb02f7d561c7e838ecfa7c803861679906f238569b4c77697d9ad",
+   "transform": "hand-written for publication",
+   "sha256": "3d6ae38b7f2cb02f7d561c7e838ecfa7c803861679906f238569b4c77697d9ad",
+   "bytes": 7762
   },
   {
    "path": "quality/closeness-test/DECISIONS.md",
@@ -593,6 +638,50 @@
    "bytes": 6730
   },
   {
+   "path": "engine/patches/v41_prefix_log.patch",
+   "kind": "patchchain",
+   "source": "$LANE/publish/authored/engine/patches/v41_prefix_log.patch",
+   "source_sha256": "80a8acd4d5eaa0377f4df9feb1ebfd69a7926971891e56d3ef9d2cb5b1cb24dd",
+   "base_sha256": {
+    "vllm/v1/core/kv_cache_manager.py": "d71136188e5554b069ebfad23f24e7b42ffeb4bc8914868e5e70e03c236c77e9",
+    "vllm/v1/core/sched/v41_multi_seq.py": "5b410108379cb5cb147056dae4584d348750a5cbb151b2e790100b0fb91e4657"
+   },
+   "result_sha256": {
+    "vllm/v1/core/kv_cache_manager.py": "ad5e08f62ebc06a6e1ba438716a940d33b7978ff2cbb9b92c71c6612605b6c8f",
+    "vllm/v1/core/sched/v41_multi_seq.py": "5dff599726dac0c0ec333e86cd47d174af267a40c10cc811d800c35d84d4f1e1"
+   },
+   "base_is_production_file": true,
+   "applies_and_reproduces": true,
+   "chain": "v41_prefix_log.patch then v41_snapshot_hit.patch",
+   "transform": "pre-built unified diff against the production engine files, copied byte for byte; applied here in chain order to a copy of those files (git apply --check, patch -p1), every header sha256 and the build's engine/src files reproduced",
+   "sha256": "80a8acd4d5eaa0377f4df9feb1ebfd69a7926971891e56d3ef9d2cb5b1cb24dd",
+   "bytes": 16005
+  },
+  {
+   "path": "engine/patches/v41_snapshot_hit.patch",
+   "kind": "patchchain",
+   "source": "$LANE/publish/authored/engine/patches/v41_snapshot_hit.patch",
+   "source_sha256": "d3d39776c5dfd3a88f6a3fc026594bcd21b106e2c12d3cc5cb6753bc38b9d9c3",
+   "base_sha256": {
+    "vllm/v1/core/kv_cache_manager.py": "ad5e08f62ebc06a6e1ba438716a940d33b7978ff2cbb9b92c71c6612605b6c8f",
+    "vllm/v1/core/sched/v41_multi_seq.py": "5dff599726dac0c0ec333e86cd47d174af267a40c10cc811d800c35d84d4f1e1",
+    "vllm/models/deepseek_v41/slots.py": "0a8f188fe96b6ca1c7891c14e31543fba3184f30a014a5825510eb89aba8ba1e",
+    "vllm/v1/worker/gpu/model_states/deepseek_v41.py": "3ea7f4bf38f1aecf689acfdc5da3c3709c0601f8d4ef269e0da8da693a28f2e7"
+   },
+   "result_sha256": {
+    "vllm/v1/core/kv_cache_manager.py": "3ad886b4829c74baadc3bdbbc0d7e293fcfed0ffc89d9d4b4cf44d1e47408252",
+    "vllm/v1/core/sched/v41_multi_seq.py": "7e336cf5a454710547f1ef69de21e13da3c9a848dc3b65b4900000459c4f55c2",
+    "vllm/models/deepseek_v41/slots.py": "805c5dfc205c75a7e9f3588ce21dd59fc6e5ec485da723d5de51fb9f59da26a3",
+    "vllm/v1/worker/gpu/model_states/deepseek_v41.py": "9c886a6d2fdf06a97f8bb7be84b40b46d37b94792101cbb1652c5d6798f94cd8"
+   },
+   "base_is_production_file": true,
+   "applies_and_reproduces": true,
+   "chain": "v41_prefix_log.patch then v41_snapshot_hit.patch",
+   "transform": "pre-built unified diff against the production engine files, copied byte for byte; applied here in chain order to a copy of those files (git apply --check, patch -p1), every header sha256 and the build's engine/src files reproduced",
+   "sha256": "d3d39776c5dfd3a88f6a3fc026594bcd21b106e2c12d3cc5cb6753bc38b9d9c3",
+   "bytes": 46762
+  },
+  {
    "path": "engine/configs/env.sh",
    "kind": "code",
    "source": "$LANE/run/env.sh",
@@ -605,10 +694,10 @@
    "path": "engine/configs/run_serve.sh",
    "kind": "code",
    "source": "$LANE/run/run_serve.sh",
-   "source_sha256": "642c98481c20f2f41bb39d11be5d8d3c54af9380db8b1bd291a9a8f4c015b168",
-   "transform": "scrubbed (12 replacements; 4 per-file redaction rules)",
-   "sha256": "28e82805d26a2e26336b06cf21305c26e48a2cee427a67d09e1e7998172b8e3f",
-   "bytes": 5536
+   "source_sha256": "a357caa05be01cda7cbe35410d6ca1cad75d2df08685956adfe676d8396df04d",
+   "transform": "scrubbed (15 replacements; 7 per-file redaction rules)",
+   "sha256": "b3936eb2cf6d692360b0db79a26a24afaaa6ad2a66b86a117188e315229618e0",
+   "bytes": 6141
   },
   {
    "path": "engine/configs/serve-nvfp4-pp2.yaml",
@@ -710,15 +799,6 @@
    "bytes": 736
   },
   {
-   "path": "harness/run/swap_arm.sh",
-   "kind": "code",
-   "source": "$LANE/run/swap_arm.sh",
-   "source_sha256": "d65fcd7217e37b7dd273c28b8ca223b73026db6af3d4a1412e55045b9c7643c9",
-   "transform": "scrubbed (3 replacements)",
-   "sha256": "360c6298a8ac1752835be901423e19221b09ad6d920b60d7c4362173489bdac2",
-   "bytes": 4122
-  },
-  {
    "path": "harness/run/tput_prompts.py",
    "kind": "code",
    "source": "$LANE/run/tput_prompts.py",
@@ -726,6 +806,15 @@
    "transform": "scrubbed (2 replacements)",
    "sha256": "9ebc5d46a5fc26fab00e86dbea775ac1249c7574fc91b202eb570f0c52582b21",
    "bytes": 794
+  },
+  {
+   "path": "harness/run/swap_arm.sh",
+   "kind": "code",
+   "source": "$LANE/run/swap_arm.sh",
+   "source_sha256": "182cedaef57f0af2d6cdba50c779dd42c244cc7a7970012b126d65ed2d87cccc",
+   "transform": "scrubbed (4 replacements; 1 per-file redaction rules)",
+   "sha256": "fa1ae4c05d5e53f7e37c826410751e4b329205376789055662244bc03ec5db44",
+   "bytes": 4743
   },
   {
    "path": "harness/run/ctx_tput.py",
@@ -862,6 +951,24 @@
    "transform": "copied byte for byte (image)",
    "sha256": "209a5b5ece9b095fd2c742d79a434ab11019f970a0e8e849492c6308586c8202",
    "bytes": 262505
+  },
+  {
+   "path": "docs/charts/decode-by-length-closeout-light.png",
+   "kind": "binary",
+   "source": "$LANE/stage/hf-pack/promo/out-c25/decode-by-length-light.png",
+   "source_sha256": "90613dbb8030d373e7f2a02a65b37a394a3c802dade68ccab23b68a3bf1a9715",
+   "transform": "copied byte for byte (image)",
+   "sha256": "90613dbb8030d373e7f2a02a65b37a394a3c802dade68ccab23b68a3bf1a9715",
+   "bytes": 263093
+  },
+  {
+   "path": "docs/charts/decode-by-length-closeout-dark.png",
+   "kind": "binary",
+   "source": "$LANE/stage/hf-pack/promo/out-c25/decode-by-length-dark.png",
+   "source_sha256": "e0fbe4896ae20de2ce3317b8aac62d0776368af134d5a70bb3860b9010961149",
+   "transform": "copied byte for byte (image)",
+   "sha256": "e0fbe4896ae20de2ce3317b8aac62d0776368af134d5a70bb3860b9010961149",
+   "bytes": 259564
   },
   {
    "path": "harness/benchmarks/nvfp4_8r/__init__.py",
@@ -1693,9 +1800,9 @@
   }
  ],
  "not_copied_from_watched_directories": {
-  "count": 179,
+  "count": 213,
   "upstream_engine_files": 32,
-  "this_build_work_in_progress": 147,
+  "this_build_work_in_progress": 181,
   "note": "files in the build's source directories that are not published: unchanged upstream vLLM expert files, and plan 04 part B and other work in progress"
  }
 }
