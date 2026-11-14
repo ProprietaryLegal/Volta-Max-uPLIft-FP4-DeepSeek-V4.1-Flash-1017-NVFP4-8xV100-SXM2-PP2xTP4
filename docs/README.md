@@ -3,6 +3,7 @@
 | File | What it is |
 |---|---|
 | [measurements.md](measurements.md) | every published number, with how it was measured |
+| [front-page-archive-2026-11-14.md](front-page-archive-2026-11-14.md) | the sections moved off the front page on 2026-11-14, word for word: older benches, dated updates, the full closeness method, Quality and the measurement log |
 | [history.md](history.md) | the steps that led to Max uPLIft: the three-tier mode, the first-tally profiles and the earlier closeness checks |
 | [plans/README.md](plans/README.md) | the build-and-test plans and their shared rules |
 | [plans/00-WHERE-TIME-GOES.md](plans/00-WHERE-TIME-GOES.md) | time and memory budget of a decode round |

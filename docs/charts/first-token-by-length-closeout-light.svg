@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Volta Max uPLIft: time to first token by prompt length</title>
+<desc id="d">Close-out build, one request at a time on the two-slot default, thinking off. Seconds to the first token: 1K 0.85 s, 2K 1.41 s, 4K 2.64 s, 8K 5.96 s, 16K 8.72 s, 32K 13.7 s, 64K 23.2 s, 128K 43.8 s, 256K 86.7 s.</desc>
+<rect width="960" height="420" fill="#fcfcfb"/>
+<text x="24" y="36" fill="#0b0b0b" font-size="15" font-weight="600">Time to first token by prompt length, seconds</text>
+<line x1="84" x2="930" y1="312.0" y2="312.0" stroke="#b9b8b2" stroke-width="1"/>
+<text x="76" y="316.0" fill="#52514e" font-size="12" text-anchor="end">0 s</text>
+<line x1="84" x2="930" y1="265.6" y2="265.6" stroke="#e4e3df" stroke-width="1"/>
+<text x="76" y="269.6" fill="#52514e" font-size="12" text-anchor="end">20 s</text>
+<line x1="84" x2="930" y1="219.2" y2="219.2" stroke="#e4e3df" stroke-width="1"/>
+<text x="76" y="223.2" fill="#52514e" font-size="12" text-anchor="end">40 s</text>
+<line x1="84" x2="930" y1="172.8" y2="172.8" stroke="#e4e3df" stroke-width="1"/>
+<text x="76" y="176.8" fill="#52514e" font-size="12" text-anchor="end">60 s</text>
+<line x1="84" x2="930" y1="126.4" y2="126.4" stroke="#e4e3df" stroke-width="1"/>
+<text x="76" y="130.4" fill="#52514e" font-size="12" text-anchor="end">80 s</text>
+<line x1="84" x2="930" y1="80.0" y2="80.0" stroke="#e4e3df" stroke-width="1"/>
+<text x="76" y="84.0" fill="#52514e" font-size="12" text-anchor="end">100 s</text>
+<polyline points="104.0,310.0 204.8,308.7 305.5,305.9 406.2,298.2 507.0,291.8 607.8,280.2 708.5,258.2 809.2,210.4 910.0,110.9" fill="none" stroke="#3987e5" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="104.0" cy="310.0" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>1K prompt: first token 0.85 s</title></circle>
+<text x="104.0" y="300.0" fill="#0b0b0b" font-size="12" text-anchor="middle">0.85 s</text>
+<text x="104.0" y="332" fill="#52514e" font-size="12" text-anchor="middle">1K</text>
+<circle cx="204.8" cy="308.7" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>2K prompt: first token 1.41 s</title></circle>
+<text x="204.8" y="298.7" fill="#0b0b0b" font-size="12" text-anchor="middle">1.41 s</text>
+<text x="204.8" y="332" fill="#52514e" font-size="12" text-anchor="middle">2K</text>
+<circle cx="305.5" cy="305.9" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>4K prompt: first token 2.64 s</title></circle>
+<text x="305.5" y="295.9" fill="#0b0b0b" font-size="12" text-anchor="middle">2.64 s</text>
+<text x="305.5" y="332" fill="#52514e" font-size="12" text-anchor="middle">4K</text>
+<circle cx="406.2" cy="298.2" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>8K prompt: first token 5.96 s</title></circle>
+<text x="406.2" y="288.2" fill="#0b0b0b" font-size="12" text-anchor="middle">5.96 s</text>
+<text x="406.2" y="332" fill="#52514e" font-size="12" text-anchor="middle">8K</text>
+<circle cx="507.0" cy="291.8" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>16K prompt: first token 8.72 s</title></circle>
+<text x="507.0" y="281.8" fill="#0b0b0b" font-size="12" text-anchor="middle">8.72 s</text>
+<text x="507.0" y="332" fill="#52514e" font-size="12" text-anchor="middle">16K</text>
+<circle cx="607.8" cy="280.2" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>32K prompt: first token 13.7 s</title></circle>
+<text x="607.8" y="270.2" fill="#0b0b0b" font-size="12" text-anchor="middle">13.7 s</text>
+<text x="607.8" y="332" fill="#52514e" font-size="12" text-anchor="middle">32K</text>
+<circle cx="708.5" cy="258.2" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>64K prompt: first token 23.2 s</title></circle>
+<text x="708.5" y="248.2" fill="#0b0b0b" font-size="12" text-anchor="middle">23.2 s</text>
+<text x="708.5" y="332" fill="#52514e" font-size="12" text-anchor="middle">64K</text>
+<circle cx="809.2" cy="210.4" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>128K prompt: first token 43.8 s</title></circle>
+<text x="809.2" y="200.4" fill="#0b0b0b" font-size="12" text-anchor="middle">43.8 s</text>
+<text x="809.2" y="332" fill="#52514e" font-size="12" text-anchor="middle">128K</text>
+<circle cx="910.0" cy="110.9" r="4.5" fill="#3987e5" stroke="#fcfcfb" stroke-width="2"><title>256K prompt: first token 86.7 s</title></circle>
+<text x="910.0" y="100.9" fill="#0b0b0b" font-size="12" text-anchor="middle">86.7 s</text>
+<text x="910.0" y="332" fill="#52514e" font-size="12" text-anchor="middle">256K</text>
+<text x="507.0" y="352" fill="#52514e" font-size="12" text-anchor="middle">prompt length, tokens (each step doubles)</text>
+<text x="24" y="390" fill="#52514e" font-size="11">Measured 2026-11-13 on 8x V100-SXM2-32GB, close-out build, one request at a time on the two-slot default, thinking off,</text>
+<text x="24" y="406" fill="#52514e" font-size="11">at the default 300 W power limit and 1,530 MHz maximum clock. Fast prompt reading: quality not established.</text>
+</svg>

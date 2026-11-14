@@ -3,6 +3,18 @@
 Dates are UTC. Every number is MEASURED on the 8-card host unless labelled otherwise; details in
 [docs/measurements.md](docs/measurements.md).
 
+## 2026-11-14: front page reordered and shortened
+
+- **README.md reordered.** Speed first, then context, then accuracy ("How close to NVFP4"), then what this is,
+  reproduce and the rest. The front page is about 60 % shorter in words.
+- **Older material moved to docs/, word for word.** The speed benches of 2026-11-10 and its rerun of 2026-11-11,
+  the dated updates, the build section of 2026-11-10, the full closeness method, Quality and the measurement log
+  are in [docs/front-page-archive-2026-11-14.md](docs/front-page-archive-2026-11-14.md). The tables of the benches
+  of 2026-11-12 and 2026-11-13 were already in [docs/measurements.md](docs/measurements.md). No figure was changed.
+- **Charts at the top.** Speed and context charts first, then the closeness graphics. One new chart, time to first
+  token by prompt length for the close-out bench, drawn by `tools/chart_first_token.py` from the long-prompt table
+  already on the page.
+
 ## 2026-11-13: the prompt cache survives a changed reply, +32 MiB on stage 1, card order, a cache log line
 
 MEASURED on the eight cards on 2026-11-12 and 2026-11-13, each under a rule fixed before its data, public prompts
@@ -126,7 +138,7 @@ reserve 7.5 GiB, chain), and so are the headline figures, until the package's sm
 - **Speed bench rerun on the kernel build** (R1's tiers and the group-plan kernel, one run, 1,475 MHz):
   thinking off, decode 149.6 and 122.5 tok/s on code after 1K and 256K prompts (first bench 123.3 and 103.8), legal 84.7 and 78.5 (71.9 and 61.8), first token after a 256K prompt 207.9 s (209.6 s). Short sets on the bench boot: general 101.1 tok/s (28.29 ms per round) and legal-style 81.1 (28.07 ms) on the rerun's boot, against 87.0 (34.73 ms) and 67.3 (34.41 ms) on the first bench's boot. Not paired with the first bench (tier map,
   dispatch, clock and day differ at once). Low-priority single-thread file jobs ran on the host for about 10 minutes, from 12:26 to 12:38 UTC, near the start of the long-prompt part (requests 10 to 40 of 169: long-off 1K to 8K). An upload of this package's last files to the Hugging Face Hub, about 7 MB/s on average by its own log, ran beside the bench from its start until 12:59 UTC (requests 1 to 69 of 169: long-off 1K to 64K). The 216K tool loop and the short sets ran after both. Tables: README
-  [Speed bench rerun](README.md#speed-bench-rerun-2026-11-11-kernel-build).
+  [Speed bench rerun](docs/front-page-archive-2026-11-14.md#speed-bench-rerun-2026-11-11-kernel-build).
 
 ## 2026-11-11: how close to NVFP4, and the package boot check
 
@@ -135,7 +147,7 @@ reserve 7.5 GiB, chain), and so are the headline figures, until the package's sm
   reference on 95.1 % of compared tokens against Volta sPLIt's 92.2 %, KL divergence 0.0794 nats against 0.1958, and
   on the shared tokens removes 63 % of Volta sPLIt's KL divergence. Changed multiple-choice answers 1.6 % against
   15.4 % (on the 475 questions the reference answered, counted after scoring: 1.7 % against 8.8 %). HOT_IQ CLOSER on
-  all four comparisons fixed in advance. In the README: [How close to NVFP4](README.md#how-close-to-nvfp4).
+  all four comparisons fixed in advance. In the README: [How close to NVFP4](docs/front-page-archive-2026-11-14.md#how-close-to-nvfp4).
 - **Published with it:** the receipts (no text), the scorer's output, the charts, the after-scoring count script and
   a scrubbed public copy of the run decisions, in [quality/closeness-test/](quality/closeness-test/). Two
   amendments to capture budgets were made before any score (decisions 8 and 9). The Volta sPLIt arm was captured on
@@ -151,7 +163,7 @@ reserve 7.5 GiB, chain), and so are the headline figures, until the package's sm
   output byte-identical in 45 of 45 cells. Prompt reading tops out at 1,243 to 1,276 tok/s, and the first token
   comes 106.4 s after a 128K prompt and 209.6 s after 256K. Slower than Volta sPLIt's bench (2026-11-05, 1,522 MHz)
   in every thinking-off cell, prompt-reading cell and short-prompt row. In the README:
-  [Tokens per second](README.md#tokens-per-second).
+  [Tokens per second](docs/front-page-archive-2026-11-14.md#tokens-per-second).
 - **The 216K tool loop's final request ran to the 32,000-token limit** inside thinking on the bench boot, with no
   final answer. On the earlier boot it ended normally (1,385 tokens), so 1 of 2 runs. The tables that showed only
   the earlier run now show both.
