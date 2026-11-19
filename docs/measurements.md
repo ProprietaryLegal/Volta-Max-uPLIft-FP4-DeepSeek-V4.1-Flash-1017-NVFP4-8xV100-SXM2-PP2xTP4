@@ -1681,3 +1681,13 @@ again.
 ESTIMATED from the miss-path rows and the tally (6 tokens x top-6 per round, independent tokens, 1.33 distinct
 host experts per layer per round on average): all experts on the cards 36.1 ms per round; zero copy 96.9; DMA 69.8 to
 79.8; GPU gather 84.8 to 94.8; host compute 190 to 200. No path comes within about 10 ms per round of all on the cards.
+
+## Figures moved from the front page (2026-11-19)
+
+The front page was rewritten on 2026-11-19. These figures were on it and are kept here.
+
+| What | Figure | Label |
+|---|---|---|
+| ISTA-DASLab GSQ-RCO GGUF, non-expert tensors by tensor bytes | Q5_K 4.76 GiB, Q8_0 0.36 GiB, BF16 0.26 GiB, F32 0.15 GiB | MEASURED from the file header |
+| The same GGUF, routed-expert records | IQ1_M 55.37 GiB, IQ2_XXS 45.68 GiB, IQ2_XS 21.95 GiB | MEASURED from the file header |
+| Card reserves of the two-slot default | 4.32 / 7.03 GiB (4,643,356,672 / 7,550,795,776 bytes) plus the fast-reading workspace of 0.33 / 0.34 GiB per card | the template |
